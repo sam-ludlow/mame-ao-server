@@ -1,0 +1,9 @@
+﻿openapi: 3.0.3
+info:
+  title: MAME-AO-SERVER
+  description: https://github.com/sam-ludlow/mame-ao
+  termsOfService: https://github.com/sam-ludlow/mame-ao
+  version: 1.0.0
+externalDocs:
+  description: Find out more
+  url: https://github.com/sam-ludlow/mame-ao
