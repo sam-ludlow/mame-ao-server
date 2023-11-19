@@ -16,7 +16,9 @@ namespace mame_ao_server
 
 		private string? _Directory;
 
-		private Dictionary<string, string> _HtmlTemplates = new Dictionary<string, string>();
+		private Dictionary<string, string[]> _HtmlTemplates = new Dictionary<string, string[]>();
+
+		private Dictionary<string, byte[]> _WebImages = new Dictionary<string, byte[]>();
 
 		public Server(string binding, string directory)
 		{
@@ -25,7 +27,44 @@ namespace mame_ao_server
 
 			_Directory = directory;
 
-			_HtmlTemplates.Add("mame_machine", File.ReadAllText(Path.Combine(_Directory, "html", "mame_machine.html"), Encoding.UTF8));
+			_WebImages.Add("spludlow.svg", File.ReadAllBytes(Path.Combine(_Directory, "html", "spludlow.svg")));
+			_WebImages.Add("stylesheet.css", File.ReadAllBytes(Path.Combine(_Directory, "html", "stylesheet.css")));
+
+			LoadHtmlTemplates();
+
+		}
+
+		public void LoadHtmlTemplates()
+		{
+			string filename = Path.Combine(_Directory, "html", "mame_machine.html");
+			string name = Path.GetFileNameWithoutExtension(filename);
+
+			string[] parts = new string[3];
+
+			string[] tags = new string[] { "@HEAD@", "@BODY@" };
+
+			StringBuilder current = new StringBuilder();
+			foreach (string line in File.ReadAllLines(filename, Encoding.UTF8))
+			{
+				int index;
+				for (index = 0; index < tags.Length; ++index)
+				{
+					if (line.Contains(tags[index]) == true)
+					{
+						parts[index] = current.ToString();
+						current.Length = 0;
+						index = -1;
+						break;
+					}
+				}
+
+				if (index != -1)
+					current.AppendLine(line);
+			}
+			parts[parts.Length - 1] = current.ToString();
+
+			_HtmlTemplates.Add(name, parts);
+
 		}
 
 		public void Start(string serverConnectionString, string databaseNames)
@@ -61,27 +100,46 @@ namespace mame_ao_server
 							}
 							else
 							{
+								byte[] data;
+
 								switch (path)
 								{
 									case "/favicon.ico":
 										context.Response.Headers["Content-Type"] = "image/x-icon";
-										context.Response.OutputStream.Write(_FavIcon, 0, _FavIcon.Length);
+										data = _FavIcon;
+										context.Response.OutputStream.Write(data, 0, data.Length);
+										break;
+
+									case "/stylesheet.css":
+										context.Response.Headers["Content-Type"] = "text/css";
+										data = _WebImages[Path.GetFileName(path)];
+										context.Response.OutputStream.Write(data, 0, data.Length);
+										break;
+
+									case "/spludlow.svg":
+										context.Response.Headers["Content-Type"] = "image/svg+xml";
+										data = _WebImages[Path.GetFileName(path)];
+										context.Response.OutputStream.Write(data, 0, data.Length);
 										break;
 
 									default:
 
 										if (path.StartsWith("/mame/machine/") == true)
 										{
-
 											MameMachine(context, writer);
+											break;
+										}
 
-										}
-										else
+										if (path.StartsWith("/mame/software/") == true)
 										{
-											ApplicationException exception = new ApplicationException($"Not found: '{path}'");
-											exception.Data.Add("status", 404);
-											throw exception;
+											MameSoftware(context, writer);
+											break;
 										}
+
+
+										ApplicationException exception = new ApplicationException($"Not found: '{path}'");
+										exception.Data.Add("status", 404);
+										throw exception;
 
 
 										//MethodInfo method = GetType().GetMethod(path.Replace("/", "_"));
@@ -121,7 +179,7 @@ namespace mame_ao_server
 			string[] pathParts = path.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
 
 			string name = pathParts[2];
-			string type = "html";
+			string type = null;
 
 			int dotIndex = name.IndexOf('.');
 			if (dotIndex != -1)
@@ -132,6 +190,7 @@ namespace mame_ao_server
 
 			switch (type)
 			{
+				case null:
 				case "html":
 					context.Response.Headers["Content-Type"] = "text/html; charset=utf-8";
 					break;
@@ -148,12 +207,80 @@ namespace mame_ao_server
 					throw new ApplicationException($"Bad Machine Payload type '{type}'.");
 			}
 
-			string payload = _Database.PayloadMachine(name, type);
+			string[] payloadParts = _Database.PayloadMachine(name, type ?? "html");
 
-			if (type == "html")
-				payload = _HtmlTemplates["mame_machine"].Replace("@BODY@", payload);
+			string title = payloadParts[0];
+			string payload = payloadParts[1];
 
-			writer.WriteLine(payload);
+			//	TODO headers & metadata
+
+			if (type == null)
+				WriteTempate("mame_machine", $"<title>{title}</title>", title, payload, writer);
+			else
+				writer.WriteLine(payload);
+		}
+
+		public void MameSoftware(HttpListenerContext context, StreamWriter writer)
+		{
+			string path = context.Request.Url.AbsolutePath.ToLower();
+			string[] pathParts = path.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+
+			string softwarelist_name = pathParts[2];
+			string software_name = pathParts[3];
+
+			string type = null;
+
+			int dotIndex = software_name.IndexOf('.');
+			if (dotIndex != -1)
+			{
+				type = software_name.Substring(dotIndex + 1);
+				software_name = software_name.Substring(0, dotIndex);
+			}
+
+			switch (type)
+			{
+				case null:
+				case "html":
+					context.Response.Headers["Content-Type"] = "text/html; charset=utf-8";
+					break;
+
+				case "xml":
+					context.Response.Headers["Content-Type"] = "text/xml; charset=utf-8";
+					break;
+
+				case "json":
+					context.Response.Headers["Content-Type"] = "application/json; charset=utf-8";
+					break;
+
+				default:
+					throw new ApplicationException($"Bad Software Payload type '{type}'.");
+			}
+
+			string[] payloadParts = _Database.PayloadSoftware(softwarelist_name, software_name, type ?? "html");
+
+			string title = payloadParts[0];
+			string payload = payloadParts[1];
+
+			//	TODO headers & metadata
+
+			if (type == null)
+				WriteTempate("mame_machine", $"<title>{title}</title>", title, payload, writer);
+			else
+				writer.WriteLine(payload);
+		}
+
+		public void WriteTempate(string templateName, string head, string title, string body, StreamWriter writer)
+		{
+			string[] parts = _HtmlTemplates[templateName];
+
+			writer.WriteLine(parts[0]);
+			writer.WriteLine(head);
+
+			//	server head
+
+			writer.WriteLine(parts[1].Replace("@H1@", title));
+			writer.WriteLine(body);
+			writer.WriteLine(parts[2]);
 		}
 
 		public void Stop()

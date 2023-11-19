@@ -14,16 +14,23 @@ foreach (string arg in args)
 if (parameters.ContainsKey("DIRECTORY") == false)
 	parameters.Add("DIRECTORY", Environment.CurrentDirectory);
 
-
 Server server = new(parameters["BINDING"], parameters["DIRECTORY"]);
 server.Start(parameters["MSSQL_SERVER"], parameters["MSSQL_TARGET_NAMES"]);
 
-Console.WriteLine("Listener started. any key to exit.");
+Console.WriteLine("Listener started. enter 'stop' to finish.");
 
-Console.ReadKey();
+string? line;
+
+while ((line = Console.ReadLine()) != null)
+{
+	line = line.Trim();
+
+	if (line == "stop")
+		break;
+}
 
 Console.WriteLine("Stopping");
 
 server.Stop();
 
-Console.WriteLine("EXIT");
+Console.WriteLine("Stopped");
