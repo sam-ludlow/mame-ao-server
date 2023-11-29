@@ -12,6 +12,8 @@ namespace mame_ao_server
 
 		public Boolean _TestMode = true;
 
+		public Dictionary<string, DataRow> _MetaData;
+
 		public Database(string serverConnectionString, string databaseNames)
 		{
 			string[] databaseNamesEach = databaseNames.Split(new char[] { ',' });
@@ -28,10 +30,25 @@ namespace mame_ao_server
 
 		public void Initialize()
 		{
+			DataSet dataSet;
+
+			_MetaData = new Dictionary<string, DataRow>();
+
+			dataSet = new DataSet();
+			using (SqlDataAdapter adapter = new SqlDataAdapter("SELECT * FROM [_metadata]", _SqlConnectionMachine))
+				adapter.Fill(dataSet);
+			_MetaData.Add("machine", dataSet.Tables[0].Rows[0]);
+
+			dataSet = new DataSet();
+			using (SqlDataAdapter adapter = new SqlDataAdapter("SELECT * FROM [_metadata]", _SqlConnectionSoftware))
+				adapter.Fill(dataSet);
+			_MetaData.Add("software", dataSet.Tables[0].Rows[0]);
+
+
 			if (_TestMode == true)
 				return;
 
-			DataSet dataSet;
+
 
 			dataSet = new DataSet();
 			using (SqlDataAdapter adapter = new SqlDataAdapter("SELECT * FROM [machine_payload]", _SqlConnectionMachine))
@@ -44,8 +61,23 @@ namespace mame_ao_server
 
 		}
 
-		public string[] PayloadMachine(string machine_name, string type)
+		private List<string> ValidExtentions = new List<string>(new string[] { "", ".html", ".json", ".xml" });
+
+		private string ExtentionToPayloadType(string extention)
 		{
+			if (ValidExtentions.Contains(extention) == false)
+				throw new ApplicationException($"Bad extention {extention}");
+
+			if (extention == "")
+				extention = ".html";
+
+			return extention.Substring(1);
+		}
+
+		public string[] PayloadMachine(string machine_name, string extention)
+		{
+			string type = ExtentionToPayloadType(extention);
+
 			DataRow row = null;
 
 			if (_TestMode == true)
@@ -72,8 +104,10 @@ namespace mame_ao_server
 
 			return new string[] { (string)row["title"], (string)row[type] };
 		}
-		public string[] PayloadSoftware(string softwarelist_name, string software_name, string type)
+		public string[] PayloadSoftware(string softwarelist_name, string software_name, string extention)
 		{
+			string type = ExtentionToPayloadType(extention);
+
 			DataRow row = null;
 
 			if (_TestMode == true)
@@ -98,6 +132,37 @@ namespace mame_ao_server
 
 			if (row == null)
 				throw new ApplicationException($"Software not found: '{softwarelist_name}', '{software_name}'");
+
+			return new string[] { (string)row["title"], (string)row[type] };
+		}
+
+		public string[] PayloadSoftwareList(string softwarelist_name, string extention)
+		{
+			string type = ExtentionToPayloadType(extention);
+
+			DataRow row = null;
+
+			if (_TestMode == true)
+			{
+				DataSet dataSet = new DataSet();
+				using (SqlDataAdapter adapter = new SqlDataAdapter($"SELECT [title], [{type}] FROM [softwarelist_payload] WHERE (softwarelist_name = @softwarelist_name)", _SqlConnectionSoftware))
+				{
+					adapter.SelectCommand.Parameters.AddWithValue("@softwarelist_name", softwarelist_name);
+
+					adapter.Fill(dataSet);
+				}
+
+				if (dataSet.Tables[0].Rows.Count > 0)
+					row = dataSet.Tables[0].Rows[0];
+			}
+			else
+			{
+				//row = _PayloadSoftware.Rows.Find(softwarelist_name, software_name);
+			}
+
+
+			if (row == null)
+				throw new ApplicationException($"Software list not found: '{softwarelist_name}'");
 
 			return new string[] { (string)row["title"], (string)row[type] };
 		}
