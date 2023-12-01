@@ -1,2 +1,6 @@
 # mame-ao-server
-MAME Data Serving
+
+Retro computer hardware & software reference web
+
+https://data.spludlow.co.uk/
+

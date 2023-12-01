@@ -153,6 +153,26 @@ namespace mame_ao_server
 										httpContext.Response.OutputStream.Write(_WebAssets[context.Path], 0, _WebAssets[context.Path].Length);
 										break;
 
+									case "/":
+										WriteTempate("master", "<title>Spludlow Data</title>", "Spludlow Data",
+											"<h2>Welcome to Spludlow Data</h2><p><a href=\"https://github.com/sam-ludlow/mame-ao-server\" target=\"_blank\">Retro computer hardware & software reference web - look at the code</a></p><ul><li><a href=\"/mame\">mame</a></li><li>more...</li></ul>", writer);
+										break;
+
+									case "/mame":
+										WriteTempate("master", "<title>Spludlow Data - mame</title>", "Spludlow Data - mame",
+											"<h2>mame data subsets</h2><ul><li><a href=\"/mame/machine\">machine</a></li><li><a href=\"/mame/software\">software</a></li></ul>", writer);
+										break;
+
+									case "/mame/machine":
+										WriteTempate("master", "<title>Spludlow Data - mame machine</title>", "Spludlow Data - mame machine",
+	"<p>this page is not ready, but you can access the data pages using the address bar, for example:</p><ul><li><a href=\"/mame/machine/mrdo\">/mame/machine/mrdo</a></li><li><a href=\"/mame/machine/bbcb\">/mame/machine/bbcb</a></li></ul>", writer);
+										break;
+
+									case "/mame/software":
+										WriteTempate("master", "<title>Spludlow Data - mame software</title>", "Spludlow Data - mame software",
+	"<p>this page is not ready, but you can access the data pages using the address bar, for example</p><ul><li><a href=\"/mame/software/neogeo\">/mame/software/neogeo</a></li><li><a href=\"/mame/software/cdi/aidsawar\">/mame/software/cdi/aidsawar</a></li></ul>", writer);
+										break;
+
 									default:
 
 										if (context.Path.StartsWith("/mame/machine/") == true && context.PathParts.Length == 3)
