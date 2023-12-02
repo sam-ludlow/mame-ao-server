@@ -167,6 +167,35 @@ namespace mame_ao_server
 			return new string[] { (string)row["title"], (string)row[type] };
 		}
 
+		public string[] PayloadSoftwareLists(string extention)
+		{
+			string type = ExtentionToPayloadType(extention);
+
+			DataRow row = null;
+
+			if (_TestMode == true)
+			{
+				DataSet dataSet = new DataSet();
+				using (SqlDataAdapter adapter = new SqlDataAdapter($"SELECT [title], [{type}] FROM [softwarelists_payload] WHERE ([key_1] = '1')", _SqlConnectionSoftware))
+				{
+					adapter.Fill(dataSet);
+				}
+
+				if (dataSet.Tables[0].Rows.Count > 0)
+					row = dataSet.Tables[0].Rows[0];
+			}
+			else
+			{
+				//row = _PayloadSoftware.Rows.Find(softwarelist_name, software_name);
+			}
+
+
+			if (row == null)
+				throw new ApplicationException("Software lists not found");
+
+			return new string[] { (string)row["title"], (string)row[type] };
+		}
+
 
 		public static DataSet ExecuteFill(SqlConnection connection, string commandText)
 		{

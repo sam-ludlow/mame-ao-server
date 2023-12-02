@@ -42,6 +42,8 @@ namespace mame_ao_server
 			public string[] PathParts;
 			public string Extention;
 
+			public string InfoHeader = "";
+
 			public Context(HttpListenerContext httpContext, StreamWriter writer)
 			{
 				HttpContext = httpContext;
@@ -77,9 +79,9 @@ namespace mame_ao_server
 			string filename = Path.Combine(_Directory, "html", "master.html");
 			string name = Path.GetFileNameWithoutExtension(filename);
 
-			string[] parts = new string[3];
+			string[] tags = new string[] { "@HEAD@", "@INFO@", "@BODY@" };
 
-			string[] tags = new string[] { "@HEAD@", "@BODY@" };
+			string[] parts = new string[tags.Length + 1];
 
 			StringBuilder current = new StringBuilder();
 			foreach (string line in File.ReadAllLines(filename, Encoding.UTF8))
@@ -145,6 +147,9 @@ namespace mame_ao_server
 							{
 								//byte[] data;
 
+								if (context.Path.StartsWith("/mame/machine") == true || context.Path.StartsWith("/mame/software") == true)
+									context.InfoHeader = (string)_Database._MetaData[context.PathParts[1]]["info"];
+
 								switch (context.Path)
 								{
 									case "/favicon.ico":
@@ -155,22 +160,21 @@ namespace mame_ao_server
 
 									case "/":
 										WriteTempate("master", "<title>Spludlow Data</title>", "Spludlow Data",
-											"<h2>Welcome to Spludlow Data</h2><p><a href=\"https://github.com/sam-ludlow/mame-ao-server\" target=\"_blank\">Retro computer hardware & software reference web - look at the code</a></p><ul><li><a href=\"/mame\">mame</a></li><li>more...</li></ul>", writer);
+											"<h2>Welcome to Spludlow Data</h2><p><a href=\"https://github.com/sam-ludlow/mame-ao-server\" target=\"_blank\">Retro computer hardware & software reference web - look at the code</a></p><ul><li><a href=\"/mame\">mame</a></li><li>more...</li></ul>", context);
 										break;
 
 									case "/mame":
 										WriteTempate("master", "<title>Spludlow Data - mame</title>", "Spludlow Data - mame",
-											"<h2>mame data subsets</h2><ul><li><a href=\"/mame/machine\">machine</a></li><li><a href=\"/mame/software\">software</a></li></ul>", writer);
+											"<h2>mame data subsets</h2><ul><li><a href=\"/mame/machine\">machine</a></li><li><a href=\"/mame/software\">software</a></li></ul>", context);
 										break;
 
 									case "/mame/machine":
 										WriteTempate("master", "<title>Spludlow Data - mame machine</title>", "Spludlow Data - mame machine",
-	"<p>this page is not ready, but you can access the data pages using the address bar, for example:</p><ul><li><a href=\"/mame/machine/mrdo\">/mame/machine/mrdo</a></li><li><a href=\"/mame/machine/bbcb\">/mame/machine/bbcb</a></li></ul>", writer);
+	"<p>this page is not ready, but you can access the data pages using the address bar, for example:</p><ul><li><a href=\"/mame/machine/mrdo\">/mame/machine/mrdo</a></li><li><a href=\"/mame/machine/bbcb\">/mame/machine/bbcb</a></li></ul>", context);
 										break;
 
 									case "/mame/software":
-										WriteTempate("master", "<title>Spludlow Data - mame software</title>", "Spludlow Data - mame software",
-	"<p>this page is not ready, but you can access the data pages using the address bar, for example</p><ul><li><a href=\"/mame/software/neogeo\">/mame/software/neogeo</a></li><li><a href=\"/mame/software/cdi/aidsawar\">/mame/software/cdi/aidsawar</a></li></ul>", writer);
+										MameSoftwareLists(context);
 										break;
 
 									default:
@@ -247,7 +251,7 @@ namespace mame_ao_server
 			//	TODO headers & metadata
 
 			if (context.Extention == "")
-				WriteTempate("master", $"<title>{title}</title>", title, payload, context.Writer);
+				WriteTempate("master", $"<title>{title}</title>", title, payload, context);
 			else
 				context.Writer.WriteLine(payload);
 		}
@@ -268,7 +272,7 @@ namespace mame_ao_server
 			//	TODO headers & metadata
 
 			if (context.Extention == "")
-				WriteTempate("master", $"<title>{title}</title>", title, payload, context.Writer);
+				WriteTempate("master", $"<title>{title}</title>", title, payload, context);
 			else
 				context.Writer.WriteLine(payload);
 		}
@@ -287,25 +291,42 @@ namespace mame_ao_server
 			//	TODO headers & metadata
 
 			if (context.Extention == "")
-				WriteTempate("master", $"<title>{title}</title>", title, payload, context.Writer);
+				WriteTempate("master", $"<title>{title}</title>", title, payload, context);
 			else
 				context.Writer.WriteLine(payload);
 
 		}
 
+		public void MameSoftwareLists(Context context)
+		{
+			string[] payloadParts = _Database.PayloadSoftwareLists(context.Extention);
 
-		public void WriteTempate(string templateName, string head, string title, string body, StreamWriter writer)
+			string title = payloadParts[0];
+			string payload = payloadParts[1];
+
+			//	TODO headers & metadata
+
+			if (context.Extention == "")
+				WriteTempate("master", $"<title>{title}</title>", title, payload, context);
+			else
+				context.Writer.WriteLine(payload);
+		}
+
+
+		public void WriteTempate(string templateName, string head, string title, string body, Context context)
 		{
 			string[] parts = _HtmlTemplates[templateName];
 
-			writer.WriteLine(parts[0]);
-			writer.WriteLine(head);
+			context.Writer.WriteLine(parts[0]);
+			context.Writer.WriteLine(head);
 
 			//	server head
 
-			writer.WriteLine(parts[1].Replace("@H1@", title));
-			writer.WriteLine(body);
-			writer.WriteLine(parts[2]);
+			context.Writer.WriteLine(parts[1].Replace("@H1@", title));
+			context.Writer.WriteLine(context.InfoHeader);
+			context.Writer.WriteLine(parts[2]);
+			context.Writer.WriteLine(body);
+			context.Writer.WriteLine(parts[3]);
 		}
 
 		public void Stop()
