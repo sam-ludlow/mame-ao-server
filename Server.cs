@@ -7,6 +7,11 @@ using static mame_ao_server.Server;
 
 namespace mame_ao_server
 {
+	public interface ISystem
+	{
+		public void Process(Context context);
+	}
+
 	public class Server
 	{
 		private bool _keepOnRunning = true;
@@ -15,7 +20,7 @@ namespace mame_ao_server
 
 		private Task? _ListenTask = null;
 
-		private Database? _Database;
+		public Database? _Database;
 
 		private string? _Directory;
 
@@ -33,6 +38,12 @@ namespace mame_ao_server
 			{ ".ico",   "image/x-icon" },
 		};
 
+		private Dictionary<string, string> _Menu = new Dictionary<string, string>() {
+
+			{	"/mame",	"MAME" },
+			{   "/tosec",    "TOSEC" },
+		};
+
 		public class Context
 		{
 			public HttpListenerContext HttpContext;
@@ -42,6 +53,7 @@ namespace mame_ao_server
 			public string[] PathParts;
 			public string Extention;
 
+			public string NavHtml = "";
 			public string InfoHeader = "";
 
 			public Context(HttpListenerContext httpContext, StreamWriter writer)
@@ -52,6 +64,9 @@ namespace mame_ao_server
 				Path = httpContext.Request.Url.AbsolutePath.ToLower();
 				PathParts = Path.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
 				Extention = System.IO.Path.GetExtension(Path);
+
+				NavHtml = "<table><tr><td> <a href=\"/mame\">MAME</a> </td><td> <a href=\"/tosec\">TOSEC</a> </td></tr></table>";
+
 			}
 		}
 
@@ -79,7 +94,7 @@ namespace mame_ao_server
 			string filename = Path.Combine(_Directory, "html", "master.html");
 			string name = Path.GetFileNameWithoutExtension(filename);
 
-			string[] tags = new string[] { "@HEAD@", "@INFO@", "@BODY@" };
+			string[] tags = new string[] { "@HEAD@", "@NAV@", "@INFO@", "@BODY@" };
 
 			string[] parts = new string[tags.Length + 1];
 
@@ -113,108 +128,75 @@ namespace mame_ao_server
 			_Database.Initialize();
 
 
+			Dictionary<string, ISystem> systems = new Dictionary<string, ISystem>() {
+				{ "mame", new MAME(this) },
+				{ "tosec", new TOSEC(this) }
+			};
+
+
 			_HttpListener.Start();
 
 			_ListenTask = new Task(() =>
 			{
-				while (_keepOnRunning == true)
+			while (_keepOnRunning == true)
+			{
+				HttpListenerContext httpContext = _HttpListener.GetContext();
+
+				using (StreamWriter writer = new StreamWriter(httpContext.Response.OutputStream, new UTF8Encoding(false)))
 				{
-					HttpListenerContext httpContext = _HttpListener.GetContext();
-
-					using (StreamWriter writer = new StreamWriter(httpContext.Response.OutputStream, new UTF8Encoding(false)))
+					try
 					{
-						try
+						Context context = new Context(httpContext, writer);
+
+						Console.WriteLine($"'{context.Path}' {context.PathParts.Length} : '{String.Join(", ", context.PathParts)}'");
+
+						if (_MimeTypes.ContainsKey(context.Extention) == false)
+							throw new ApplicationException($"MIME mapping not found: '{context.Extention}'");
+
+						httpContext.Response.Headers.Add("content-type", _MimeTypes[context.Extention]);
+
+						httpContext.Response.Headers.Add("access-control-allow-origin", "*");
+						httpContext.Response.Headers.Add("x-content-type-options", "nosniff");
+						httpContext.Response.Headers.Add("cache-control", "public");
+
+
+						if (httpContext.Request.HttpMethod == "OPTIONS")
 						{
-							Context context = new Context(httpContext, writer);
+							httpContext.Response.Headers.Add("Allow", "OPTIONS, GET");
+						}
+						else
+						{
 
-							Console.WriteLine($"'{context.Path}' {context.PathParts.Length} : '{String.Join(", ", context.PathParts)}'");
-
-							if (_MimeTypes.ContainsKey(context.Extention) == false)
-								throw new ApplicationException($"MIME mapping not found: '{context.Extention}'");
-
-							httpContext.Response.Headers.Add("content-type", _MimeTypes[context.Extention]);
-
-							httpContext.Response.Headers.Add("access-control-allow-origin", "*");
-							httpContext.Response.Headers.Add("x-content-type-options", "nosniff");
-							httpContext.Response.Headers.Add("cache-control", "public");
-
-
-							if (httpContext.Request.HttpMethod == "OPTIONS")
+							switch (context.Path)
 							{
-								httpContext.Response.Headers.Add("Allow", "OPTIONS, GET");
-							}
-							else
-							{
-								//byte[] data;
+								case "/favicon.ico":
+								case "/stylesheet.css":
+								case "/spludlow.svg":
+									httpContext.Response.OutputStream.Write(_WebAssets[context.Path], 0, _WebAssets[context.Path].Length);
+									break;
 
-								if (context.Path.StartsWith("/mame/machine") == true || context.Path.StartsWith("/mame/software") == true)
-									context.InfoHeader = (string)_Database._MetaData[context.PathParts[1]]["info"];
+								case "/":
+									WriteTempate("master", "<title>Spludlow Data</title>", "Spludlow Data",
+										"<h2>Welcome to Spludlow Data</h2><p>Retro computer hardware & software reference web</p>" +
+										"<ul><li><a href=\"/mame\">MAME</a></li><li><a href=\"/tosec\">TOSEC</a></li></ul>" +
+										"<p><a href=\"https://github.com/sam-ludlow/mame-ao-server\" target=\"_blank\">This web is open source</a></p>", context);
+									break;
 
-								switch (context.Path)
-								{
-									case "/favicon.ico":
-									case "/stylesheet.css":
-									case "/spludlow.svg":
-										httpContext.Response.OutputStream.Write(_WebAssets[context.Path], 0, _WebAssets[context.Path].Length);
+
+								default:
+
+									string systemName = context.PathParts[0];
+
+									if (systems.Keys.Contains(systemName) == true)
+									{
+										ISystem system = systems[systemName];
+										system.Process(context);
 										break;
+									}
 
-									case "/":
-										WriteTempate("master", "<title>Spludlow Data</title>", "Spludlow Data",
-											"<h2>Welcome to Spludlow Data</h2><p><a href=\"https://github.com/sam-ludlow/mame-ao-server\" target=\"_blank\">Retro computer hardware & software reference web - look at the code</a></p><ul><li><a href=\"/mame\">mame</a></li><li>more...</li></ul>", context);
-										break;
-
-									case "/mame":
-										WriteTempate("master", "<title>Spludlow Data - mame</title>", "Spludlow Data - mame",
-											"<h2>mame data subsets</h2><ul><li><a href=\"/mame/machine\">machine</a></li><li><a href=\"/mame/software\">software</a></li></ul>", context);
-										break;
-
-									case "/mame/machine":
-										WriteTempate("master", "<title>Spludlow Data - mame machine</title>", "Spludlow Data - mame machine",
-	"<p>this page is not ready, but you can access the data pages using the address bar, for example:</p><ul><li><a href=\"/mame/machine/mrdo\">/mame/machine/mrdo</a></li><li><a href=\"/mame/machine/bbcb\">/mame/machine/bbcb</a></li></ul>", context);
-										break;
-
-									case "/mame/software":
-										MameSoftwareLists(context);
-										break;
-
-									default:
-
-										if (context.Path.StartsWith("/mame/machine/") == true && context.PathParts.Length == 3)
-										{
-											MameMachine(context);
-											break;
-										}
-
-										if (context.Path.StartsWith("/mame/software/") == true && context.PathParts.Length == 3)
-										{
-											MameSoftwareList(context);
-											break;
-										}
-
-										if (context.Path.StartsWith("/mame/software/") == true && context.PathParts.Length == 4)
-										{
-											MameSoftware(context);
-											break;
-										}
-
-
-										ApplicationException exception = new ApplicationException($"Route not found: '{context.Path}'");
-										exception.Data.Add("status", 404);
-										throw exception;
-
-
-										//MethodInfo method = GetType().GetMethod(path.Replace("/", "_"));
-
-										//if (method == null)
-										//{
-										//	ApplicationException exception = new ApplicationException($"Not found: {path}");
-										//	exception.Data.Add("status", 404);
-										//	throw exception;
-										//}
-
-										//method.Invoke(this, new object[] { context, writer });
-
-										//break;
+									ApplicationException exception = new ApplicationException($"Route not found: '{context.Path}'");
+									exception.Data.Add("status", 404);
+									throw exception;
 								}
 							}
 
@@ -236,81 +218,7 @@ namespace mame_ao_server
 
 		}
 
-		public void MameMachine(Context context)
-		{
-			string machine_name = context.PathParts[2];
 
-			if (context.Extention != "")
-				machine_name = machine_name.Substring(0, machine_name.Length - context.Extention.Length);
-
-			string[] payloadParts = _Database.PayloadMachine(machine_name, context.Extention);
-
-			string title = payloadParts[0];
-			string payload = payloadParts[1];
-
-			//	TODO headers & metadata
-
-			if (context.Extention == "")
-				WriteTempate("master", $"<title>{title}</title>", title, payload, context);
-			else
-				context.Writer.WriteLine(payload);
-		}
-
-		public void MameSoftware(Context context)
-		{
-			string softwarelist_name = context.PathParts[2];
-			string software_name = context.PathParts[3];
-
-			if (context.Extention != "")
-				software_name = software_name.Substring(0, software_name.Length - context.Extention.Length);
-
-			string[] payloadParts = _Database.PayloadSoftware(softwarelist_name, software_name, context.Extention);
-
-			string title = payloadParts[0];
-			string payload = payloadParts[1];
-
-			//	TODO headers & metadata
-
-			if (context.Extention == "")
-				WriteTempate("master", $"<title>{title}</title>", title, payload, context);
-			else
-				context.Writer.WriteLine(payload);
-		}
-		public void MameSoftwareList(Context context)
-		{
-			string softwarelist_name = context.PathParts[2];
-
-			if (context.Extention != "")
-				softwarelist_name = softwarelist_name.Substring(0, softwarelist_name.Length - context.Extention.Length);
-
-			string[] payloadParts = _Database.PayloadSoftwareList(softwarelist_name, context.Extention);
-
-			string title = payloadParts[0];
-			string payload = payloadParts[1];
-
-			//	TODO headers & metadata
-
-			if (context.Extention == "")
-				WriteTempate("master", $"<title>{title}</title>", title, payload, context);
-			else
-				context.Writer.WriteLine(payload);
-
-		}
-
-		public void MameSoftwareLists(Context context)
-		{
-			string[] payloadParts = _Database.PayloadSoftwareLists(context.Extention);
-
-			string title = payloadParts[0];
-			string payload = payloadParts[1];
-
-			//	TODO headers & metadata
-
-			if (context.Extention == "")
-				WriteTempate("master", $"<title>{title}</title>", title, payload, context);
-			else
-				context.Writer.WriteLine(payload);
-		}
 
 
 		public void WriteTempate(string templateName, string head, string title, string body, Context context)
@@ -319,14 +227,13 @@ namespace mame_ao_server
 
 			context.Writer.WriteLine(parts[0]);
 			context.Writer.WriteLine(head);
-
-			//	server head
-
 			context.Writer.WriteLine(parts[1].Replace("@H1@", title));
-			context.Writer.WriteLine(context.InfoHeader);
+			context.Writer.WriteLine(context.NavHtml);
 			context.Writer.WriteLine(parts[2]);
-			context.Writer.WriteLine(body);
+			context.Writer.WriteLine(context.InfoHeader);
 			context.Writer.WriteLine(parts[3]);
+			context.Writer.WriteLine(body);
+			context.Writer.WriteLine(parts[4]);
 		}
 
 		public void Stop()
