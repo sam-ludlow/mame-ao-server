@@ -20,6 +20,8 @@ namespace mame_ao_server
 
 		private Task? _ListenTask = null;
 
+		public string _ServerConnectionString;
+
 		public Database? _Database;
 
 		private string? _Directory;
@@ -64,6 +66,9 @@ namespace mame_ao_server
 				Path = httpContext.Request.Url.AbsolutePath.ToLower();
 				PathParts = Path.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
 				Extention = System.IO.Path.GetExtension(Path);
+
+				if (Extention.Length > 5)
+					Extention = "";
 
 				NavHtml = "<table><tr><td> <a href=\"/mame\">MAME</a> </td><td> <a href=\"/tosec\">TOSEC</a> </td></tr></table>";
 
@@ -124,6 +129,8 @@ namespace mame_ao_server
 
 		public void Start(string serverConnectionString, string databaseNames)
 		{
+			_ServerConnectionString = serverConnectionString;
+
 			_Database = new Database(serverConnectionString, databaseNames);
 			_Database.Initialize();
 

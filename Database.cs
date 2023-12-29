@@ -205,5 +205,13 @@ namespace mame_ao_server
 			return dataSet;
 		}
 
+		public static DataSet ExecuteFill(SqlCommand command)
+		{
+			DataSet dataSet = new DataSet();
+			using (SqlDataAdapter adapter = new SqlDataAdapter(command))
+				adapter.Fill(dataSet);
+			return dataSet;
+		}
+
 	}
 }
