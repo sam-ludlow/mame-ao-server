@@ -11,13 +11,25 @@ namespace mame_ao_server
 	public class TOSEC : ISystem
 	{
 		public Server Server;
+
+		private SqlConnection Connection;
+
+		private DataRow MetaDataRow;
+
 		public TOSEC(Server server)
 		{
 			Server = server;
+
+			Connection = new SqlConnection($"{Server._ServerConnectionString}Initial Catalog=TOSEC-AO;");
+
+			MetaDataRow = Database.ExecuteFill(Connection, "SELECT * FROM [_metadata]").Tables[0].Rows[0];
+
 		}
 
 		public void Process(Server.Context context)
 		{
+			context.InfoHeader = (string)MetaDataRow["info"];
+
 			string payloadType = ExtentionToPayloadType(context.Extention);
 
 			if (context.PathParts.Length == 1)

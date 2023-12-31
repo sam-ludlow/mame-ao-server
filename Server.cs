@@ -65,8 +65,26 @@ namespace mame_ao_server
 
 				Path = httpContext.Request.Url.AbsolutePath.ToLower();
 				PathParts = Path.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
-				Extention = System.IO.Path.GetExtension(Path);
 
+				// IIS URL Rewrite is messing this up
+				for (int index = 0; index < PathParts.Length; ++index)
+				{
+					string path = PathParts[index];
+
+					//	%27
+					if (path.Contains('\'') == true)
+						path = path.Replace("'", "%27");
+
+					if (path.Contains('(') == true)
+						path = path.Replace("(", "%28");
+
+					if (path.Contains(')') == true)
+						path = path.Replace(")", "%29");
+
+					PathParts[index] = path;
+				}
+
+				Extention = System.IO.Path.GetExtension(Path);
 				if (Extention.Length > 5)
 					Extention = "";
 
