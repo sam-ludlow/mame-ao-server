@@ -40,6 +40,7 @@ namespace mame_ao_server
 			{ ".ico",   "image/x-icon" },
 		};
 
+
 		private Dictionary<string, string> _Menu = new Dictionary<string, string>() {
 
 			{	"/mame",	"MAME" },
