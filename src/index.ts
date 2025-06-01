@@ -1,39 +1,8 @@
 import http from 'http';
-import Tedious from 'tedious';
-var Connection = require('tedious').Connection;
-var Request = require('tedious').Request;
 
-var TYPES = require('tedious').TYPES;
+import * as mame from './mame';
 
 var validNameRegEx = /^[a-zA-Z0-9-_]+$/;
-
-var sqlConfig: any = {  
-    server: 'splcal-main',
-    authentication: {
-        type: 'default',
-        options: {
-            userName: 'api', //update me
-            password: 'api'  //update me
-        }
-    },
-    options: {
-        // If you are on Microsoft Azure, you need encryption:
-        encrypt: false,
-        database: 'MameAoMachine',  //update me
-        rowCollectionOnRequestCompletion: true,
-        trustServerCertificate: true,
-    }
-};
-
-//  Tedious.ConnectionConfiguration
-
-let connection: Tedious.Connection = new Connection(sqlConfig);
-
-
-
-let server: http.Server;
-
-
 
 const favIconBase64 = `
     AAABAAEAEBAAAAAAGABoAwAAFgAAACgAAAAQAAAAIAAAAAEAGAAAAAAAAAMAAAAAAAAAAAAAAAAA
@@ -227,47 +196,6 @@ const logo = `<?xml version="1.0" encoding="utf-8"?>
 const favIcon = Buffer.from(favIconBase64, 'base64');
 
 
-
-const sqlOpen = async (): Promise<void> => {
-    return new Promise((resolve, reject) => {
-        connection.connect((err?: Error) => {
-            if (err)
-                reject(err);
-            else
-                resolve();
-
-        });
-    });
-}
-
-const sqlClose = async (): Promise<void> => {
-    return new Promise((resolve, reject) => {
-        connection.on('end', () => {
-            resolve();
-        });
-        connection.close();
-    });
-}
-
-const sqlRequest = async (machine_name: string): Promise<any[]> => {
-
-    return new Promise((resolve, reject) => {
-
-
-        const request: Tedious.Request = new Request('SELECT [title], [html] FROM [machine_payload] WHERE [machine_name] = @machine_name', (error: any, rowCount: any, rows: any) => {
-
-            if (error)
-                reject(error);
-
-            resolve(rows);
-        });
-
-        request.addParameter('machine_name', TYPES.VarChar, machine_name);
-
-        connection.execSql(request);
-    });
-}
-
 const requestListener: http.RequestListener = async (
     req: http.IncomingMessage,
     res: http.ServerResponse) =>
@@ -312,62 +240,125 @@ const requestListener: http.RequestListener = async (
 
 
 
-    let urlParts = (req.url || '').split('/');
-    //console.log(`${urlParts.length}\t${urlParts}`);
+    let urlParts = (req.url || '/').split('/').filter(u => u !== '');
+    console.log(`${req.url}\t${urlParts.length}\t${urlParts}`);
 
+    const validExtentions = [ '', 'xml', 'json', 'html' ];
+
+    const extentionContentTypes: { [key: string]: any } = {
+        '': 'text/html; charset=utf-8',
+        'html': 'text/html; charset=utf-8',
+        'json': 'application/json; charset=utf-8',
+        'xml': 'text/xml; charset=utf-8',
+    };
 
     try {
 
-        let html = '';
+        let extention = '';
+        let data: any[] | undefined;
 
-        if (urlParts.length === 4 && urlParts[1] === 'mame' && urlParts[2] === 'machine') {
+
+        if (urlParts.length === 0) {
+
+            data = [ {value: 'Spludlow Data Web'}, {value: '<ul><li><a href=\"/mame\">MAME</a></li></ul>'} ]
+        }
+
+        if (urlParts.length === 1 && urlParts[0] === 'mame') {
+
+            const page =`
+            <h2>mame data subsets</h2><ul><li><a href=\"/mame/machine\">machine</a></li><li><a href=\"/mame/software\">software</a></li></ul>
+            `;
+
+            data = [ {value: 'Spludlow Data Web'}, {value: page } ]
+        }
+
+        if (urlParts.length === 2 && urlParts[0] === 'mame' && urlParts[1] === 'machine') {
+            
+            const page =`
+            <p>this page is not ready, but you can access the data pages using the address bar, for example:</p><ul><li><a href=\"/mame/machine/mrdo\">/mame/machine/mrdo</a></li><li><a href=\"/mame/machine/bbcb\">/mame/machine/bbcb</a></li></ul>
+            `;
+
+            data = [ {value: 'Spludlow Data Web'}, {value: page } ]
+
+        }
+
+        // MAME Machine
+        if (urlParts.length === 3 && urlParts[0] === 'mame' && urlParts[1] === 'machine') {
     
-            const machine_name = urlParts[3];
-    
-    
+            let machine_name = urlParts[2];
+
+            if (machine_name.includes('.') === true)
+                [ machine_name, extention ] = machine_name.split('.');
+
+            if (validExtentions.includes(extention) === false)
+                throw new Error('Bad extention');
+
             if (validNameRegEx.test(machine_name) !== true)
                 throw new Error(`bad machine name`);
     
-            
-       
-            connection = new Connection(sqlConfig);
-    
-    
-    
-            await sqlOpen();
-    
-    
-            try {
-    
-    
-                const data: any[] = (await sqlRequest(machine_name))[0];
-    
-
-                html = masterHtml;
-
-                html = html.replace('@H1@', data[0].value);
-                html = html.replace('@BODY@', data[1].value);
-    
-
-
-               // data.forEach((column: any) => {
-                    //console.log(column);
-                   // console.log(`${column.metadata.colName}\t${column.value}`);
-              //  });
-    
-    
-            
-            }
-            finally {
-                await sqlClose();
-            }
-    
+            data = await mame.getMachine(machine_name, extention);
         }
-    
-        res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8'});
-    
-        res.write(html);
 
+        //  MAME Software Lists
+        if (urlParts.length === 2 && urlParts[0] === 'mame' && urlParts[1] === 'software') {
+
+            data = await mame.getSoftwareLists();
+        }
+
+        // MAME Software List
+        if (urlParts.length === 3 && urlParts[0] === 'mame' && urlParts[1] === 'software') {
+        
+            let softwarelist_name = urlParts[2];
+
+            if (softwarelist_name.includes('.') === true)
+                [ softwarelist_name, extention ] = softwarelist_name.split('.');
+
+            if (validExtentions.includes(extention) === false)
+                throw new Error('Bad extention');
+            
+            if (validNameRegEx.test(softwarelist_name) !== true)
+                throw new Error(`bad softwarelist_name`);
+
+            data = await mame.getSoftwareList(softwarelist_name, extention);
+        }
+
+        // MAME Software
+        if (urlParts.length === 4 && urlParts[0] === 'mame' && urlParts[1] === 'software') {
+        
+            const softwarelist_name = urlParts[2];
+            if (validNameRegEx.test(softwarelist_name) !== true)
+                throw new Error(`bad softwarelist_name`);
+
+            let software_name = urlParts[3];
+
+            if (software_name.includes('.') === true)
+                [ software_name, extention ] = software_name.split('.');
+
+            if (validExtentions.includes(extention) === false)
+                throw new Error('Bad extention');
+
+            if (validNameRegEx.test(software_name) !== true)
+                throw new Error(`bad software_name`);
+
+            data = await mame.getSoftware(softwarelist_name, software_name, extention);
+        }
+
+        if (data === undefined) {
+            throw new Error('Route not found');
+        }
+
+        res.writeHead(200, { 'Content-Type': extentionContentTypes[extention] });
+
+        if (extention === '') {
+
+            let html = masterHtml;
+            html = html.replace('@H1@', data[0].value);
+            html = html.replace('@BODY@', data[1].value);
+
+            res.write(html);
+        } else {
+            res.write(data[1].value);
+        }
     }
     catch (error) {
 
@@ -382,11 +373,7 @@ const requestListener: http.RequestListener = async (
 
 
     res.end();
-    
-
-
 }
 
-server = http.createServer(requestListener);
-server.listen(8888);
-
+const server: http.Server = http.createServer(requestListener);
+server.listen(32103);
