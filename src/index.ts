@@ -195,6 +195,7 @@ const logo = `<?xml version="1.0" encoding="utf-8"?>
 
 const favIcon = Buffer.from(favIconBase64, 'base64');
 
+let concurrentRequests = 0;
 
 const requestListener: http.RequestListener = async (
     req: http.IncomingMessage,
@@ -202,10 +203,17 @@ const requestListener: http.RequestListener = async (
 {
     const now: Date = new Date();
 
-    console.log(`${now.toUTCString()}\t${req.url}\t${req.method}`);
+    console.log(`${now.toUTCString()}\t${req.url}\t${req.method}\t${concurrentRequests}`);
 
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Server', 'Spludlow Data Web/0.0');
+
+    if (concurrentRequests > 1024) {
+        res.writeHead(503, { 'Content-Type': 'text/html; charset=utf-8'});
+        res.write('<h1>Server Busy - Try Later</h1>');
+        res.end();
+        return;
+    }
 
     if (req.method === 'OPTIONS') {
         res.setHeader("Allow", "OPTIONS, GET");
@@ -241,7 +249,7 @@ const requestListener: http.RequestListener = async (
 
 
     let urlParts = (req.url || '/').split('/').filter(u => u !== '');
-    console.log(`${req.url}\t${urlParts.length}\t${urlParts}`);
+    //console.log(`${req.url}\t${urlParts.length}\t${urlParts}`);
 
     const validExtentions = [ '', 'xml', 'json', 'html' ];
 
@@ -251,6 +259,8 @@ const requestListener: http.RequestListener = async (
         'json': 'application/json; charset=utf-8',
         'xml': 'text/xml; charset=utf-8',
     };
+
+    concurrentRequests++;
 
     try {
 
@@ -369,10 +379,11 @@ const requestListener: http.RequestListener = async (
         res.write('error');
 
     }
-    
+    finally {
+        concurrentRequests--;
+        res.end();
+    }
 
-
-    res.end();
 }
 
 const server: http.Server = http.createServer(requestListener);
