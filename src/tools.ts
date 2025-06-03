@@ -1,5 +1,14 @@
-
+import fs from 'fs';
 import Tedious from 'tedious';
+
+export const directoryFiles = async (directory: string): Promise<string[]> => {
+    return fs.readdirSync(directory);
+}
+
+export const fileRead = async (filename: string): Promise<string> => {
+	const buffer: Buffer = fs.readFileSync(filename);
+    return buffer.toString();
+}
 
 export const sqlOpen = async (connection: Tedious.Connection): Promise<void> => {
     return new Promise((resolve, reject) => {

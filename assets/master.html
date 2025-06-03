@@ -1,0 +1,62 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width">
+    <link href="/stylesheet.css" rel="stylesheet" type="text/css" />
+
+    <script type="text/javascript">
+		const mameAO = async (line) => {
+			try {
+				const response = await fetch(`http://localhost:12380/api/command?line=${line}`);
+
+				const result = await response.text();
+
+				if (response.status !== 200)
+					alert('MAME-AO server reachable but not happy.\n\n' + result);
+			}
+			catch (e) {
+				alert('MAME-AO server not reachable.\n\n' + 'Is it running locally?\n\n' +
+					'Use F12->Console to view errors.');
+			}
+		}
+    </script>
+
+    @HEAD@
+
+
+</head>
+<body>
+    <div style="position:relative;width:100%;">
+
+        <div style="width:100%; height:90px; background:black;">
+
+            <a href="/" style="float: left">
+                <img src="/spludlow.svg" alt="spludlow logo" />
+            </a>
+
+            <h1 style="color: white;">@H1@</h1>
+
+
+        </div>
+
+    </div>
+    
+    <hr />
+    <nav>
+        @NAV@
+    </nav>
+    <hr />
+    <div style="font-size: 12px; font-weight: bold;">
+        @INFO@
+    </div>
+    <hr />
+
+    @BODY@
+
+    <hr />
+    <div style="width:100%; height:40px; background:black;">
+    </div>
+</body>
+</html>
