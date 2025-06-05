@@ -1,0 +1,46 @@
+<script type="text/javascript">
+
+    const _path = document.location.pathname;
+
+    const _parameters = {};
+
+    const load = async () => {
+        if (window.location.href.includes('?')) {
+
+            const parts = window.location.href.split('?')[1].split('&');
+            parts.forEach((part) => {
+                const pair = part.split('=');
+                _parameters[pair[0]] = decodeURIComponent(pair[1]);
+            });
+        }
+
+        if (_parameters['offset'] === undefined)
+            _parameters['offset'] = 0;
+        else
+            _parameters['offset'] = parseInt(_parameters['offset'], 10);
+
+        if (_parameters['search'] === undefined)
+            _parameters['search'] = '';
+
+        const inputText = document.getElementById('inputText');
+        inputText.value = _parameters.search;
+        inputText.focus();
+    }
+
+    const searchButton = async () => {
+        
+        const inputText = document.getElementById('inputText');
+        document.location = `${_path}?search=${encodeURIComponent(inputText.value)}`;
+    }
+
+    window.onload = load;
+
+</script>
+
+<p>this page is not ready, but you can access the data pages using the address bar, for example:</p><ul><li><a href="/mame/machine/mrdo">/mame/machine/mrdo</a></li><li><a href="/mame/machine/bbcb">/mame/machine/bbcb</a></li></ul>
+
+<hr />
+
+<input id="inputText" type="text" style="width:480px;" />
+<button type="submit" onclick="searchButton(); return false;">Search</button>
+<hr />

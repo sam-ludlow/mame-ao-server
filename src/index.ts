@@ -13,12 +13,12 @@ const loadAssets = async () => {
 
     const filenames: string[] = await tools.directoryFiles(directory);
 
-    console.log(filenames);
+     await Promise.all(filenames.map(async filename => {
 
-    await Promise.all(filenames.map(async filename => {
-
-        assets[filename] = await tools.fileRead(`${directory}/${filename}`);
-
+        if (filename.endsWith('.ico') === true)
+            assets[filename] = await tools.fileReadBuffer(`${directory}/${filename}`);
+        else
+            assets[filename] = await tools.fileRead(`${directory}/${filename}`);
     }));
 }
 
@@ -72,13 +72,21 @@ const requestListener: http.RequestListener = async (
             res.end();
             return;
 
+        case '/.well-known/appspecific/com.chrome.devtools.json':
+            res.setHeader('Content-Type', 'application/json; charset=utf-8');
+            res.setHeader('Cache-Control', 'public, max-age=86400');
+            res.write('{}');
+            res.end();
+            return;
+
         default:
             break;
     }
 
 
+    const [url, query] = (req.url || '/').split('?');
 
-    let urlParts = (req.url || '/').split('/').filter(u => u !== '');
+    let urlParts = url.split('/').filter(u => u !== '');
     //console.log(`${req.url}\t${urlParts.length}\t${urlParts}`);
 
     const validExtentions = [ '', 'xml', 'json', 'html' ];
@@ -98,29 +106,14 @@ const requestListener: http.RequestListener = async (
         let data: any[] | undefined;
 
 
-        if (urlParts.length === 0) {
+        if (urlParts.length === 0)
+            data = [ {value: 'Spludlow Data Web'}, {value: assets['root.html'] } ];
+        
+        if (urlParts.length === 1 && urlParts[0] === 'mame')
+            data = [ {value: 'Spludlow Data Web'}, {value: assets['mame.html'] } ];
 
-            data = [ {value: 'Spludlow Data Web'}, {value: '<ul><li><a href=\"/mame\">MAME</a></li></ul>'} ]
-        }
-
-        if (urlParts.length === 1 && urlParts[0] === 'mame') {
-
-            const page =`
-            <h2>mame data subsets</h2><ul><li><a href=\"/mame/machine\">machine</a></li><li><a href=\"/mame/software\">software</a></li></ul>
-            `;
-
-            data = [ {value: 'Spludlow Data Web'}, {value: page } ]
-        }
-
-        if (urlParts.length === 2 && urlParts[0] === 'mame' && urlParts[1] === 'machine') {
-            
-            const page =`
-            <p>this page is not ready, but you can access the data pages using the address bar, for example:</p><ul><li><a href=\"/mame/machine/mrdo\">/mame/machine/mrdo</a></li><li><a href=\"/mame/machine/bbcb\">/mame/machine/bbcb</a></li></ul>
-            `;
-
-            data = [ {value: 'Spludlow Data Web'}, {value: page } ]
-
-        }
+        if (urlParts.length === 2 && urlParts[0] === 'mame' && urlParts[1] === 'machine')
+            data = [ {value: 'Spludlow Data Web'}, {value: assets['mame-machine.html'] } ];
 
         // MAME Machine
         if (urlParts.length === 3 && urlParts[0] === 'mame' && urlParts[1] === 'machine') {

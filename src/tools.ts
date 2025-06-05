@@ -10,6 +10,11 @@ export const fileRead = async (filename: string): Promise<string> => {
     return buffer.toString();
 }
 
+export const fileReadBuffer = async (filename: string): Promise<Buffer> => {
+	const buffer: Buffer = fs.readFileSync(filename);
+    return buffer;
+}
+
 export const sqlOpen = async (connection: Tedious.Connection): Promise<void> => {
     return new Promise((resolve, reject) => {
         connection.connect((err?: Error) => {
