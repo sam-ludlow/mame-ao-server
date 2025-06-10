@@ -73,3 +73,50 @@ export const sqlConfig = (server: string, database: string) => {
 
     return sqlConfig;
 }
+
+export const htmlTable = (data: any[], columnDefs: any): string => {
+
+    const columnNames = Object.keys(columnDefs);
+
+    let html = `<table>`;
+
+    html += '<tr>';
+    columnNames.forEach(columnName => {
+        html += `<th>${columnDefs[columnName]}</th>`;
+    });
+    html += '</tr>';
+
+    data.forEach((row) => {
+        html += '<tr>';
+        row.forEach((column: any) => {
+            if (columnNames.includes(column.metadata.colName) === true) {
+                let value;
+                switch (column.metadata.colName) {
+                    case 'name':
+                        value = `<a href="/mame/machine/${column.value}">${column.value}</a>`;
+                       break;
+
+                    case 'romof':
+                        if (column.value)
+                            value = `<a href="/mame/machine/${column.value}">${column.value}</a>`;
+                       break;
+
+                    case 'cloneof':
+                        if (column.value)
+                            value = `<a href="/mame/machine/${column.value}">${column.value}</a>`;
+                       break;
+
+                    default:
+                        value = column.value;
+                        break;
+                }
+                html += `<td>${value || ''}</td>`;
+            }
+        });
+        html += '</tr>';
+    });
+
+    html += '</table>';
+
+    return html;
+}

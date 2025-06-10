@@ -35,12 +35,18 @@ table, th, td {
 }
 
 th {
-	background-color: #00ADEF;
-	color: white;
+	background-color: #555;
+	color: #fff;
+}
+
+tr {
+	color: #000;
+	background-color: #ddd;
 }
 
 tr:nth-child(even) {
-	background-color: #b6daeb;
+	color: #000;
+	background-color: #eee;
 }
 
 a.nav-off {

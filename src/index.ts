@@ -86,6 +86,27 @@ const requestListener: http.RequestListener = async (
 
     const [url, query] = (req.url || '/').split('?');
 
+    const paramters = { search: '', offset: 0, limit: 1000 };
+
+    if (query !== undefined) {
+        query.split('&').forEach(queryPart => {
+            const pair = queryPart.split('=');
+            if (pair.length === 2) {
+                switch (pair[0]) {
+                    case 'search':
+                        paramters.search = decodeURIComponent(pair[1]);
+                        break;
+
+                    case 'offset':
+                        paramters.offset = parseInt(pair[1], 10);
+                        if (Number.isNaN(paramters.offset) == true || paramters.offset < 0)
+                            paramters.offset = 0;
+                        break;
+                }
+            }
+        });
+    }
+    
     let urlParts = url.split('/').filter(u => u !== '');
     //console.log(`${req.url}\t${urlParts.length}\t${urlParts}`);
 
@@ -100,6 +121,8 @@ const requestListener: http.RequestListener = async (
 
     concurrentRequests++;
 
+
+
     try {
 
         let extention = '';
@@ -112,8 +135,57 @@ const requestListener: http.RequestListener = async (
         if (urlParts.length === 1 && urlParts[0] === 'mame')
             data = [ {value: 'Spludlow Data Web'}, {value: assets['mame.html'] } ];
 
-        if (urlParts.length === 2 && urlParts[0] === 'mame' && urlParts[1] === 'machine')
-            data = [ {value: 'Spludlow Data Web'}, {value: assets['mame-machine.html'] } ];
+        if (urlParts.length === 2 && urlParts[0] === 'mame' && urlParts[1] === 'machine') {
+
+            let lastTime = Date.now();
+
+            const pageData = await mame.getMachines(paramters.search, paramters.offset, paramters.limit);
+
+            //console.log(`1: ${Date.now() - lastTime}`);
+            lastTime = Date.now();
+
+            let viewCount = pageData.length;
+            let totalCount = viewCount === 0 ? 0 : pageData[0].filter((r: any) => r.metadata.colName === 'ao_total')[0].value;
+
+
+            let nav = '';
+            let prevOffset = paramters.offset - paramters.limit;
+            if (prevOffset >= 0)
+                nav += `<a href="${url}?search=${paramters.search}&offset=${prevOffset}">PREV</a> &bull; `;
+            else
+                nav += 'PREV &bull; ';
+
+
+            let nextOffset = paramters.offset + paramters.limit;
+            if (nextOffset < totalCount)
+                nav += `<a href="${url}?search=${paramters.search}&offset=${nextOffset}">NEXT</a> &bull; `;
+            else
+                nav += 'NEXT &bull; ';
+
+            nav += `view:${viewCount} total:${totalCount}`;
+
+            const columnDefs = {
+                'name': 'Name',
+                'description': 'Description',
+                'year': 'Year',
+                'manufacturer': 'Manufacturer',
+                'romof': 'Rom of',
+                'cloneof': 'Clone of',
+            };
+
+            let machineHtml: string = assets['mame-machine.html'].replace('@DATA@', tools.htmlTable(pageData, columnDefs));
+            machineHtml = machineHtml.replace('@TOP@', nav);
+            machineHtml = machineHtml.replace('@BOTTOM@', nav);
+
+            //console.log(`2: ${Date.now() - lastTime}`);
+            lastTime = Date.now();
+
+            data = [ {value: 'MAME Machines'}, {value: machineHtml } ];
+
+            //console.log(`3: ${Date.now() - lastTime}`);
+            lastTime = Date.now();
+        }
+
 
         // MAME Machine
         if (urlParts.length === 3 && urlParts[0] === 'mame' && urlParts[1] === 'machine') {
@@ -216,6 +288,14 @@ const requestListener: http.RequestListener = async (
 }
 
 const run = async () => {
+
+    process.stdin.on('data', (chunk: Buffer) => {
+		const command: string = chunk.toString().trim();
+		console.log(`COMMAND: ${command}`);
+
+		if (command === 'stop')
+			process.exit(0);
+	});
 
     await loadAssets();
 

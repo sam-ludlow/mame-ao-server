@@ -35,6 +35,41 @@ export const getMachine = async (machine_name: string, extention: string) => {
     return data;
 }
 
+export const getMachines = async (search: string, offset: number, limit: number) => {
+
+    const sqlConfig = tools.sqlConfig('SPLCAL-MAIN', 'MameAoMachine');
+    const connection: Tedious.Connection = new Connection(sqlConfig);
+
+    let commandText = 'SELECT COUNT(1) OVER() [ao_total], machine.name, machine.description, machine.year, machine.manufacturer, machine.romof, machine.cloneof FROM [machine] @search ORDER BY [machine].[name] OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY';
+    commandText = commandText.replace('@offset', offset.toString());
+    commandText = commandText.replace('@limit', limit.toString());
+
+    const searchParts = search.split(' ').filter(p => p != '');
+
+    if (searchParts.length > 0)
+        commandText = commandText.replace('@search', 'WHERE ([name] LIKE @search OR [description] LIKE @search)');
+    else
+        commandText = commandText.replace('@search', '');
+
+    const request: Tedious.Request = new Request(commandText);
+
+    if (searchParts.length > 0)
+        request.addParameter('search', TYPES.VarChar, `%${searchParts.join('%')}%`);
+
+    let data: any[] = [];
+
+    await tools.sqlOpen(connection);
+
+    try {
+        data = await tools.sqlRequest(connection, request);
+    }
+    finally {
+        await tools.sqlClose(connection);
+    }
+
+    return data;
+}
+
 export const getSoftware = async (softwarelist_name: string, software_name: string, extention: string) => {
 
     if (extention === '')
