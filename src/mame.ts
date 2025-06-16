@@ -6,13 +6,12 @@ var TYPES = require('tedious').TYPES;
 
 import * as tools from './tools';
 
-export const getMachine = async (machine_name: string, extention: string) => {
+export const getMachine = async (machine_name: string, extention: string, dataset: string) => {
 
     if (extention === '')
         extention = 'html';
 
-    const sqlConfig = tools.sqlConfig('SPLCAL-MAIN', 'MameAoMachine');
-    const connection: Tedious.Connection = new Connection(sqlConfig);
+    const connection: Tedious.Connection = tools.sqlConnection(dataset, 'machine');
     await tools.sqlOpen(connection);
 
     let data: any[] = [];
@@ -35,10 +34,9 @@ export const getMachine = async (machine_name: string, extention: string) => {
     return data;
 }
 
-export const getMachines = async (search: string, offset: number, limit: number) => {
+export const getMachines = async (search: string, offset: number, limit: number, dataset: string) => {
 
-    const sqlConfig = tools.sqlConfig('SPLCAL-MAIN', 'MameAoMachine');
-    const connection: Tedious.Connection = new Connection(sqlConfig);
+    const connection: Tedious.Connection = tools.sqlConnection(dataset, 'machine');
 
     let commandText = 'SELECT COUNT(1) OVER() [ao_total], machine.name, machine.description, machine.year, machine.manufacturer, machine.romof, machine.cloneof FROM [machine] @search ORDER BY [machine].[name] OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY';
     commandText = commandText.replace('@offset', offset.toString());
@@ -70,13 +68,13 @@ export const getMachines = async (search: string, offset: number, limit: number)
     return data;
 }
 
-export const getSoftware = async (softwarelist_name: string, software_name: string, extention: string) => {
+export const getSoftware = async (softwarelist_name: string, software_name: string, extention: string, dataset: string) => {
 
     if (extention === '')
         extention = 'html';
 
-    const sqlConfig = tools.sqlConfig('SPLCAL-MAIN', 'MameAoSoftware');
-    const connection: Tedious.Connection = new Connection(sqlConfig);
+    const connection: Tedious.Connection = tools.sqlConnection(dataset, 'software');
+
     await tools.sqlOpen(connection);
 
     let data: any[] = [];
@@ -100,13 +98,12 @@ export const getSoftware = async (softwarelist_name: string, software_name: stri
     return data;
 }
 
-export const getSoftwareList = async (softwarelist_name: string, extention: string) => {
+export const getSoftwareList = async (softwarelist_name: string, extention: string, dataset: string) => {
 
     if (extention === '')
         extention = 'html';
     
-    const sqlConfig = tools.sqlConfig('SPLCAL-MAIN', 'MameAoSoftware');
-    const connection: Tedious.Connection = new Connection(sqlConfig);
+    const connection: Tedious.Connection = tools.sqlConnection(dataset, 'software');
     await tools.sqlOpen(connection);
 
     let data: any[] = [];
@@ -129,10 +126,10 @@ export const getSoftwareList = async (softwarelist_name: string, extention: stri
     return data;
 }
 
-export const getSoftwareLists = async () => {
+export const getSoftwareLists = async (dataset: string) => {
 
-    const sqlConfig = tools.sqlConfig('SPLCAL-MAIN', 'MameAoSoftware');
-    const connection: Tedious.Connection = new Connection(sqlConfig);
+    const connection = tools.sqlConnection(dataset, 'software');
+    console.log(dataset);
     await tools.sqlOpen(connection);
 
     let data: any[] = [];

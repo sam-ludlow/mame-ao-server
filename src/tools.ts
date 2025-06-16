@@ -1,6 +1,8 @@
 import fs from 'fs';
 import Tedious from 'tedious';
 
+var Connection = require('tedious').Connection;
+
 export const directoryFiles = async (directory: string): Promise<string[]> => {
     return fs.readdirSync(directory);
 }
@@ -74,7 +76,30 @@ export const sqlConfig = (server: string, database: string) => {
     return sqlConfig;
 }
 
-export const htmlTable = (data: any[], columnDefs: any): string => {
+export const sqlConnection = (dataset: string, subSet: string) => {
+
+    let config;
+    switch (`${dataset}.${subSet}`) {
+        case 'mame.machine':
+            config = sqlConfig('SPLCAL-MAIN', 'MameAoMachine');
+            break;
+        case 'mame.software':
+            config = sqlConfig('SPLCAL-MAIN', 'MameAoSoftware');
+            break;
+        case 'hbmame.machine':
+            config = sqlConfig('SPLCAL-MAIN', 'HBMAME-Machine');
+            break;
+        case 'hbmame.software':
+            config = sqlConfig('SPLCAL-MAIN', 'HBMAME-Software');
+            break;
+        default:
+            throw new Error(`Unknown dataset.subset ${dataset}`);
+    }
+    
+    return new Connection(config);
+}
+
+export const htmlTable = (data: any[], columnDefs: any, dataset: string): string => {
 
     const columnNames = Object.keys(columnDefs);
 
@@ -93,17 +118,17 @@ export const htmlTable = (data: any[], columnDefs: any): string => {
                 let value;
                 switch (column.metadata.colName) {
                     case 'name':
-                        value = `<a href="/mame/machine/${column.value}">${column.value}</a>`;
+                        value = `<a href="/${dataset}/machine/${column.value}">${column.value}</a>`;
                        break;
 
                     case 'romof':
                         if (column.value)
-                            value = `<a href="/mame/machine/${column.value}">${column.value}</a>`;
+                            value = `<a href="/${dataset}/machine/${column.value}">${column.value}</a>`;
                        break;
 
                     case 'cloneof':
                         if (column.value)
-                            value = `<a href="/mame/machine/${column.value}">${column.value}</a>`;
+                            value = `<a href="/${dataset}/machine/${column.value}">${column.value}</a>`;
                        break;
 
                     default:

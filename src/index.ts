@@ -133,13 +133,16 @@ const requestListener: http.RequestListener = async (
             data = [ {value: 'Spludlow Data Web'}, {value: assets['root.html'] } ];
         
         if (urlParts.length === 1 && urlParts[0] === 'mame')
-            data = [ {value: 'Spludlow Data Web'}, {value: assets['mame.html'] } ];
+            data = [ {value: 'MAME Data'}, {value: assets['mame.html'] } ];
 
-        if (urlParts.length === 2 && urlParts[0] === 'mame' && urlParts[1] === 'machine') {
+        if (urlParts.length === 1 && urlParts[0] === 'hbmame')
+            data = [ {value: 'HBMAME Data'}, {value: assets['hbmame.html'] } ];
+
+        if (urlParts.length === 2 && (urlParts[0] === 'mame' || urlParts[0] === 'hbmame') && urlParts[1] === 'machine') {
 
             let lastTime = Date.now();
 
-            const pageData = await mame.getMachines(paramters.search, paramters.offset, paramters.limit);
+            const pageData = await mame.getMachines(paramters.search, paramters.offset, paramters.limit, urlParts[0]);
 
             //console.log(`1: ${Date.now() - lastTime}`);
             lastTime = Date.now();
@@ -173,14 +176,14 @@ const requestListener: http.RequestListener = async (
                 'cloneof': 'Clone of',
             };
 
-            let machineHtml: string = assets['mame-machine.html'].replace('@DATA@', tools.htmlTable(pageData, columnDefs));
+            let machineHtml: string = assets['mame-machine.html'].replace('@DATA@', tools.htmlTable(pageData, columnDefs, urlParts[0]));
             machineHtml = machineHtml.replace('@TOP@', nav);
             machineHtml = machineHtml.replace('@BOTTOM@', nav);
 
             //console.log(`2: ${Date.now() - lastTime}`);
             lastTime = Date.now();
 
-            data = [ {value: 'MAME Machines'}, {value: machineHtml } ];
+            data = [ {value: `${urlParts[0]} - machines`}, {value: machineHtml } ];
 
             //console.log(`3: ${Date.now() - lastTime}`);
             lastTime = Date.now();
@@ -188,7 +191,7 @@ const requestListener: http.RequestListener = async (
 
 
         // MAME Machine
-        if (urlParts.length === 3 && urlParts[0] === 'mame' && urlParts[1] === 'machine') {
+        if (urlParts.length === 3 && (urlParts[0] === 'mame' || urlParts[0] === 'hbmame') && urlParts[1] === 'machine') {
     
             let machine_name = urlParts[2];
 
@@ -201,17 +204,17 @@ const requestListener: http.RequestListener = async (
             if (validNameRegEx.test(machine_name) !== true)
                 throw new Error(`bad machine name`);
     
-            data = await mame.getMachine(machine_name, extention);
+            data = await mame.getMachine(machine_name, extention, urlParts[0]);
         }
 
         //  MAME Software Lists
-        if (urlParts.length === 2 && urlParts[0] === 'mame' && urlParts[1] === 'software') {
+        if (urlParts.length === 2 && (urlParts[0] === 'mame' || urlParts[0] === 'hbmame') && urlParts[1] === 'software') {
 
-            data = await mame.getSoftwareLists();
+            data = await mame.getSoftwareLists(urlParts[0]);
         }
 
         // MAME Software List
-        if (urlParts.length === 3 && urlParts[0] === 'mame' && urlParts[1] === 'software') {
+        if (urlParts.length === 3 && (urlParts[0] === 'mame' || urlParts[0] === 'hbmame') && urlParts[1] === 'software') {
         
             let softwarelist_name = urlParts[2];
 
@@ -224,11 +227,11 @@ const requestListener: http.RequestListener = async (
             if (validNameRegEx.test(softwarelist_name) !== true)
                 throw new Error(`bad softwarelist_name`);
 
-            data = await mame.getSoftwareList(softwarelist_name, extention);
+            data = await mame.getSoftwareList(softwarelist_name, extention, urlParts[0]);
         }
 
         // MAME Software
-        if (urlParts.length === 4 && urlParts[0] === 'mame' && urlParts[1] === 'software') {
+        if (urlParts.length === 4 && (urlParts[0] === 'mame' || urlParts[0] === 'hbmame') && urlParts[1] === 'software') {
         
             const softwarelist_name = urlParts[2];
             if (validNameRegEx.test(softwarelist_name) !== true)
@@ -245,7 +248,7 @@ const requestListener: http.RequestListener = async (
             if (validNameRegEx.test(software_name) !== true)
                 throw new Error(`bad software_name`);
 
-            data = await mame.getSoftware(softwarelist_name, software_name, extention);
+            data = await mame.getSoftware(softwarelist_name, software_name, extention, urlParts[0]);
         }
 
         if (data === undefined) {
