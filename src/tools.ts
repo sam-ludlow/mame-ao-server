@@ -92,6 +92,9 @@ export const sqlConnection = (dataset: string, subSet: string) => {
         case 'hbmame.software':
             config = sqlConfig('SPLCAL-MAIN', 'HBMAME-Software');
             break;
+        case 'tosec.dataset':
+            config = sqlConfig('SPLCAL-MAIN', 'TOSEC');
+            break;
         default:
             throw new Error(`Unknown dataset.subset ${dataset}`);
     }

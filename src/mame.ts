@@ -6,6 +6,31 @@ var TYPES = require('tedious').TYPES;
 
 import * as tools from './tools';
 
+
+export const getTosecDataFiles = async () => {
+
+    const connection: Tedious.Connection = tools.sqlConnection('tosec', 'dataset');
+    await tools.sqlOpen(connection);
+
+    let data: any[] = [];
+    try {
+
+        const request: Tedious.Request = new Request('SELECT [title], [html] FROM [tosec_payload]');
+
+        const response = await tools.sqlRequest(connection, request);
+
+        if (response.length === 0)
+            throw new Error('TOSEC not found');
+
+        data = response[0];
+    }
+    finally {
+        await tools.sqlClose(connection);
+    }
+
+    return data;
+}
+
 export const getMachine = async (machine_name: string, extention: string, dataset: string) => {
 
     if (extention === '')

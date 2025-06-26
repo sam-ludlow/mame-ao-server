@@ -138,6 +138,9 @@ const requestListener: http.RequestListener = async (
         if (urlParts.length === 1 && urlParts[0] === 'hbmame')
             data = [ {value: 'HBMAME Data'}, {value: assets['hbmame.html'] } ];
 
+        if (urlParts.length === 1 && urlParts[0] === 'tosec')
+            data = [ {value: 'TOSEC Data'}, {value: assets['tosec.html'] } ];
+
         if (urlParts.length === 2 && (urlParts[0] === 'mame' || urlParts[0] === 'hbmame') && urlParts[1] === 'machine') {
 
             let lastTime = Date.now();
@@ -249,6 +252,12 @@ const requestListener: http.RequestListener = async (
                 throw new Error(`bad software_name`);
 
             data = await mame.getSoftware(softwarelist_name, software_name, extention, urlParts[0]);
+        }
+
+        // TOSEC Datafiles
+        if (urlParts.length === 2 && urlParts[0] === 'tosec' && urlParts[1] === 'datafile') {
+            
+                data = await mame.getTosecDataFiles();
         }
 
         if (data === undefined) {
