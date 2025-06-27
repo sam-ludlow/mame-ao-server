@@ -7,7 +7,7 @@ var TYPES = require('tedious').TYPES;
 import * as tools from './tools';
 
 
-export const getTosecDataFiles = async () => {
+export const getTosecDataFiles = async (category: string) => {
 
     const connection: Tedious.Connection = tools.sqlConnection('tosec', 'dataset');
     await tools.sqlOpen(connection);
@@ -15,12 +15,13 @@ export const getTosecDataFiles = async () => {
     let data: any[] = [];
     try {
 
-        const request: Tedious.Request = new Request('SELECT [title], [html] FROM [tosec_payload]');
+        const request: Tedious.Request = new Request('SELECT [title], [html] FROM [category_payload] WHERE (category = @category)');
+        request.addParameter('category', TYPES.VarChar, category);
 
         const response = await tools.sqlRequest(connection, request);
 
         if (response.length === 0)
-            throw new Error('TOSEC not found');
+            throw new Error('TOSEC category not found');
 
         data = response[0];
     }

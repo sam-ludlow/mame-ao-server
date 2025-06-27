@@ -254,10 +254,12 @@ const requestListener: http.RequestListener = async (
             data = await mame.getSoftware(softwarelist_name, software_name, extention, urlParts[0]);
         }
 
+        const tosecCategories = ['tosec', 'tosec-iso', 'tosec-pix'];
+
         // TOSEC Datafiles
-        if (urlParts.length === 2 && urlParts[0] === 'tosec' && urlParts[1] === 'datafile') {
+        if (urlParts.length === 2 && urlParts[0] === 'tosec' && tosecCategories.includes(urlParts[1]) === true) {
             
-                data = await mame.getTosecDataFiles();
+                data = await mame.getTosecDataFiles(urlParts[1]);
         }
 
         if (data === undefined) {
