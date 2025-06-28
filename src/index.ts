@@ -24,6 +24,66 @@ const loadAssets = async () => {
 
 let concurrentRequests = 0;
 
+const rootMenu: any[] =
+[
+    {
+        text: 'MAME',
+        title: 'MAME Data',
+        href: '/mame',
+        menu: [
+            {
+                text: 'MAME Machine',
+                title: 'MAME Machine Data',
+                href: '/mame/machine',
+            },
+            {
+                text: 'MAME Software',
+                title: 'MAME Software Data',
+                href: '/mame/software',
+            },
+        ],
+    },
+    {
+        text: 'HBMAME',
+        title: 'HBMAME Data',
+        href: '/hbmame',
+        menu: [
+            {
+                text: 'HBMAME Machine',
+                title: 'HBMAME Machine Data',
+                href: '/hbmame/machine',
+            },
+            {
+                text: 'HBMAME Software',
+                title: 'HBMAME Software Data',
+                href: '/hbmame/software',
+            },
+        ],
+    },
+    {
+        text: 'TOSEC',
+        title: 'TOSEC DATA',
+        href: '/tosec',
+        menu: [
+            {
+                text: 'TOSEC',
+                title: 'HBMAME Machine Data',
+                href: '/tosec/tosec',
+            },
+            {
+                text: 'TOSEC-ISO',
+                title: 'HBMAME Software Data',
+                href: '/tosec/tosec-iso',
+            },
+            {
+                text: 'TOSEC-PIX',
+                title: 'HBMAME Software Data',
+                href: '/tosec/tosec-pix',
+            },
+        ],
+    },
+];
+
 const requestListener: http.RequestListener = async (
     req: http.IncomingMessage,
     res: http.ServerResponse) =>
@@ -108,7 +168,42 @@ const requestListener: http.RequestListener = async (
     }
     
     let urlParts = url.split('/').filter(u => u !== '');
+
+    const urlPaths = ['/'];
+    urlParts.forEach((item, index) => {
+        urlPaths.push(`${index > 0 ? urlPaths[index] : ''}/${item}`);
+    });
+
     //console.log(`${req.url}\t${urlParts.length}\t${urlParts}`);
+    //console.log(`PATHS: ${urlPaths}`);
+
+    //
+    // Menu
+    //
+    const walkMenu = (current: any) => {
+        navMenu += '<table class="nav"><tr>';
+        
+        let foundMenu: any;
+
+        current.forEach((menuItem: any) => {
+
+            if (urlPaths.includes(menuItem.href))
+                foundMenu = menuItem;
+
+            const navClass = urlPaths.includes(menuItem.href) ? 'nav-on' : 'nav-off';
+
+            navMenu += `<td class="${navClass}"><a class="${navClass}" href="${menuItem.href}">${menuItem.text}</a></td>`;
+        });
+        navMenu += '</tr></table>';
+
+        if (foundMenu !== undefined && foundMenu.menu !== undefined)
+            walkMenu(foundMenu.menu);
+    };
+
+    let navMenu = '';   //text title href   nav-off
+
+    walkMenu(rootMenu);
+
 
     const validExtentions = [ '', 'xml', 'json', 'html' ];
 
@@ -274,7 +369,7 @@ const requestListener: http.RequestListener = async (
 
             html = html.replace('@HEAD@', '');
 
-            html = html.replace('@NAV@', '');
+            html = html.replace('@NAV@', navMenu);
             html = html.replace('@INFO@', '');
 
             html = html.replace('@H1@', data[0].value);

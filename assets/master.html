@@ -10,15 +10,12 @@
 		const mameAO = async (line) => {
 			try {
 				const response = await fetch(`http://localhost:12380/api/command?line=${line}`);
-
 				const result = await response.text();
-
 				if (response.status !== 200)
-					alert('MAME-AO server reachable but not happy.\n\n' + result);
+					alert('MAME-AO error:\n\n' + result);
 			}
 			catch (e) {
-				alert('MAME-AO server not reachable.\n\n' + 'Is it running locally?\n\n' +
-					'Use F12->Console to view errors.');
+				alert('MAME-AO not reachable. Is it running?');
 			}
 		}
     </script>

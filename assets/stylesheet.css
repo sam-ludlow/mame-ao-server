@@ -25,6 +25,34 @@ table {
 	font-size: small;
 }
 
+table.nav {
+	border-collapse: collapse;
+	font-size: small;
+	width: 100%;
+}
+
+td.nav-off {
+	text-decoration: none;
+	background-color: #1a75bc;
+	text-align: center;
+}
+
+td.nav-on {
+	text-decoration: none;
+	background-color: #00ADEF;
+	text-align: center;
+}
+
+a.nav-off {
+	text-decoration: none;
+	color: #FFFFFF;
+}
+
+a.nav-on {
+	text-decoration: none;
+	color: #FFFF00;
+}
+
 th, td {
 	padding: 2px;
 	text-align: left;
