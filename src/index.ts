@@ -3,6 +3,12 @@ import http from 'http';
 import * as mame from './mame';
 import * as tools from './tools';
 
+import Tedious from 'tedious';
+
+var Connection = require('tedious').Connection;
+var Request = require('tedious').Request;
+var TYPES = require('tedious').TYPES;
+
 var validNameRegEx = /^[a-zA-Z0-9-_]+$/;
 
 const assets: any = {};
@@ -23,6 +29,87 @@ const loadAssets = async () => {
 }
 
 let concurrentRequests = 0;
+
+
+
+export interface ApplicationServer {
+    Key: string;
+    Title: string;
+    Info: string;
+    SubSets: any;
+}
+
+export interface ApplicationServerConstructable {
+    new(key: string, subKeys: string[]): ApplicationServer;
+}
+
+export class MameApplicationServer implements ApplicationServer {
+    
+    public Key: string;
+    public Title: string;
+    public Info: string;
+
+    public SubSets: any = {};
+
+    constructor(key: string, subKeys: string[]) {
+
+        this.Key = key;
+
+        this.Title = '';
+        this.Info = '';
+
+        subKeys.forEach((subKey) => {
+
+            let databaseName = `ao-${key}`;
+            if (key !== 'tosec')
+                databaseName += `-${subKey}`;
+
+            this.SubSets[subKey] = {
+                Key: subKey,
+                Title: '',
+                Info: '',
+                SqlConfig: tools.sqlConfig('SPLCAL-MAIN', databaseName),
+            };
+
+        });
+    }
+
+    public initialize = async (): Promise<any> => {
+
+        await Promise.all(Object.keys(this.SubSets).map(async (subKey) => {
+
+            const subSet = this.SubSets[subKey];
+
+            const connection: Tedious.Connection = new Connection(subSet.SqlConfig);
+
+            await tools.sqlOpen(connection);
+        
+            let data: any[] = [];
+            try {
+        
+                const request: Tedious.Request = new Request('SELECT * FROM [_metadata]');
+        
+                const response = await tools.sqlRequest(connection, request);
+        
+                if (response.length === 0)
+                    throw new Error('_metadata not found');
+
+                console.log(response[0].filter((item: any) => item.metadata.colName === 'info'));
+
+
+                this.Info = response[0].filter((item: any) => item.metadata.colName === 'info')[0].value;
+            }
+            finally {
+                await tools.sqlClose(connection);
+            }
+
+        }));
+    }
+
+
+}
+
+const applicationServers: any = {};
 
 const rootMenu: any[] =
 [
@@ -174,8 +261,9 @@ const requestListener: http.RequestListener = async (
         urlPaths.push(`${index > 0 ? urlPaths[index] : ''}/${item}`);
     });
 
-    //console.log(`${req.url}\t${urlParts.length}\t${urlParts}`);
-    //console.log(`PATHS: ${urlPaths}`);
+/*     console.log(`URL: ${req.url}`);
+    console.log(`PARTS: ${urlParts.length}\t${urlParts}`);
+    console.log(`PATHS: ${urlPaths.length}\t${urlPaths}`); */
 
     //
     // Menu
@@ -200,10 +288,26 @@ const requestListener: http.RequestListener = async (
             walkMenu(foundMenu.menu);
     };
 
-    let navMenu = '';   //text title href   nav-off
+    let navMenu = '';
 
     walkMenu(rootMenu);
 
+    //
+    // Info
+    //
+
+    let title = '';
+    let info = '';
+
+    if (urlParts.length > 0) {
+
+        const applicationServer = applicationServers[urlParts[0]];
+
+        info = applicationServer.Info;
+
+    }
+
+    //applicationServers[];
 
     const validExtentions = [ '', 'xml', 'json', 'html' ];
 
@@ -370,7 +474,7 @@ const requestListener: http.RequestListener = async (
             html = html.replace('@HEAD@', '');
 
             html = html.replace('@NAV@', navMenu);
-            html = html.replace('@INFO@', '');
+            html = html.replace('@INFO@', info);
 
             html = html.replace('@H1@', data[0].value);
             html = html.replace('@BODY@', data[1].value);
@@ -405,6 +509,12 @@ const run = async () => {
 		if (command === 'stop')
 			process.exit(0);
 	});
+
+    applicationServers['mame'] = new MameApplicationServer('mame', ['machine', 'software']);
+    applicationServers['hbmame'] = new MameApplicationServer('hbmame', ['machine', 'software']);
+    applicationServers['tosec'] = new MameApplicationServer('tosec', ['tosec', 'tosec-iso', 'tosec-pix']);
+    
+    await Promise.all(Object.keys(applicationServers).map(async (key) => applicationServers[key].initialize()));
 
     await loadAssets();
 

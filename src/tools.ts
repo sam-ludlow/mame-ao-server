@@ -81,19 +81,19 @@ export const sqlConnection = (dataset: string, subSet: string) => {
     let config;
     switch (`${dataset}.${subSet}`) {
         case 'mame.machine':
-            config = sqlConfig('SPLCAL-MAIN', 'MameAoMachine');
+            config = sqlConfig('SPLCAL-MAIN', 'ao-mame-machine');
             break;
         case 'mame.software':
-            config = sqlConfig('SPLCAL-MAIN', 'MameAoSoftware');
+            config = sqlConfig('SPLCAL-MAIN', 'ao-mame-software');
             break;
         case 'hbmame.machine':
-            config = sqlConfig('SPLCAL-MAIN', 'HBMAME-Machine');
+            config = sqlConfig('SPLCAL-MAIN', 'ao-hbmame-machine');
             break;
         case 'hbmame.software':
-            config = sqlConfig('SPLCAL-MAIN', 'HBMAME-Software');
+            config = sqlConfig('SPLCAL-MAIN', 'ao-hbmame-software');
             break;
         case 'tosec.dataset':
-            config = sqlConfig('SPLCAL-MAIN', 'TOSEC');
+            config = sqlConfig('SPLCAL-MAIN', 'ao-tosec');
             break;
         default:
             throw new Error(`Unknown dataset.subset ${dataset}`);
