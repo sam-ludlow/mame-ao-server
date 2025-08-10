@@ -36,6 +36,7 @@ export interface ApplicationServer {
     Key: string;
     Title: string;
     Info: string;
+    Version: string;
     SubSets: any;
 }
 
@@ -48,6 +49,7 @@ export class MameApplicationServer implements ApplicationServer {
     public Key: string;
     public Title: string;
     public Info: string;
+    public Version: string;
 
     public SubSets: any = {};
 
@@ -57,6 +59,7 @@ export class MameApplicationServer implements ApplicationServer {
 
         this.Title = '';
         this.Info = '';
+        this.Version = '';
 
         subKeys.forEach((subKey) => {
 
@@ -98,6 +101,7 @@ export class MameApplicationServer implements ApplicationServer {
 
 
                 this.Info = response[0].filter((item: any) => item.metadata.colName === 'info')[0].value;
+                this.Version = response[0].filter((item: any) => item.metadata.colName === 'version')[0].value;
             }
             finally {
                 await tools.sqlClose(connection);
@@ -296,14 +300,19 @@ const requestListener: http.RequestListener = async (
     // Info
     //
 
+    let applicationServer: any;
+    
     let title = '';
     let info = '';
 
     if (urlParts.length > 0) {
 
-        const applicationServer = applicationServers[urlParts[0]];
+        applicationServer = applicationServers[urlParts[0]];
 
-        info = applicationServer.Info;
+        //console.log(applicationServer);
+
+        if (applicationServer !== undefined)
+            info = applicationServer.Info;
 
     }
 
@@ -332,14 +341,15 @@ const requestListener: http.RequestListener = async (
             data = [ {value: 'Spludlow Data Web'}, {value: assets['root.html'] } ];
         
         if (urlParts.length === 1 && urlParts[0] === 'mame')
-            data = [ {value: 'MAME Data'}, {value: assets['mame.html'] } ];
+            data = [ {value: `MAME (${applicationServer.Version})`}, {value: assets['mame.html'] } ];
 
         if (urlParts.length === 1 && urlParts[0] === 'hbmame')
-            data = [ {value: 'HBMAME Data'}, {value: assets['hbmame.html'] } ];
+            data = [ {value: `HBMAME (${applicationServer.Version})`}, {value: assets['hbmame.html'] } ];
 
         if (urlParts.length === 1 && urlParts[0] === 'tosec')
-            data = [ {value: 'TOSEC Data'}, {value: assets['tosec.html'] } ];
+            data = [ {value: `TOSEC (${applicationServer.Version})`}, {value: assets['tosec.html'] } ];
 
+        // Mame Machines
         if (urlParts.length === 2 && (urlParts[0] === 'mame' || urlParts[0] === 'hbmame') && urlParts[1] === 'machine') {
 
             let lastTime = Date.now();
@@ -385,7 +395,7 @@ const requestListener: http.RequestListener = async (
             //console.log(`2: ${Date.now() - lastTime}`);
             lastTime = Date.now();
 
-            data = [ {value: `${urlParts[0]} - machines`}, {value: machineHtml } ];
+            data = [ {value: `${applicationServer.Key} (${applicationServer.Version}) machines`}, {value: machineHtml } ];
 
             //console.log(`3: ${Date.now() - lastTime}`);
             lastTime = Date.now();
@@ -471,7 +481,7 @@ const requestListener: http.RequestListener = async (
 
             let html = assets['master.html'];
 
-            html = html.replace('@HEAD@', '');
+            html = html.replace('@HEAD@', `<title>${data[0].value}</title>`);
 
             html = html.replace('@NAV@', navMenu);
             html = html.replace('@INFO@', info);
