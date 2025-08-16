@@ -468,7 +468,16 @@ const requestListener: http.RequestListener = async (
         // TOSEC Datafiles
         if (urlParts.length === 2 && urlParts[0] === 'tosec' && tosecCategories.includes(urlParts[1]) === true) {
             
-                data = await mame.getTosecDataFiles(urlParts[1]);
+            data = await mame.getTosecDataFiles(urlParts[1]);
+        }
+
+        // TOSEC DataFile (list of items in category)
+        if (urlParts.length === 3 && urlParts[0] === 'tosec' && tosecCategories.includes(urlParts[1]) === true) {
+
+            //console.log('raw:' + urlParts[2]);
+            const name = decodeURIComponent(urlParts[2]);
+            //console.log('name:' + name);
+            data = await mame.getTosecDataFile(urlParts[1], name);
         }
 
         if (data === undefined) {

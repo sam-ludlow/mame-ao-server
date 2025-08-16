@@ -32,6 +32,32 @@ export const getTosecDataFiles = async (category: string) => {
     return data;
 }
 
+export const getTosecDataFile = async (category: string, name: string) => {
+
+    const connection: Tedious.Connection = tools.sqlConnection('tosec', 'dataset');
+    await tools.sqlOpen(connection);
+    
+    let data: any[] = [];
+    try {
+
+        const request: Tedious.Request = new Request('SELECT [title], [html] FROM [datafile_payload] WHERE ([category] = @category AND [name] = @name)');
+        request.addParameter('category', TYPES.VarChar, category);
+        request.addParameter('name', TYPES.VarChar, name);
+
+        const response = await tools.sqlRequest(connection, request);
+
+        if (response.length === 0)
+            throw new Error('TOSEC datafile not found');
+
+        data = response[0];
+    }
+    finally {
+        await tools.sqlClose(connection);
+    }
+
+    return data;
+}
+
 export const getMachine = async (machine_name: string, extention: string, dataset: string) => {
 
     if (extention === '')
