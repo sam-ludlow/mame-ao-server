@@ -58,6 +58,33 @@ export const getTosecDataFile = async (category: string, name: string) => {
     return data;
 }
 
+export const getTosecGame = async (category: string, datafile_name: string, game_name: string) => {
+
+    const connection: Tedious.Connection = tools.sqlConnection('tosec', 'dataset');
+    await tools.sqlOpen(connection);
+    
+    let data: any[] = [];
+    try {
+
+        const request: Tedious.Request = new Request('SELECT [title], [html] FROM [game_payload] WHERE ([category] = @category AND [datafile_name] = @datafile_name AND [game_name] = @game_name)');
+        request.addParameter('category', TYPES.VarChar, category);
+        request.addParameter('datafile_name', TYPES.VarChar, datafile_name);
+        request.addParameter('game_name', TYPES.VarChar, game_name);
+
+        const response = await tools.sqlRequest(connection, request);
+
+        if (response.length === 0)
+            throw new Error('TOSEC game not found');
+
+        data = response[0];
+    }
+    finally {
+        await tools.sqlClose(connection);
+    }
+
+    return data;
+}
+
 export const getMachine = async (machine_name: string, extention: string, dataset: string) => {
 
     if (extention === '')

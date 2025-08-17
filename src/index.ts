@@ -471,13 +471,20 @@ const requestListener: http.RequestListener = async (
             data = await mame.getTosecDataFiles(urlParts[1]);
         }
 
-        // TOSEC DataFile (list of items in category)
+        // TOSEC DataFile (list of games)
         if (urlParts.length === 3 && urlParts[0] === 'tosec' && tosecCategories.includes(urlParts[1]) === true) {
 
             //console.log('raw:' + urlParts[2]);
             const name = decodeURIComponent(urlParts[2]);
             //console.log('name:' + name);
             data = await mame.getTosecDataFile(urlParts[1], name);
+        }
+
+        // TOSEC Game (rom details)
+        if (urlParts.length === 4 && urlParts[0] === 'tosec' && tosecCategories.includes(urlParts[1]) === true) {
+            const datafile_name = decodeURIComponent(urlParts[2]);
+            const game_name = decodeURIComponent(urlParts[3]);
+            data = await mame.getTosecGame(urlParts[1], datafile_name, game_name);
         }
 
         if (data === undefined) {
