@@ -64,7 +64,8 @@ export class MameApplicationServer implements ApplicationServer {
         subKeys.forEach((subKey) => {
 
             let databaseName = `ao-${key}`;
-            if (key !== 'tosec')
+
+            if (key.endsWith('mame') === true)
                 databaseName += `-${subKey}`;
 
             this.SubSets[subKey] = {
@@ -115,6 +116,8 @@ export class MameApplicationServer implements ApplicationServer {
 
 const applicationServers: any = {};
 
+const fbneoDatafileKeys = ['arcade', 'channelf', 'coleco', 'fds', 'gamegear', 'megadrive', 'msx', 'neogeo', 'nes', 'ngp', 'pce', 'sg1000', 'sgx', 'sms', 'snes', 'spectrum', 'tg16', ];
+
 const rootMenu: any[] =
 [
     {
@@ -149,6 +152,30 @@ const rootMenu: any[] =
                 title: 'HBMAME Software Data',
                 href: '/hbmame/software',
             },
+        ],
+    },
+    {
+        text: 'FBNeo',
+        title: 'FBNeo Data',
+        href: '/fbneo',
+        menu: [
+            { text: 'Arcade Games', title: 'Arcade Games', href: '/fbneo/arcade'},
+            { text: 'Fairchild Channel F Games', title: 'Fairchild Channel F Games', href: '/fbneo/channelf'},
+            { text: 'ColecoVision Games', title: 'ColecoVision Games', href: '/fbneo/coleco'},
+            { text: 'FDS Games', title: 'FDS Games', href: '/fbneo/fds'},
+            { text: 'Game Gear Games', title: 'Game Gear Games', href: '/fbneo/gamegear'},
+            { text: 'Megadrive Games', title: 'Megadrive Games', href: '/fbneo/megadrive'},
+            { text: 'MSX 1 Games', title: 'MSX 1 Games', href: '/fbneo/msx'},
+            { text: 'Neo Geo Games', title: 'Neo Geo Games', href: '/fbneo/neogeo'},
+            { text: 'NES Games', title: 'NES Games', href: '/fbneo/nes'},
+            { text: 'Neo Geo Pocket Games', title: 'Neo Geo Pocket Games', href: '/fbneo/ngp'},
+            { text: 'PC-Engine Games', title: 'PC-Engine Games', href: '/fbneo/pce'},
+            { text: 'Sega SG-1000 Games', title: 'Sega SG-1000 Games', href: '/fbneo/sg1000'},
+            { text: 'SuprGrafx Games', title: 'SuprGrafx Games', href: '/fbneo/sgx'},
+            { text: 'Master System Games', title: 'Master System Games', href: '/fbneo/sms'},
+            { text: 'SNES Games', title: 'SNES Games', href: '/fbneo/snes'},
+            { text: 'ZX Spectrum Games', title: 'ZX Spectrum Games', href: '/fbneo/spectrum'},
+            { text: 'TurboGrafx 16 Games', title: 'TurboGrafx 16 Games', href: '/fbneo/tg16'},
         ],
     },
     {
@@ -346,6 +373,9 @@ const requestListener: http.RequestListener = async (
         if (urlParts.length === 1 && urlParts[0] === 'hbmame')
             data = [ {value: `HBMAME (${applicationServer.Version})`}, {value: assets['hbmame.html'] } ];
 
+        if (urlParts.length === 1 && urlParts[0] === 'fbneo')
+            data = [ {value: `FBNeo (${applicationServer.Version})`}, {value: assets['fbneo.html'] } ];
+
         if (urlParts.length === 1 && urlParts[0] === 'tosec')
             data = [ {value: `TOSEC (${applicationServer.Version})`}, {value: assets['tosec.html'] } ];
 
@@ -463,6 +493,19 @@ const requestListener: http.RequestListener = async (
             data = await mame.getSoftware(softwarelist_name, software_name, extention, urlParts[0]);
         }
 
+        //
+        // FBNeo
+        //
+
+
+
+        //  FBNeo Datafile
+        if (urlParts.length === 2 && urlParts[0] === 'fbneo' && fbneoDatafileKeys.includes(urlParts[1]) === true) {
+
+            data = await mame.getFBNeoDataFile(urlParts[1]);
+        }
+
+
         const tosecCategories = ['tosec', 'tosec-iso', 'tosec-pix'];
 
         // TOSEC Datafiles
@@ -538,6 +581,7 @@ const run = async () => {
 
     applicationServers['mame'] = new MameApplicationServer('mame', ['machine', 'software']);
     applicationServers['hbmame'] = new MameApplicationServer('hbmame', ['machine', 'software']);
+    applicationServers['fbneo'] = new MameApplicationServer('fbneo', fbneoDatafileKeys);
     applicationServers['tosec'] = new MameApplicationServer('tosec', ['tosec', 'tosec-iso', 'tosec-pix']);
     
     await Promise.all(Object.keys(applicationServers).map(async (key) => applicationServers[key].initialize()));

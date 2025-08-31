@@ -92,6 +92,9 @@ export const sqlConnection = (dataset: string, subSet: string) => {
         case 'hbmame.software':
             config = sqlConfig('SPLCAL-MAIN', 'ao-hbmame-software');
             break;
+        case 'fbneo.dataset':
+            config = sqlConfig('SPLCAL-MAIN', 'ao-fbneo');
+            break;
         case 'tosec.dataset':
             config = sqlConfig('SPLCAL-MAIN', 'ao-tosec');
             break;
