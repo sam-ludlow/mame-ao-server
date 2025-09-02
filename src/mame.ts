@@ -6,6 +6,31 @@ var TYPES = require('tedious').TYPES;
 
 import * as tools from './tools';
 
+export const getFBNeoGame = async (datafile_key: string, game_name: string) => {
+
+    const connection: Tedious.Connection = tools.sqlConnection('fbneo', 'dataset');
+    await tools.sqlOpen(connection);
+
+    let data: any[] = [];
+    try {
+
+        const request: Tedious.Request = new Request('SELECT [title], [html] FROM [game_payload] WHERE ([datafile_key] = @datafile_key AND [game_name] = @game_name)');
+        request.addParameter('datafile_key', TYPES.VarChar, datafile_key);
+        request.addParameter('game_name', TYPES.VarChar, game_name);
+
+        const response = await tools.sqlRequest(connection, request);
+
+        if (response.length === 0)
+            throw new Error('FBNeo Game not found');
+
+        data = response[0];
+    }
+    finally {
+        await tools.sqlClose(connection);
+    }
+
+    return data;
+}
 
 export const getFBNeoDataFile = async (key: string) => {
 
@@ -21,7 +46,7 @@ export const getFBNeoDataFile = async (key: string) => {
         const response = await tools.sqlRequest(connection, request);
 
         if (response.length === 0)
-            throw new Error('FBNeo datafile key not found');
+            throw new Error('FBNeo datafile not found');
 
         data = response[0];
     }

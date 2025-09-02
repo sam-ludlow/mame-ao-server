@@ -501,10 +501,25 @@ const requestListener: http.RequestListener = async (
 
         //  FBNeo Datafile
         if (urlParts.length === 2 && urlParts[0] === 'fbneo' && fbneoDatafileKeys.includes(urlParts[1]) === true) {
+            const datafile_key = urlParts[1];
+            if (validNameRegEx.test(datafile_key) !== true)
+                throw new Error(`bad datafile_key`);
 
-            data = await mame.getFBNeoDataFile(urlParts[1]);
+            data = await mame.getFBNeoDataFile(datafile_key);
         }
 
+        //  FBNeo Game
+        if (urlParts.length === 3 && urlParts[0] === 'fbneo' && fbneoDatafileKeys.includes(urlParts[1]) === true) {
+            const datafile_key = urlParts[1];
+            if (validNameRegEx.test(datafile_key) !== true)
+                throw new Error(`bad datafile_key`);
+
+            const game_name = urlParts[2];
+            if (validNameRegEx.test(game_name) !== true)
+                throw new Error(`bad game_name`);
+
+            data = await mame.getFBNeoGame(datafile_key, game_name);
+        }
 
         const tosecCategories = ['tosec', 'tosec-iso', 'tosec-pix'];
 
