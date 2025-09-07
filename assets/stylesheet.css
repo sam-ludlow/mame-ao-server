@@ -1,6 +1,5 @@
 ﻿body {
 	font-family: sans-serif;
-	font-size: small;
 	background-color: #c6eafb;
 }
 
@@ -22,12 +21,10 @@ hr.px2 {
 
 table {
 	border-collapse: collapse;
-	font-size: small;
 }
 
 table.nav {
 	border-collapse: collapse;
-	font-size: small;
 	width: 100%;
 }
 
