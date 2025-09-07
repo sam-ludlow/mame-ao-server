@@ -7,3 +7,6 @@ rootDirectory		C:\DATA
 databaseServer		Data Source='my-mssql-server';Integrated Security=True;TrustServerCertificate=True;
 startUrl		http://magic-start-web-url
 stopUrl			http://magic-stop-web-url
+mailServer		my-smtp-server
+mailFromAddress		from@email.com
+mailToAddress		to@email.com

@@ -5,15 +5,21 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Mail;
+using System.Text;
 
 namespace updater
 {
 	internal class Program
 	{
-		static void Main(string[] args)
+		static int Main(string[] args)
 		{
-			if (args.Length != 1)
-				throw new ApplicationException("Usage updater.exe <config filename>");
+			string exeFileName = Process.GetCurrentProcess().MainModule.FileName;
+
+			Console.WriteLine($"{File.GetLastWriteTime(exeFileName)} {exeFileName}");
+
+			if (args.Length != 1 && args.Length != 2)
+				throw new ApplicationException("Usage updater.exe <config filename> [option]");
 
 			string configFilename = args[0];
 
@@ -48,6 +54,23 @@ namespace updater
 			string databaseServer = config["databaseServer"];
 			string startUrl = config["startUrl"];
 			string stopUrl = config["stopUrl"];
+			string mailServer = config["mailServer"];
+			string mailFromAddress = config["mailFromAddress"];
+			string mailToAddress = config["mailToAddress"];
+
+			if (args.Length == 2)
+			{
+				switch (args[1])
+				{
+					case "monitor":
+						Monitor(exeFileName, configFilename, Path.Combine(rootDirectory, "logs"), mailServer, mailFromAddress, mailToAddress);
+						return 0;
+
+					default:
+						throw new ApplicationException($"Bad option: {args[1]}");
+
+				}
+			}
 
 			Dictionary<string, string[]> coresDatabases = new Dictionary<string, string[]>()
 			{
@@ -56,6 +79,8 @@ namespace updater
 				{ "fbneo", new string[] { "ao-fbneo" } },
 				{ "tosec", new string[] { "ao-tosec" } },
 			};
+
+			int exitCode = 0;
 
 			foreach (string core in cores)
 			{
@@ -71,6 +96,8 @@ namespace updater
 					}
 					else
 					{
+						exitCode = 1;
+
 						Console.WriteLine($"{core} processing.");
 
 						Run(mameAoPath, $"{core}-xml directory=\"{directory}\"");
@@ -121,8 +148,90 @@ namespace updater
 				}
 				catch (Exception e)
 				{
+					exitCode = 1;
 					Console.WriteLine($"{core} ERROR, {e.Message}");
 					Console.WriteLine(e.ToString());
+				}
+			}
+
+			return exitCode;
+		}
+
+		public static void Monitor(string exeFilename, string configFilename, string logDirectory, string mailServer, string mailFromAddress, string mailToAddress)
+		{
+			Directory.CreateDirectory(logDirectory);
+
+			string logFilename = Path.Combine(logDirectory, DateTime.Now.ToString("s").Replace(":", "-") + ".txt");
+
+			int exitCode = 0;
+
+			using (StreamWriter writer = new StreamWriter(logFilename, false, Encoding.UTF8))
+			{
+				ProcessStartInfo startInfo = new ProcessStartInfo()
+				{
+					Arguments = configFilename,
+					FileName = exeFilename,
+
+					UseShellExecute = false,
+					RedirectStandardOutput = true,
+					RedirectStandardError = true,
+					StandardOutputEncoding = Encoding.UTF8,
+				};
+
+				using (Process process = new Process())
+				{
+					process.StartInfo = startInfo;
+
+					process.OutputDataReceived += new DataReceivedEventHandler((sender, e) =>
+					{
+						if (e.Data != null)
+						{
+							Console.WriteLine(e.Data);
+							lock (writer)
+								writer.WriteLine(e.Data);
+						}
+					});
+
+					process.ErrorDataReceived += new DataReceivedEventHandler((sender, e) =>
+					{
+						if (e.Data != null)
+						{
+							Console.Write("ERROR\t");
+							Console.WriteLine(e.Data);
+							lock (writer)
+							{
+								writer.Write("ERROR\t");
+								writer.WriteLine(e.Data);
+							}
+						}
+					});
+
+					process.Start();
+					process.BeginOutputReadLine();
+					process.BeginErrorReadLine();
+					process.WaitForExit();
+
+					exitCode = process.ExitCode;
+				}
+			}
+
+			Console.WriteLine($"Worker Process exit code: {exitCode}");
+
+			if (exitCode != 0)
+			{
+				Mail(mailServer, mailFromAddress, mailToAddress, $"Data Web Updater exitCode:{exitCode}", File.ReadAllText(logFilename));
+				Console.WriteLine($"Mail Sent: {mailToAddress}");
+			}
+		}
+
+		public static void Mail(string mailServer, string mailFromAddress, string mailToAddress, string subject, string body)
+		{
+			using (SmtpClient client = new SmtpClient(mailServer))
+			{
+				using (MailMessage message = new MailMessage(mailFromAddress, mailToAddress, subject, body))
+				{
+					message.IsBodyHtml = false;
+					client.Send(message);
 				}
 			}
 		}
