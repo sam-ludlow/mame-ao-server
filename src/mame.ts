@@ -6,7 +6,9 @@ var TYPES = require('tedious').TYPES;
 
 import * as tools from './tools';
 
-export const getFBNeoGame = async (datafile_key: string, game_name: string) => {
+export const getFBNeoGame = async (datafile_key: string, game_name: string, extention: string) => {
+    if (extention === '')
+        extention = 'html';
 
     const connection: Tedious.Connection = tools.sqlConnection('fbneo', 'dataset');
     await tools.sqlOpen(connection);
@@ -14,7 +16,7 @@ export const getFBNeoGame = async (datafile_key: string, game_name: string) => {
     let data: any[] = [];
     try {
 
-        const request: Tedious.Request = new Request('SELECT [title], [html] FROM [game_payload] WHERE ([datafile_key] = @datafile_key AND [game_name] = @game_name)');
+        const request: Tedious.Request = new Request(`SELECT [title], [${extention}] FROM [game_payload] WHERE ([datafile_key] = @datafile_key AND [game_name] = @game_name)`);
         request.addParameter('datafile_key', TYPES.VarChar, datafile_key);
         request.addParameter('game_name', TYPES.VarChar, game_name);
 
@@ -32,7 +34,9 @@ export const getFBNeoGame = async (datafile_key: string, game_name: string) => {
     return data;
 }
 
-export const getFBNeoDataFile = async (key: string) => {
+export const getFBNeoDataFile = async (key: string, extention: string) => {
+    if (extention === '')
+        extention = 'html';
 
     const connection: Tedious.Connection = tools.sqlConnection('fbneo', 'dataset');
     await tools.sqlOpen(connection);
@@ -40,7 +44,7 @@ export const getFBNeoDataFile = async (key: string) => {
     let data: any[] = [];
     try {
 
-        const request: Tedious.Request = new Request('SELECT [title], [html] FROM [datafile_payload] WHERE ([key] = @key)');
+        const request: Tedious.Request = new Request(`SELECT [title], [${extention}] FROM [datafile_payload] WHERE ([key] = @key)`);
         request.addParameter('key', TYPES.VarChar, key);
 
         const response = await tools.sqlRequest(connection, request);
@@ -84,7 +88,10 @@ export const getTosecDataFiles = async (category: string) => {
     return data;
 }
 
-export const getTosecDataFile = async (category: string, name: string) => {
+export const getTosecDataFile = async (category: string, name: string, extention: string) => {
+
+    if (extention === '')
+        extention = 'html';
 
     const connection: Tedious.Connection = tools.sqlConnection('tosec', 'dataset');
     await tools.sqlOpen(connection);
@@ -92,7 +99,7 @@ export const getTosecDataFile = async (category: string, name: string) => {
     let data: any[] = [];
     try {
 
-        const request: Tedious.Request = new Request('SELECT [title], [html] FROM [datafile_payload] WHERE ([category] = @category AND [name] = @name)');
+        const request: Tedious.Request = new Request(`SELECT [title], [${extention}] FROM [datafile_payload] WHERE ([category] = @category AND [name] = @name)`);
         request.addParameter('category', TYPES.VarChar, category);
         request.addParameter('name', TYPES.VarChar, name);
 
@@ -110,7 +117,10 @@ export const getTosecDataFile = async (category: string, name: string) => {
     return data;
 }
 
-export const getTosecGame = async (category: string, datafile_name: string, game_name: string) => {
+export const getTosecGame = async (category: string, datafile_name: string, game_name: string, extention: string) => {
+
+    if (extention === '')
+        extention = 'html';
 
     const connection: Tedious.Connection = tools.sqlConnection('tosec', 'dataset');
     await tools.sqlOpen(connection);
@@ -118,7 +128,7 @@ export const getTosecGame = async (category: string, datafile_name: string, game
     let data: any[] = [];
     try {
 
-        const request: Tedious.Request = new Request('SELECT [title], [html] FROM [game_payload] WHERE ([category] = @category AND [datafile_name] = @datafile_name AND [game_name] = @game_name)');
+        const request: Tedious.Request = new Request(`SELECT [title], [${extention}] FROM [game_payload] WHERE ([category] = @category AND [datafile_name] = @datafile_name AND [game_name] = @game_name)`);
         request.addParameter('category', TYPES.VarChar, category);
         request.addParameter('datafile_name', TYPES.VarChar, datafile_name);
         request.addParameter('game_name', TYPES.VarChar, game_name);

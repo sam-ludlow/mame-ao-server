@@ -500,25 +500,45 @@ const requestListener: http.RequestListener = async (
 
 
         //  FBNeo Datafile
-        if (urlParts.length === 2 && urlParts[0] === 'fbneo' && fbneoDatafileKeys.includes(urlParts[1]) === true) {
-            const datafile_key = urlParts[1];
+        if (urlParts.length === 2 && urlParts[0] === 'fbneo') {
+            let datafile_key = urlParts[1];
+
+            if (datafile_key.includes('.') === true)
+                [ datafile_key, extention ] = datafile_key.split('.');
+
+            if (validExtentions.includes(extention) === false)
+                throw new Error('Bad extention');
+
             if (validNameRegEx.test(datafile_key) !== true)
                 throw new Error(`bad datafile_key`);
 
-            data = await mame.getFBNeoDataFile(datafile_key);
+            if (fbneoDatafileKeys.includes(datafile_key) === false)
+                throw new Error(`unkown datafile_key`);
+
+            data = await mame.getFBNeoDataFile(datafile_key, extention);
         }
 
         //  FBNeo Game
-        if (urlParts.length === 3 && urlParts[0] === 'fbneo' && fbneoDatafileKeys.includes(urlParts[1]) === true) {
+        if (urlParts.length === 3 && urlParts[0] === 'fbneo') {
             const datafile_key = urlParts[1];
+            let game_name = urlParts[2];
+
+            if (game_name.includes('.') === true)
+                [ game_name, extention ] = game_name.split('.');
+
+            if (validExtentions.includes(extention) === false)
+                throw new Error('Bad extention');
+
             if (validNameRegEx.test(datafile_key) !== true)
                 throw new Error(`bad datafile_key`);
 
-            const game_name = urlParts[2];
+            if (fbneoDatafileKeys.includes(datafile_key) === false)
+                throw new Error(`unkown datafile_key`);
+            
             if (validNameRegEx.test(game_name) !== true)
                 throw new Error(`bad game_name`);
 
-            data = await mame.getFBNeoGame(datafile_key, game_name);
+            data = await mame.getFBNeoGame(datafile_key, game_name, extention);
         }
 
         const tosecCategories = ['tosec', 'tosec-iso', 'tosec-pix'];
@@ -531,18 +551,29 @@ const requestListener: http.RequestListener = async (
 
         // TOSEC DataFile (list of games)
         if (urlParts.length === 3 && urlParts[0] === 'tosec' && tosecCategories.includes(urlParts[1]) === true) {
+            let name = decodeURIComponent(urlParts[2]);
 
-            //console.log('raw:' + urlParts[2]);
-            const name = decodeURIComponent(urlParts[2]);
-            //console.log('name:' + name);
-            data = await mame.getTosecDataFile(urlParts[1], name);
+            if (name.includes('.') === true)
+                [ name, extention ] = name.split('.');
+
+            if (validExtentions.includes(extention) === false)
+                throw new Error('Bad extention');
+
+            data = await mame.getTosecDataFile(urlParts[1], name, extention);
         }
 
         // TOSEC Game (rom details)
         if (urlParts.length === 4 && urlParts[0] === 'tosec' && tosecCategories.includes(urlParts[1]) === true) {
             const datafile_name = decodeURIComponent(urlParts[2]);
-            const game_name = decodeURIComponent(urlParts[3]);
-            data = await mame.getTosecGame(urlParts[1], datafile_name, game_name);
+            let game_name = decodeURIComponent(urlParts[3]);
+
+            if (game_name.includes('.') === true)
+                [ game_name, extention ] = game_name.split('.');
+
+            if (validExtentions.includes(extention) === false)
+                throw new Error('Bad extention');
+
+            data = await mame.getTosecGame(urlParts[1], datafile_name, game_name, extention);
         }
 
         if (data === undefined) {
