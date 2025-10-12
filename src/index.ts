@@ -553,11 +553,12 @@ const requestListener: http.RequestListener = async (
         if (urlParts.length === 3 && urlParts[0] === 'tosec' && tosecCategories.includes(urlParts[1]) === true) {
             let name = decodeURIComponent(urlParts[2]);
 
-            if (name.includes('.') === true)
-                [ name, extention ] = name.split('.');
-
-            if (validExtentions.includes(extention) === false)
-                throw new Error('Bad extention');
+            validExtentions.forEach(validExtention => {
+                if (validExtention != '' && name.endsWith('.' + validExtention) == true) {
+                    extention = validExtention;
+                    name = name.slice(0, -(extention.length + 1));
+                }
+            });
 
             data = await mame.getTosecDataFile(urlParts[1], name, extention);
         }
@@ -567,11 +568,12 @@ const requestListener: http.RequestListener = async (
             const datafile_name = decodeURIComponent(urlParts[2]);
             let game_name = decodeURIComponent(urlParts[3]);
 
-            if (game_name.includes('.') === true)
-                [ game_name, extention ] = game_name.split('.');
-
-            if (validExtentions.includes(extention) === false)
-                throw new Error('Bad extention');
+            validExtentions.forEach(validExtention => {
+                if (validExtention != '' && game_name.endsWith('.' + validExtention) == true) {
+                    extention = validExtention;
+                    game_name = game_name.slice(0, -(extention.length + 1));
+                }
+            });
 
             data = await mame.getTosecGame(urlParts[1], datafile_name, game_name, extention);
         }
