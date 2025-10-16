@@ -159,28 +159,28 @@ const rootMenu: any[] =
         title: 'FBNeo Data',
         href: '/fbneo',
         menu: [
-            { text: 'Arcade', title: 'Arcade Games', href: '/fbneo/arcade'},
-            { text: 'Fairchild Channel F', title: 'Fairchild Channel F Games', href: '/fbneo/channelf'},
-            { text: 'ColecoVision', title: 'ColecoVision Games', href: '/fbneo/coleco'},
-            { text: 'FDS', title: 'FDS Games', href: '/fbneo/fds'},
-            { text: 'Game Gear', title: 'Game Gear Games', href: '/fbneo/gamegear'},
-            { text: 'Megadrive', title: 'Megadrive Games', href: '/fbneo/megadrive'},
-            { text: 'MSX 1', title: 'MSX 1 Games', href: '/fbneo/msx'},
-            { text: 'Neo Geo', title: 'Neo Geo Games', href: '/fbneo/neogeo'},
-            { text: 'NES', title: 'NES Games', href: '/fbneo/nes'},
-            { text: 'Neo Geo Pocket', title: 'Neo Geo Pocket Games', href: '/fbneo/ngp'},
-            { text: 'PC-Engine', title: 'PC-Engine Games', href: '/fbneo/pce'},
-            { text: 'Sega SG-1000', title: 'Sega SG-1000 Games', href: '/fbneo/sg1000'},
-            { text: 'SuprGrafx', title: 'SuprGrafx Games', href: '/fbneo/sgx'},
-            { text: 'Master System', title: 'Master System Games', href: '/fbneo/sms'},
-            { text: 'SNES', title: 'SNES Games', href: '/fbneo/snes'},
-            { text: 'ZX Spectrum', title: 'ZX Spectrum Games', href: '/fbneo/spectrum'},
-            { text: 'TurboGrafx 16', title: 'TurboGrafx 16 Games', href: '/fbneo/tg16'},
+            { text: 'arcade', title: 'Arcade Games', href: '/fbneo/arcade'},
+            { text: 'channelf', title: 'Fairchild Channel F Games', href: '/fbneo/channelf'},
+            { text: 'coleco', title: 'ColecoVision Games', href: '/fbneo/coleco'},
+            { text: 'fds', title: 'FDS (Famicom Disk System) Games', href: '/fbneo/fds'},
+            { text: 'gamegear', title: 'Game Gear Games', href: '/fbneo/gamegear'},
+            { text: 'megadrive', title: 'Megadrive Games', href: '/fbneo/megadrive'},
+            { text: 'msx', title: 'MSX 1 Games', href: '/fbneo/msx'},
+            { text: 'neogeo', title: 'Neo Geo Games', href: '/fbneo/neogeo'},
+            { text: 'nes', title: 'NES Games', href: '/fbneo/nes'},
+            { text: 'ngp', title: 'Neo Geo Pocket Games', href: '/fbneo/ngp'},
+            { text: 'pce', title: 'PC-Engine Games', href: '/fbneo/pce'},
+            { text: 'sg1000', title: 'Sega SG-1000 Games', href: '/fbneo/sg1000'},
+            { text: 'sgx', title: 'SuprGrafx Games', href: '/fbneo/sgx'},
+            { text: 'sms', title: 'Master System Games', href: '/fbneo/sms'},
+            { text: 'snes', title: 'SNES Games', href: '/fbneo/snes'},
+            { text: 'spectrum', title: 'ZX Spectrum Games', href: '/fbneo/spectrum'},
+            { text: 'tg16', title: 'TurboGrafx 16 Games', href: '/fbneo/tg16'},
         ],
     },
     {
         text: 'TOSEC',
-        title: 'TOSEC DATA',
+        title: 'TOSEC Data',
         href: '/tosec',
         menu: [
             {
@@ -311,7 +311,7 @@ const requestListener: http.RequestListener = async (
 
             const navClass = urlPaths.includes(menuItem.href) ? 'nav-on' : 'nav-off';
 
-            navMenu += `<td class="${navClass}"><a class="${navClass}" href="${menuItem.href}">${menuItem.text}</a></td>`;
+            navMenu += `<td class="${navClass}"><a class="${navClass}" href="${menuItem.href}" title="${menuItem.title}">${menuItem.text}</a></td>`;
         });
         navMenu += '</tr></table>';
 
