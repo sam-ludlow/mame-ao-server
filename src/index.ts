@@ -185,27 +185,82 @@ const rootMenu: any[] =
         menu: [
             {
                 text: 'TOSEC',
-                title: 'HBMAME Machine Data',
+                title: 'Non-optical disc based systems',
                 href: '/tosec/tosec',
             },
             {
                 text: 'TOSEC-ISO',
-                title: 'HBMAME Software Data',
+                title: 'Optical disc based systems',
                 href: '/tosec/tosec-iso',
             },
             {
                 text: 'TOSEC-PIX',
-                title: 'HBMAME Software Data',
+                title: 'Scans of software and hardware manuals, magazine scans, computing catalogs, and videos',
                 href: '/tosec/tosec-pix',
             },
         ],
     },
 ];
 
+export class RequestInfo {
+
+    public Url: string;
+    public Query: string;
+    public Paramters: any;
+    public UrlParts: string[];
+    public UrlPaths: string[];
+
+    constructor(req: http.IncomingMessage) {
+
+        [this.Url, this.Query] = (req.url || '/').split('?');
+
+        this.Paramters = { search: '', offset: 0, limit: 1000 };
+
+        if (this.Query !== undefined) {
+            this.Query.split('&').forEach(queryPart => {
+                const pair = queryPart.split('=');
+                if (pair.length === 2) {
+                    switch (pair[0]) {
+                        case 'search':
+                            this.Paramters.search = decodeURIComponent(pair[1]);
+                            break;
+
+                        case 'offset':
+                            this.Paramters.offset = parseInt(pair[1], 10);
+                            if (Number.isNaN(this.Paramters.offset) == true || this.Paramters.offset < 0)
+                                this.Paramters.offset = 0;
+                            break;
+                    }
+                }
+            });
+        }
+
+        this.UrlParts = this.Url.split('/').filter(url => url !== '');
+
+        this.UrlPaths = ['/'];
+        this.UrlParts.forEach((part, index) => {
+            this.UrlPaths.push(`${index > 0 ? this.UrlPaths[index] : ''}/${part}`);
+        });
+    }
+}
+
+export class ResponeInfo {
+
+    public Title: string = '';
+    public Heading: string = '';
+    public NavMenu: string = '';
+    public Info: string = '';
+    public Body: string = '';
+    public Extention: string = '';
+}
+
 const requestListener: http.RequestListener = async (
     req: http.IncomingMessage,
     res: http.ServerResponse) =>
 {
+    const requestInfo = new RequestInfo(req);
+    const responseInfo = new ResponeInfo();
+
     const now: Date = new Date();
 
     console.log(`${now.toUTCString()}\t${req.url}\t${req.method}\t${concurrentRequests}`);
@@ -225,7 +280,6 @@ const requestListener: http.RequestListener = async (
         res.end();
         return;
     }
-
 
     switch (req.url) {
 
@@ -261,90 +315,34 @@ const requestListener: http.RequestListener = async (
             break;
     }
 
-
-    const [url, query] = (req.url || '/').split('?');
-
-    const paramters = { search: '', offset: 0, limit: 1000 };
-
-    if (query !== undefined) {
-        query.split('&').forEach(queryPart => {
-            const pair = queryPart.split('=');
-            if (pair.length === 2) {
-                switch (pair[0]) {
-                    case 'search':
-                        paramters.search = decodeURIComponent(pair[1]);
-                        break;
-
-                    case 'offset':
-                        paramters.offset = parseInt(pair[1], 10);
-                        if (Number.isNaN(paramters.offset) == true || paramters.offset < 0)
-                            paramters.offset = 0;
-                        break;
-                }
-            }
-        });
-    }
-    
-    let urlParts = url.split('/').filter(u => u !== '');
-
-    const urlPaths = ['/'];
-    urlParts.forEach((item, index) => {
-        urlPaths.push(`${index > 0 ? urlPaths[index] : ''}/${item}`);
-    });
-
-/*     console.log(`URL: ${req.url}`);
-    console.log(`PARTS: ${urlParts.length}\t${urlParts}`);
-    console.log(`PATHS: ${urlPaths.length}\t${urlPaths}`); */
-
     //
     // Menu
     //
     const walkMenu = (current: any) => {
-        navMenu += '<table class="nav"><tr>';
+        responseInfo.NavMenu += '<table class="nav"><tr>';
         
         let foundMenu: any;
 
         current.forEach((menuItem: any) => {
 
-            if (urlPaths.includes(menuItem.href))
+            if (requestInfo.UrlPaths.includes(menuItem.href))
                 foundMenu = menuItem;
 
-            const navClass = urlPaths.includes(menuItem.href) ? 'nav-on' : 'nav-off';
+            const navClass = requestInfo.UrlPaths.includes(menuItem.href) ? 'nav-on' : 'nav-off';
 
-            navMenu += `<td class="${navClass}"><a class="${navClass}" href="${menuItem.href}" title="${menuItem.title}">${menuItem.text}</a></td>`;
+            responseInfo.NavMenu += `<td class="${navClass}"><a class="${navClass}" href="${menuItem.href}" title="${menuItem.title}">${menuItem.text}</a></td>`;
         });
-        navMenu += '</tr></table>';
+        responseInfo.NavMenu += '</tr></table>';
 
         if (foundMenu !== undefined && foundMenu.menu !== undefined)
             walkMenu(foundMenu.menu);
     };
 
-    let navMenu = '';
-
     walkMenu(rootMenu);
 
     //
-    // Info
+    // Routing
     //
-
-    let applicationServer: any;
-    
-    let title = '';
-    let info = '';
-
-    if (urlParts.length > 0) {
-
-        applicationServer = applicationServers[urlParts[0]];
-
-        //console.log(applicationServer);
-
-        if (applicationServer !== undefined)
-            info = applicationServer.Info;
-
-    }
-
-    //applicationServers[];
-
     const validExtentions = [ '', 'xml', 'json', 'html' ];
 
     const extentionContentTypes: { [key: string]: any } = {
@@ -356,249 +354,289 @@ const requestListener: http.RequestListener = async (
 
     concurrentRequests++;
 
-
-
     try {
 
-        let extention = '';
-        let data: any[] | undefined;
+        if (requestInfo.UrlParts.length === 0) {
+
+            responseInfo.Title = 'Spludlow Data Web';
+            responseInfo.Heading = responseInfo.Title;
+            responseInfo.Body = assets['root.html'];
+
+        } else {
+
+            const application = applicationServers[requestInfo.UrlParts[0]];
+
+            if (application === undefined)
+                throw new Error(`Application not found: ${requestInfo.UrlParts[0]}`);
+
+            responseInfo.Info = application.Info;
+
+            switch (requestInfo.UrlParts.length) {
+                
+                case 1:
+                    responseInfo.Title = `${application.Key.toUpperCase()} (${application.Version})`;
+                    responseInfo.Heading = responseInfo.Title;
+                    responseInfo.Body = assets[`${application.Key}.html`];
+                    break;
+
+                case 2:
+                    switch (requestInfo.UrlParts[0]) {
+                        case 'mame':
+                        case 'hbmame':
+                            switch (requestInfo.UrlParts[1]) {
+                                case 'machine':
+                                    const pageData = await mame.getMachines(requestInfo.Paramters.search, requestInfo.Paramters.offset, requestInfo.Paramters.limit, application.Key);
+
+                                    let viewCount = pageData.length;
+                                    let totalCount = viewCount === 0 ? 0 : pageData[0].filter((r: any) => r.metadata.colName === 'ao_total')[0].value;
+
+                                    let nav = '';
+                                    let prevOffset = requestInfo.Paramters.offset - requestInfo.Paramters.limit;
+                                    if (prevOffset >= 0)
+                                        nav += `<a href="${requestInfo.Url}?search=${requestInfo.Paramters.search}&offset=${prevOffset}">PREV</a> &bull; `;
+                                    else
+                                        nav += 'PREV &bull; ';
 
 
-        if (urlParts.length === 0)
-            data = [ {value: 'Spludlow Data Web'}, {value: assets['root.html'] } ];
-        
-        if (urlParts.length === 1 && urlParts[0] === 'mame')
-            data = [ {value: `MAME (${applicationServer.Version})`}, {value: assets['mame.html'] } ];
+                                    let nextOffset = requestInfo.Paramters.offset + requestInfo.Paramters.limit;
+                                    if (nextOffset < totalCount)
+                                        nav += `<a href="${requestInfo.Url}?search=${requestInfo.Paramters.search}&offset=${nextOffset}">NEXT</a> &bull; `;
+                                    else
+                                        nav += 'NEXT &bull; ';
 
-        if (urlParts.length === 1 && urlParts[0] === 'hbmame')
-            data = [ {value: `HBMAME (${applicationServer.Version})`}, {value: assets['hbmame.html'] } ];
+                                    nav += `view:${viewCount} total:${totalCount}`;
 
-        if (urlParts.length === 1 && urlParts[0] === 'fbneo')
-            data = [ {value: `FBNeo (${applicationServer.Version})`}, {value: assets['fbneo.html'] } ];
+                                    const columnDefs = {
+                                        'name': 'Name',
+                                        'description': 'Description',
+                                        'year': 'Year',
+                                        'manufacturer': 'Manufacturer',
+                                        'romof': 'Rom of',
+                                        'cloneof': 'Clone of',
+                                    };
 
-        if (urlParts.length === 1 && urlParts[0] === 'tosec')
-            data = [ {value: `TOSEC (${applicationServer.Version})`}, {value: assets['tosec.html'] } ];
+                                    let machineHtml: string = assets['mame-machine.html'].replace('@DATA@', tools.htmlTable(pageData, columnDefs, application.Key));
+                                    machineHtml = machineHtml.replace('@TOP@', nav);
+                                    machineHtml = machineHtml.replace('@BOTTOM@', nav);
 
-        // Mame Machines
-        if (urlParts.length === 2 && (urlParts[0] === 'mame' || urlParts[0] === 'hbmame') && urlParts[1] === 'machine') {
+                                    responseInfo.Title = `${application.Key.toUpperCase()} (${application.Version}) machine`;
+                                    responseInfo.Heading = responseInfo.Title;
+                                    responseInfo.Body = machineHtml;
+                                    break;
 
-            let lastTime = Date.now();
+                                case 'software':
+                                    const data = await mame.getSoftwareLists(application.Key);
 
-            const pageData = await mame.getMachines(paramters.search, paramters.offset, paramters.limit, urlParts[0]);
+                                    responseInfo.Title = data[0].value;
+                                    responseInfo.Heading = responseInfo.Title;
+                                    responseInfo.Body = data[1].value;
+                                    break;
+                            }
+                            break;
 
-            //console.log(`1: ${Date.now() - lastTime}`);
-            lastTime = Date.now();
+                        case 'fbneo':
+                            let datafile_key = requestInfo.UrlParts[1];
 
-            let viewCount = pageData.length;
-            let totalCount = viewCount === 0 ? 0 : pageData[0].filter((r: any) => r.metadata.colName === 'ao_total')[0].value;
+                            if (datafile_key.includes('.') === true)
+                                [ datafile_key, responseInfo.Extention ] = datafile_key.split('.');
 
+                            if (validExtentions.includes(responseInfo.Extention) === false)
+                                throw new Error('Bad extention');
 
-            let nav = '';
-            let prevOffset = paramters.offset - paramters.limit;
-            if (prevOffset >= 0)
-                nav += `<a href="${url}?search=${paramters.search}&offset=${prevOffset}">PREV</a> &bull; `;
-            else
-                nav += 'PREV &bull; ';
+                            if (validNameRegEx.test(datafile_key) !== true)
+                                throw new Error(`bad datafile_key`);
 
+                            if (fbneoDatafileKeys.includes(datafile_key) === false)
+                                throw new Error(`unkown datafile_key`);
 
-            let nextOffset = paramters.offset + paramters.limit;
-            if (nextOffset < totalCount)
-                nav += `<a href="${url}?search=${paramters.search}&offset=${nextOffset}">NEXT</a> &bull; `;
-            else
-                nav += 'NEXT &bull; ';
+                            const fbneo_data = await mame.getFBNeoDataFile(datafile_key, responseInfo.Extention);
 
-            nav += `view:${viewCount} total:${totalCount}`;
+                            responseInfo.Title = fbneo_data[0].value;
+                            responseInfo.Heading = responseInfo.Title;
+                            responseInfo.Body = fbneo_data[1].value;
+                            break;
 
-            const columnDefs = {
-                'name': 'Name',
-                'description': 'Description',
-                'year': 'Year',
-                'manufacturer': 'Manufacturer',
-                'romof': 'Rom of',
-                'cloneof': 'Clone of',
-            };
+                        case 'tosec':
+                            const tosec_category = requestInfo.UrlParts[1];
+                            if (['tosec', 'tosec-iso', 'tosec-pix'].includes(tosec_category) === false)
+                                throw new Error('Bad TOSEC category');
 
-            let machineHtml: string = assets['mame-machine.html'].replace('@DATA@', tools.htmlTable(pageData, columnDefs, urlParts[0]));
-            machineHtml = machineHtml.replace('@TOP@', nav);
-            machineHtml = machineHtml.replace('@BOTTOM@', nav);
+                            const tosec_data = await mame.getTosecDataFiles(tosec_category);
 
-            //console.log(`2: ${Date.now() - lastTime}`);
-            lastTime = Date.now();
+                            responseInfo.Title = tosec_data[0].value;
+                            responseInfo.Heading = responseInfo.Title;
+                            responseInfo.Body = tosec_data[1].value;
+                            break;
 
-            data = [ {value: `${applicationServer.Key} (${applicationServer.Version}) machines`}, {value: machineHtml } ];
+                    }
+                    break;
 
-            //console.log(`3: ${Date.now() - lastTime}`);
-            lastTime = Date.now();
+                case 3:
+                    switch (requestInfo.UrlParts[0]) {
+                        case 'mame':
+                        case 'hbmame':
+                            switch (requestInfo.UrlParts[1]) {
+                                case 'machine':
+                                    let machine_name = requestInfo.UrlParts[2];
+
+                                    if (machine_name.includes('.') === true)
+                                        [ machine_name, responseInfo.Extention ] = machine_name.split('.');
+
+                                    if (validExtentions.includes(responseInfo.Extention) === false)
+                                        throw new Error('Bad extention');
+
+                                    if (validNameRegEx.test(machine_name) !== true)
+                                        throw new Error(`bad machine name`);
+                            
+                                    const data = await mame.getMachine(machine_name, responseInfo.Extention, application.Key);
+
+                                    responseInfo.Title = data[0].value;
+                                    responseInfo.Heading = responseInfo.Title;
+                                    responseInfo.Body = data[1].value;
+                                    break;
+
+                                case 'software':
+                                    let softwarelist_name = requestInfo.UrlParts[2];
+
+                                    if (softwarelist_name.includes('.') === true)
+                                        [ softwarelist_name, responseInfo.Extention ] = softwarelist_name.split('.');
+
+                                    if (validExtentions.includes(responseInfo.Extention) === false)
+                                        throw new Error('Bad extention');
+                                    
+                                    if (validNameRegEx.test(softwarelist_name) !== true)
+                                        throw new Error(`bad softwarelist_name`);
+
+                                    const software_data = await mame.getSoftwareList(softwarelist_name, responseInfo.Extention, application.Key);
+
+                                    responseInfo.Title = software_data[0].value;
+                                    responseInfo.Heading = responseInfo.Title;
+                                    responseInfo.Body = software_data[1].value;
+                                    break;
+                            }
+                            break;
+
+                        case 'fbneo':
+                            const datafile_key = requestInfo.UrlParts[1];
+                            let game_name = requestInfo.UrlParts[2];
+
+                            if (game_name.includes('.') === true)
+                                [ game_name, responseInfo.Extention ] = game_name.split('.');
+
+                            if (validExtentions.includes(responseInfo.Extention) === false)
+                                throw new Error('Bad extention');
+
+                            if (validNameRegEx.test(datafile_key) !== true)
+                                throw new Error(`bad datafile_key`);
+
+                            if (fbneoDatafileKeys.includes(datafile_key) === false)
+                                throw new Error(`unkown datafile_key`);
+                            
+                            if (validNameRegEx.test(game_name) !== true)
+                                throw new Error(`bad game_name`);
+
+                            const fbneo_data = await mame.getFBNeoGame(datafile_key, game_name, responseInfo.Extention);
+
+                            responseInfo.Title = fbneo_data[0].value;
+                            responseInfo.Heading = responseInfo.Title;
+                            responseInfo.Body = fbneo_data[1].value;
+                            break;
+
+                        case 'tosec':
+                            const tosec_category = requestInfo.UrlParts[1];
+                            if (['tosec', 'tosec-iso', 'tosec-pix'].includes(tosec_category) === false)
+                                throw new Error('Bad TOSEC category');
+
+                            let name = decodeURIComponent(requestInfo.UrlParts[2]);
+
+                            validExtentions.forEach(validExtention => {
+                                if (validExtention != '' && name.endsWith('.' + validExtention) == true) {
+                                    responseInfo.Extention = validExtention;
+                                    name = name.slice(0, -(responseInfo.Extention.length + 1));
+                                }
+                            });
+
+                            const tosec_data = await mame.getTosecDataFile(tosec_category, name, responseInfo.Extention);
+
+                            responseInfo.Title = tosec_data[0].value;
+                            responseInfo.Heading = responseInfo.Title;
+                            responseInfo.Body = tosec_data[1].value;
+                            break;
+                    }
+                    break;
+
+                case 4:
+                    switch (requestInfo.UrlParts[0]) {
+                        case 'mame':
+                        case 'hbmame':
+                            const softwarelist_name = requestInfo.UrlParts[2];
+                            if (validNameRegEx.test(softwarelist_name) !== true)
+                                throw new Error(`bad softwarelist_name`);
+
+                            let software_name = requestInfo.UrlParts[3];
+
+                            if (software_name.includes('.') === true)
+                                [ software_name, responseInfo.Extention ] = software_name.split('.');
+
+                            if (validExtentions.includes(responseInfo.Extention) === false)
+                                throw new Error('Bad extention');
+
+                            if (validNameRegEx.test(software_name) !== true)
+                                throw new Error(`bad software_name`);
+
+                            const data = await mame.getSoftware(softwarelist_name, software_name, responseInfo.Extention, application.Key);
+
+                            responseInfo.Title = data[0].value;
+                            responseInfo.Heading = responseInfo.Title;
+                            responseInfo.Body = data[1].value;
+                            break;
+
+                        case 'tosec':
+                            const tosec_category = requestInfo.UrlParts[1];
+                            if (['tosec', 'tosec-iso', 'tosec-pix'].includes(tosec_category) === false)
+                                throw new Error('Bad TOSEC category');
+                            const datafile_name = decodeURIComponent(requestInfo.UrlParts[2]);
+                            let game_name = decodeURIComponent(requestInfo.UrlParts[3]);
+
+                            validExtentions.forEach(validExtention => {
+                                if (validExtention != '' && game_name.endsWith('.' + validExtention) == true) {
+                                    responseInfo.Extention = validExtention;
+                                    game_name = game_name.slice(0, -(responseInfo.Extention.length + 1));
+                                }
+                            });
+
+                            const tosecData = await mame.getTosecGame(tosec_category, datafile_name, game_name, responseInfo.Extention);
+
+                            responseInfo.Title = tosecData[0].value;
+                            responseInfo.Heading = responseInfo.Title;
+                            responseInfo.Body = tosecData[1].value;
+                            break;
+                    }
+                    break;
+            }
+
         }
 
+        if (responseInfo.Body === '')
+            throw new Error('Route');
 
-        // MAME Machine
-        if (urlParts.length === 3 && (urlParts[0] === 'mame' || urlParts[0] === 'hbmame') && urlParts[1] === 'machine') {
-    
-            let machine_name = urlParts[2];
+        res.writeHead(200, { 'Content-Type': extentionContentTypes[responseInfo.Extention] });
 
-            if (machine_name.includes('.') === true)
-                [ machine_name, extention ] = machine_name.split('.');
-
-            if (validExtentions.includes(extention) === false)
-                throw new Error('Bad extention');
-
-            if (validNameRegEx.test(machine_name) !== true)
-                throw new Error(`bad machine name`);
-    
-            data = await mame.getMachine(machine_name, extention, urlParts[0]);
-        }
-
-        //  MAME Software Lists
-        if (urlParts.length === 2 && (urlParts[0] === 'mame' || urlParts[0] === 'hbmame') && urlParts[1] === 'software') {
-
-            data = await mame.getSoftwareLists(urlParts[0]);
-        }
-
-        // MAME Software List
-        if (urlParts.length === 3 && (urlParts[0] === 'mame' || urlParts[0] === 'hbmame') && urlParts[1] === 'software') {
-        
-            let softwarelist_name = urlParts[2];
-
-            if (softwarelist_name.includes('.') === true)
-                [ softwarelist_name, extention ] = softwarelist_name.split('.');
-
-            if (validExtentions.includes(extention) === false)
-                throw new Error('Bad extention');
-            
-            if (validNameRegEx.test(softwarelist_name) !== true)
-                throw new Error(`bad softwarelist_name`);
-
-            data = await mame.getSoftwareList(softwarelist_name, extention, urlParts[0]);
-        }
-
-        // MAME Software
-        if (urlParts.length === 4 && (urlParts[0] === 'mame' || urlParts[0] === 'hbmame') && urlParts[1] === 'software') {
-        
-            const softwarelist_name = urlParts[2];
-            if (validNameRegEx.test(softwarelist_name) !== true)
-                throw new Error(`bad softwarelist_name`);
-
-            let software_name = urlParts[3];
-
-            if (software_name.includes('.') === true)
-                [ software_name, extention ] = software_name.split('.');
-
-            if (validExtentions.includes(extention) === false)
-                throw new Error('Bad extention');
-
-            if (validNameRegEx.test(software_name) !== true)
-                throw new Error(`bad software_name`);
-
-            data = await mame.getSoftware(softwarelist_name, software_name, extention, urlParts[0]);
-        }
-
-        //
-        // FBNeo
-        //
-
-
-
-        //  FBNeo Datafile
-        if (urlParts.length === 2 && urlParts[0] === 'fbneo') {
-            let datafile_key = urlParts[1];
-
-            if (datafile_key.includes('.') === true)
-                [ datafile_key, extention ] = datafile_key.split('.');
-
-            if (validExtentions.includes(extention) === false)
-                throw new Error('Bad extention');
-
-            if (validNameRegEx.test(datafile_key) !== true)
-                throw new Error(`bad datafile_key`);
-
-            if (fbneoDatafileKeys.includes(datafile_key) === false)
-                throw new Error(`unkown datafile_key`);
-
-            data = await mame.getFBNeoDataFile(datafile_key, extention);
-        }
-
-        //  FBNeo Game
-        if (urlParts.length === 3 && urlParts[0] === 'fbneo') {
-            const datafile_key = urlParts[1];
-            let game_name = urlParts[2];
-
-            if (game_name.includes('.') === true)
-                [ game_name, extention ] = game_name.split('.');
-
-            if (validExtentions.includes(extention) === false)
-                throw new Error('Bad extention');
-
-            if (validNameRegEx.test(datafile_key) !== true)
-                throw new Error(`bad datafile_key`);
-
-            if (fbneoDatafileKeys.includes(datafile_key) === false)
-                throw new Error(`unkown datafile_key`);
-            
-            if (validNameRegEx.test(game_name) !== true)
-                throw new Error(`bad game_name`);
-
-            data = await mame.getFBNeoGame(datafile_key, game_name, extention);
-        }
-
-        const tosecCategories = ['tosec', 'tosec-iso', 'tosec-pix'];
-
-        // TOSEC Datafiles
-        if (urlParts.length === 2 && urlParts[0] === 'tosec' && tosecCategories.includes(urlParts[1]) === true) {
-            
-            data = await mame.getTosecDataFiles(urlParts[1]);
-        }
-
-        // TOSEC DataFile (list of games)
-        if (urlParts.length === 3 && urlParts[0] === 'tosec' && tosecCategories.includes(urlParts[1]) === true) {
-            let name = decodeURIComponent(urlParts[2]);
-
-            validExtentions.forEach(validExtention => {
-                if (validExtention != '' && name.endsWith('.' + validExtention) == true) {
-                    extention = validExtention;
-                    name = name.slice(0, -(extention.length + 1));
-                }
-            });
-
-            data = await mame.getTosecDataFile(urlParts[1], name, extention);
-        }
-
-        // TOSEC Game (rom details)
-        if (urlParts.length === 4 && urlParts[0] === 'tosec' && tosecCategories.includes(urlParts[1]) === true) {
-            const datafile_name = decodeURIComponent(urlParts[2]);
-            let game_name = decodeURIComponent(urlParts[3]);
-
-            validExtentions.forEach(validExtention => {
-                if (validExtention != '' && game_name.endsWith('.' + validExtention) == true) {
-                    extention = validExtention;
-                    game_name = game_name.slice(0, -(extention.length + 1));
-                }
-            });
-
-            data = await mame.getTosecGame(urlParts[1], datafile_name, game_name, extention);
-        }
-
-        if (data === undefined) {
-            throw new Error('Route not found');
-        }
-
-        res.writeHead(200, { 'Content-Type': extentionContentTypes[extention] });
-
-        if (extention === '') {
+        if (responseInfo.Extention === '') {
 
             let html = assets['master.html'];
 
-            html = html.replace('@HEAD@', `<title>${data[0].value}</title>`);
+            html = html.replace('@HEAD@', `<title>${responseInfo.Title}</title>`);
 
-            html = html.replace('@NAV@', navMenu);
-            html = html.replace('@INFO@', info);
+            html = html.replace('@NAV@', responseInfo.NavMenu);
+            html = html.replace('@INFO@', responseInfo.Info);
 
-            html = html.replace('@H1@', data[0].value);
-            html = html.replace('@BODY@', data[1].value);
+            html = html.replace('@H1@', responseInfo.Heading);
+            html = html.replace('@BODY@', responseInfo.Body);
 
             res.write(html);
         } else {
-            res.write(data[1].value);
+            res.write(responseInfo.Body);
         }
     }
     catch (error) {
