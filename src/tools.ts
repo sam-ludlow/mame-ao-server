@@ -2,6 +2,8 @@ import fs from 'fs';
 import Tedious from 'tedious';
 
 var Connection = require('tedious').Connection;
+var Request = require('tedious').Request;
+var TYPES = require('tedious').TYPES;
 
 export const directoryFiles = async (directory: string): Promise<string[]> => {
     return fs.readdirSync(directory);
@@ -76,33 +78,63 @@ export const sqlConfig = (server: string, database: string) => {
     return sqlConfig;
 }
 
-export const sqlConnection = (dataset: string, subSet: string) => {
+export const getDataPayload = async (databaseName: string, tableName: string, keys: any, extention: string) => {
+    if (extention === '')
+        extention = 'html';
 
-    let config;
-    switch (`${dataset}.${subSet}`) {
-        case 'mame.machine':
-            config = sqlConfig('SPLCAL-MAIN', 'ao-mame-machine');
-            break;
-        case 'mame.software':
-            config = sqlConfig('SPLCAL-MAIN', 'ao-mame-software');
-            break;
-        case 'hbmame.machine':
-            config = sqlConfig('SPLCAL-MAIN', 'ao-hbmame-machine');
-            break;
-        case 'hbmame.software':
-            config = sqlConfig('SPLCAL-MAIN', 'ao-hbmame-software');
-            break;
-        case 'fbneo.dataset':
-            config = sqlConfig('SPLCAL-MAIN', 'ao-fbneo');
-            break;
-        case 'tosec.dataset':
-            config = sqlConfig('SPLCAL-MAIN', 'ao-tosec');
-            break;
-        default:
-            throw new Error(`Unknown dataset.subset ${dataset}`);
+    const config = sqlConfig('my-mssql-server', databaseName);
+
+    const connection = new Connection(config);
+    await sqlOpen(connection);
+
+    let data;
+    try {
+        const wheres: string[] = Object.keys(keys).map(keyName => `[${keyName}] = @${keyName}`);
+        const commandText = `SELECT [title], [${extention}] FROM [${tableName}] WHERE (${wheres.join(' AND ')})`;
+        const request: Tedious.Request = new Request(commandText);
+
+        Object.keys(keys).forEach((keyName => {
+            request.addParameter(keyName, TYPES.VarChar, keys[keyName]);
+            console.log(`${keyName} / ${keys[keyName]}`);
+        }));
+
+        const response = await sqlRequest(connection, request);
+
+        if (response.length === 0)
+            throw new Error('Data not found');
+
+        data = response[0];
     }
-    
-    return new Connection(config);
+    finally {
+        await sqlClose(connection);
+    }
+
+    return data;
+}
+
+export const dataQuery = async (databaseName: string, commandText: string) => {
+
+    const config = sqlConfig('my-mssql-server', databaseName);
+
+    const connection = new Connection(config);
+    await sqlOpen(connection);
+
+    let data;
+    try {
+        const request: Tedious.Request = new Request(commandText);
+
+        const response = await sqlRequest(connection, request);
+
+        if (response.length === 0)
+            throw new Error('Data not found');
+
+        data = response[0];
+    }
+    finally {
+        await sqlClose(connection);
+    }
+
+    return data;
 }
 
 export const htmlTable = (data: any[], columnDefs: any, dataset: string): string => {

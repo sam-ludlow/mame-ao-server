@@ -1,6 +1,5 @@
 import http from 'http';
 
-import * as mame from './mame';
 import * as tools from './tools';
 
 import Tedious from 'tedious';
@@ -254,10 +253,8 @@ export class ResponeInfo {
     public Extention: string = '';
 }
 
-const requestListener: http.RequestListener = async (
-    req: http.IncomingMessage,
-    res: http.ServerResponse) =>
-{
+const requestListener: http.RequestListener = async (req: http.IncomingMessage, res: http.ServerResponse) => {
+
     const requestInfo = new RequestInfo(req);
     const responseInfo = new ResponeInfo();
 
@@ -357,7 +354,7 @@ const requestListener: http.RequestListener = async (
     try {
 
         if (requestInfo.UrlParts.length === 0) {
-
+            // Root
             responseInfo.Title = 'Spludlow Data Web';
             responseInfo.Heading = responseInfo.Title;
             responseInfo.Body = assets['root.html'];
@@ -374,6 +371,7 @@ const requestListener: http.RequestListener = async (
             switch (requestInfo.UrlParts.length) {
                 
                 case 1:
+                    // Core
                     responseInfo.Title = `${application.Key.toUpperCase()} (${application.Version})`;
                     responseInfo.Heading = responseInfo.Title;
                     responseInfo.Body = assets[`${application.Key}.html`];
@@ -385,7 +383,8 @@ const requestListener: http.RequestListener = async (
                         case 'hbmame':
                             switch (requestInfo.UrlParts[1]) {
                                 case 'machine':
-                                    const pageData = await mame.getMachines(requestInfo.Paramters.search, requestInfo.Paramters.offset, requestInfo.Paramters.limit, application.Key);
+                                    // Machine Search
+                                    const pageData = await getMachines(requestInfo.Paramters.search, requestInfo.Paramters.offset, requestInfo.Paramters.limit, application.Key);
 
                                     let viewCount = pageData.length;
                                     let totalCount = viewCount === 0 ? 0 : pageData[0].filter((r: any) => r.metadata.colName === 'ao_total')[0].value;
@@ -425,7 +424,8 @@ const requestListener: http.RequestListener = async (
                                     break;
 
                                 case 'software':
-                                    const data = await mame.getSoftwareLists(application.Key);
+                                    // Software List
+                                    const data = await tools.dataQuery(`ao-${application.Key}-software`, 'SELECT [title], [html] FROM [softwarelists_payload]');
 
                                     responseInfo.Title = data[0].value;
                                     responseInfo.Heading = responseInfo.Title;
@@ -435,6 +435,7 @@ const requestListener: http.RequestListener = async (
                             break;
 
                         case 'fbneo':
+                            // Datafile
                             let datafile_key = requestInfo.UrlParts[1];
 
                             if (datafile_key.includes('.') === true)
@@ -449,7 +450,7 @@ const requestListener: http.RequestListener = async (
                             if (fbneoDatafileKeys.includes(datafile_key) === false)
                                 throw new Error(`unkown datafile_key`);
 
-                            const fbneo_data = await mame.getFBNeoDataFile(datafile_key, responseInfo.Extention);
+                            const fbneo_data = await tools.getDataPayload('ao-fbneo', 'datafile_payload', { key: datafile_key }, responseInfo.Extention);
 
                             responseInfo.Title = fbneo_data[0].value;
                             responseInfo.Heading = responseInfo.Title;
@@ -457,11 +458,12 @@ const requestListener: http.RequestListener = async (
                             break;
 
                         case 'tosec':
+                            // Category
                             const tosec_category = requestInfo.UrlParts[1];
                             if (['tosec', 'tosec-iso', 'tosec-pix'].includes(tosec_category) === false)
                                 throw new Error('Bad TOSEC category');
 
-                            const tosec_data = await mame.getTosecDataFiles(tosec_category);
+                            const tosec_data = await tools.getDataPayload('ao-tosec', 'category_payload', { category: tosec_category }, responseInfo.Extention);
 
                             responseInfo.Title = tosec_data[0].value;
                             responseInfo.Heading = responseInfo.Title;
@@ -477,6 +479,7 @@ const requestListener: http.RequestListener = async (
                         case 'hbmame':
                             switch (requestInfo.UrlParts[1]) {
                                 case 'machine':
+                                    // Machine
                                     let machine_name = requestInfo.UrlParts[2];
 
                                     if (machine_name.includes('.') === true)
@@ -488,7 +491,7 @@ const requestListener: http.RequestListener = async (
                                     if (validNameRegEx.test(machine_name) !== true)
                                         throw new Error(`bad machine name`);
                             
-                                    const data = await mame.getMachine(machine_name, responseInfo.Extention, application.Key);
+                                    const data = await tools.getDataPayload(`ao-${application.Key}-machine`, 'machine_payload', { machine_name }, responseInfo.Extention);
 
                                     responseInfo.Title = data[0].value;
                                     responseInfo.Heading = responseInfo.Title;
@@ -496,6 +499,7 @@ const requestListener: http.RequestListener = async (
                                     break;
 
                                 case 'software':
+                                    // Software List
                                     let softwarelist_name = requestInfo.UrlParts[2];
 
                                     if (softwarelist_name.includes('.') === true)
@@ -507,7 +511,7 @@ const requestListener: http.RequestListener = async (
                                     if (validNameRegEx.test(softwarelist_name) !== true)
                                         throw new Error(`bad softwarelist_name`);
 
-                                    const software_data = await mame.getSoftwareList(softwarelist_name, responseInfo.Extention, application.Key);
+                                    const software_data = await tools.getDataPayload(`ao-${application.Key}-software`, 'softwarelist_payload', { softwarelist_name }, responseInfo.Extention);
 
                                     responseInfo.Title = software_data[0].value;
                                     responseInfo.Heading = responseInfo.Title;
@@ -517,6 +521,7 @@ const requestListener: http.RequestListener = async (
                             break;
 
                         case 'fbneo':
+                            // Game
                             const datafile_key = requestInfo.UrlParts[1];
                             let game_name = requestInfo.UrlParts[2];
 
@@ -535,7 +540,7 @@ const requestListener: http.RequestListener = async (
                             if (validNameRegEx.test(game_name) !== true)
                                 throw new Error(`bad game_name`);
 
-                            const fbneo_data = await mame.getFBNeoGame(datafile_key, game_name, responseInfo.Extention);
+                            const fbneo_data = await tools.getDataPayload('ao-fbneo', 'game_payload', { datafile_key, game_name }, responseInfo.Extention);
 
                             responseInfo.Title = fbneo_data[0].value;
                             responseInfo.Heading = responseInfo.Title;
@@ -543,6 +548,7 @@ const requestListener: http.RequestListener = async (
                             break;
 
                         case 'tosec':
+                            // Datafile
                             const tosec_category = requestInfo.UrlParts[1];
                             if (['tosec', 'tosec-iso', 'tosec-pix'].includes(tosec_category) === false)
                                 throw new Error('Bad TOSEC category');
@@ -556,7 +562,7 @@ const requestListener: http.RequestListener = async (
                                 }
                             });
 
-                            const tosec_data = await mame.getTosecDataFile(tosec_category, name, responseInfo.Extention);
+                            const tosec_data = await tools.getDataPayload('ao-tosec', 'datafile_payload', { category: tosec_category }, responseInfo.Extention);
 
                             responseInfo.Title = tosec_data[0].value;
                             responseInfo.Heading = responseInfo.Title;
@@ -569,6 +575,7 @@ const requestListener: http.RequestListener = async (
                     switch (requestInfo.UrlParts[0]) {
                         case 'mame':
                         case 'hbmame':
+                            // Software
                             const softwarelist_name = requestInfo.UrlParts[2];
                             if (validNameRegEx.test(softwarelist_name) !== true)
                                 throw new Error(`bad softwarelist_name`);
@@ -584,7 +591,7 @@ const requestListener: http.RequestListener = async (
                             if (validNameRegEx.test(software_name) !== true)
                                 throw new Error(`bad software_name`);
 
-                            const data = await mame.getSoftware(softwarelist_name, software_name, responseInfo.Extention, application.Key);
+                            const data = await tools.getDataPayload(`ao-${application.Key}-software`, 'software_payload', { softwarelist_name, software_name }, responseInfo.Extention);
 
                             responseInfo.Title = data[0].value;
                             responseInfo.Heading = responseInfo.Title;
@@ -592,6 +599,7 @@ const requestListener: http.RequestListener = async (
                             break;
 
                         case 'tosec':
+                            // Game
                             const tosec_category = requestInfo.UrlParts[1];
                             if (['tosec', 'tosec-iso', 'tosec-pix'].includes(tosec_category) === false)
                                 throw new Error('Bad TOSEC category');
@@ -605,7 +613,7 @@ const requestListener: http.RequestListener = async (
                                 }
                             });
 
-                            const tosecData = await mame.getTosecGame(tosec_category, datafile_name, game_name, responseInfo.Extention);
+                            const tosecData = await tools.getDataPayload('ao-tosec', 'game_payload', { category: tosec_category, datafile_name, game_name }, responseInfo.Extention);
 
                             responseInfo.Title = tosecData[0].value;
                             responseInfo.Heading = responseInfo.Title;
@@ -653,6 +661,40 @@ const requestListener: http.RequestListener = async (
         res.end();
     }
 
+}
+
+export const getMachines = async (search: string, offset: number, limit: number, core: string) => {
+
+    let commandText = 'SELECT COUNT(1) OVER() [ao_total], machine.name, machine.description, machine.year, machine.manufacturer, machine.romof, machine.cloneof FROM [machine] @search ORDER BY [machine].[name] OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY';
+    commandText = commandText.replace('@offset', offset.toString());
+    commandText = commandText.replace('@limit', limit.toString());
+
+    const searchParts = search.split(' ').filter(p => p != '');
+
+    if (searchParts.length > 0)
+        commandText = commandText.replace('@search', 'WHERE ([name] LIKE @search OR [description] LIKE @search)');
+    else
+        commandText = commandText.replace('@search', '');
+
+    const request: Tedious.Request = new Request(commandText);
+
+    if (searchParts.length > 0)
+        request.addParameter('search', TYPES.VarChar, `%${searchParts.join('%')}%`);
+
+    let data;
+
+    const config = tools.sqlConfig('my-mssql-server', `ao-${core}-machine`);
+    const connection = new Connection(config);
+    await tools.sqlOpen(connection);
+
+    try {
+        data = await tools.sqlRequest(connection, request);
+    }
+    finally {
+        await tools.sqlClose(connection);
+    }
+
+    return data;
 }
 
 const run = async () => {
