@@ -10,112 +10,74 @@ var TYPES = require('tedious').TYPES;
 
 var validNameRegEx = /^[a-zA-Z0-9-_]+$/;
 
-const assets: any = {};
-
-const loadAssets = async () => {
-
-    const directory = './assets';
-
-    const filenames: string[] = await tools.directoryFiles(directory);
-
-     await Promise.all(filenames.map(async filename => {
-
-        if (filename.endsWith('.ico') === true)
-            assets[filename] = await tools.fileReadBuffer(`${directory}/${filename}`);
-        else
-            assets[filename] = await tools.fileRead(`${directory}/${filename}`);
-    }));
-}
-
-let concurrentRequests = 0;
-
-
-
-export interface ApplicationServer {
+export interface Application {
     Key: string;
+    Version: string;
     Title: string;
     Info: string;
-    Version: string;
-    SubSets: any;
+
+    SubKeys: string[];
+    DatabaseConfigs: any[];
 }
 
 export interface ApplicationServerConstructable {
-    new(key: string, subKeys: string[]): ApplicationServer;
+    new(key: string): Application;
 }
 
-export class MameApplicationServer implements ApplicationServer {
+export class ApplicationCore implements Application {
     
     public Key: string;
+    public Version: string;
     public Title: string;
     public Info: string;
-    public Version: string;
 
-    public SubSets: any = {};
+    public SubKeys: string[];
+    public DatabaseConfigs: any[];
 
-    constructor(key: string, subKeys: string[]) {
+    constructor(key: string) {
 
         this.Key = key;
-
+        this.Version = '';
         this.Title = '';
         this.Info = '';
-        this.Version = '';
 
-        subKeys.forEach((subKey) => {
-
-            let databaseName = `ao-${key}`;
-
-            if (key.endsWith('mame') === true)
-                databaseName += `-${subKey}`;
-
-            this.SubSets[subKey] = {
-                Key: subKey,
-                Title: '',
-                Info: '',
-                SqlConfig: tools.sqlConfig('SPLCAL-MAIN', databaseName),
-            };
-
-        });
+        this.SubKeys = [];
+        this.DatabaseConfigs = [];
     }
 
     public initialize = async (): Promise<any> => {
 
-        await Promise.all(Object.keys(this.SubSets).map(async (subKey) => {
+        const databaseServer = 'my-mssql-server';
 
-            const subSet = this.SubSets[subKey];
+        switch (this.Key) {
+            case 'mame':
+            case 'hbmame':
+                this.SubKeys = ['machine', 'software'];
+                this.DatabaseConfigs = [ tools.sqlConfig(databaseServer, `ao-${this.Key}-machine`), tools.sqlConfig(databaseServer, `ao-${this.Key}-software`)];
+                break;
 
-            const connection: Tedious.Connection = new Connection(subSet.SqlConfig);
+            case 'fbneo':   //  TODO: Load from DB - build menu
+                this.SubKeys = ['arcade', 'channelf', 'coleco', 'fds', 'gamegear', 'megadrive', 'msx', 'neogeo', 'nes', 'ngp', 'pce', 'sg1000', 'sgx', 'sms', 'snes', 'spectrum', 'tg16', ];
+                this.DatabaseConfigs = [ tools.sqlConfig(databaseServer, `ao-${this.Key}`)];
+                break;
 
-            await tools.sqlOpen(connection);
-        
-            let data: any[] = [];
-            try {
-        
-                const request: Tedious.Request = new Request('SELECT * FROM [_metadata]');
-        
-                const response = await tools.sqlRequest(connection, request);
-        
-                if (response.length === 0)
-                    throw new Error('_metadata not found');
+            case 'tosec':
+                this.SubKeys = ['tosec', 'tosec-iso', 'tosec-pix'];
+                this.DatabaseConfigs = [ tools.sqlConfig(databaseServer, `ao-${this.Key}`)];
+                break;
 
-                console.log(response[0].filter((item: any) => item.metadata.colName === 'info'));
+            default:
+                throw new Error(`Unknown core key: ${this.Key}`);
+        }
 
+        const metadata = await tools.databaseQuery(this.DatabaseConfigs[0], 'SELECT [version], [info] FROM [_metadata]');
+        if (metadata.length === 0)
+            throw new Error('_metadata not found');
 
-                this.Info = response[0].filter((item: any) => item.metadata.colName === 'info')[0].value;
-                this.Version = response[0].filter((item: any) => item.metadata.colName === 'version')[0].value;
-            }
-            finally {
-                await tools.sqlClose(connection);
-            }
-
-        }));
+        this.Version = metadata[0][0].value;
+        this.Info = metadata[0][1].value;
     }
-
-
 }
-
-const applicationServers: any = {};
-
-const fbneoDatafileKeys = ['arcade', 'channelf', 'coleco', 'fds', 'gamegear', 'megadrive', 'msx', 'neogeo', 'nes', 'ngp', 'pce', 'sg1000', 'sgx', 'sms', 'snes', 'spectrum', 'tg16', ];
 
 const rootMenu: any[] =
 [
@@ -253,6 +215,61 @@ export class ResponeInfo {
     public Extention: string = '';
 }
 
+const coreKeys = ['mame', 'hbmame', 'fbneo', 'tosec'];
+
+const applicationServers: any = {};
+const assets: any = {};
+let concurrentRequests = 0;
+
+const run = async () => {
+
+    process.stdin.on('data', (chunk: Buffer) => {
+		const command: string = chunk.toString().trim();
+		console.log(`COMMAND: ${command}`);
+
+		if (command === 'stop')
+			process.exit(0);
+	});
+
+    await loadAssets();
+
+    const server: http.Server = http.createServer(requestListener);
+    server.listen(32103);
+
+    await Promise.all(coreKeys.map(async (coreKey) => {
+
+        delete applicationServers[coreKey];
+
+        try {
+
+            const application = new ApplicationCore(coreKey);
+            await application.initialize();
+
+            applicationServers[coreKey] = application;
+
+        }
+        catch (error) {
+            console.log(`!!! Error starting Application: ${coreKey}`);
+            console.log(error);
+        }
+    }));
+}
+
+const loadAssets = async () => {
+
+    const directory = './assets';
+
+    const filenames: string[] = await tools.directoryFiles(directory);
+
+     await Promise.all(filenames.map(async filename => {
+
+        if (filename.endsWith('.ico') === true)
+            assets[filename] = await tools.fileReadBuffer(`${directory}/${filename}`);
+        else
+            assets[filename] = await tools.fileRead(`${directory}/${filename}`);
+    }));
+}
+
 const requestListener: http.RequestListener = async (req: http.IncomingMessage, res: http.ServerResponse) => {
 
     const requestInfo = new RequestInfo(req);
@@ -363,8 +380,17 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
 
             const application = applicationServers[requestInfo.UrlParts[0]];
 
-            if (application === undefined)
-                throw new Error(`Application not found: ${requestInfo.UrlParts[0]}`);
+            if (application === undefined) {
+                if (coreKeys.includes(requestInfo.UrlParts[0]) === true)
+                    throw new Error(`Core not available: ${requestInfo.UrlParts[0]}`);
+                else
+                    throw new Error(`Core not found: ${requestInfo.UrlParts[0]}`);
+            }
+                
+            if (requestInfo.UrlParts.length > 1) {
+                if (application.SubKeys.includes(requestInfo.UrlParts[1]) == false)
+                    throw new Error(`The core "${application.Key}" does not have a sub set "${requestInfo.UrlParts[1]}"`);
+            }
 
             responseInfo.Info = application.Info;
 
@@ -384,7 +410,7 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
                             switch (requestInfo.UrlParts[1]) {
                                 case 'machine':
                                     // Machine Search
-                                    const pageData = await getMachines(requestInfo.Paramters.search, requestInfo.Paramters.offset, requestInfo.Paramters.limit, application.Key);
+                                    const pageData = await getMachines(application.DatabaseConfigs[0], requestInfo.Paramters.search, requestInfo.Paramters.offset, requestInfo.Paramters.limit);
 
                                     let viewCount = pageData.length;
                                     let totalCount = viewCount === 0 ? 0 : pageData[0].filter((r: any) => r.metadata.colName === 'ao_total')[0].value;
@@ -425,11 +451,11 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
 
                                 case 'software':
                                     // Software List
-                                    const data = await tools.dataQuery(`ao-${application.Key}-software`, 'SELECT [title], [html] FROM [softwarelists_payload]');
+                                    const data = await tools.databaseQuery(application.DatabaseConfigs[1], 'SELECT [title], [html] FROM [softwarelists_payload]');
 
-                                    responseInfo.Title = data[0].value;
+                                    responseInfo.Title = data[0][0].value;
                                     responseInfo.Heading = responseInfo.Title;
-                                    responseInfo.Body = data[1].value;
+                                    responseInfo.Body = data[0][1].value;
                                     break;
                             }
                             break;
@@ -444,13 +470,7 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
                             if (validExtentions.includes(responseInfo.Extention) === false)
                                 throw new Error('Bad extention');
 
-                            if (validNameRegEx.test(datafile_key) !== true)
-                                throw new Error(`bad datafile_key`);
-
-                            if (fbneoDatafileKeys.includes(datafile_key) === false)
-                                throw new Error(`unkown datafile_key`);
-
-                            const fbneo_data = await tools.getDataPayload('ao-fbneo', 'datafile_payload', { key: datafile_key }, responseInfo.Extention);
+                            const fbneo_data = await tools.databasePayload(application.DatabaseConfigs[0], 'datafile_payload', { key: datafile_key }, responseInfo.Extention);
 
                             responseInfo.Title = fbneo_data[0].value;
                             responseInfo.Heading = responseInfo.Title;
@@ -460,10 +480,8 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
                         case 'tosec':
                             // Category
                             const tosec_category = requestInfo.UrlParts[1];
-                            if (['tosec', 'tosec-iso', 'tosec-pix'].includes(tosec_category) === false)
-                                throw new Error('Bad TOSEC category');
 
-                            const tosec_data = await tools.getDataPayload('ao-tosec', 'category_payload', { category: tosec_category }, responseInfo.Extention);
+                            const tosec_data = await tools.databasePayload(application.DatabaseConfigs[0], 'category_payload', { category: tosec_category }, responseInfo.Extention);
 
                             responseInfo.Title = tosec_data[0].value;
                             responseInfo.Heading = responseInfo.Title;
@@ -491,7 +509,7 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
                                     if (validNameRegEx.test(machine_name) !== true)
                                         throw new Error(`bad machine name`);
                             
-                                    const data = await tools.getDataPayload(`ao-${application.Key}-machine`, 'machine_payload', { machine_name }, responseInfo.Extention);
+                                    const data = await tools.databasePayload(application.DatabaseConfigs[0], 'machine_payload', { machine_name }, responseInfo.Extention);
 
                                     responseInfo.Title = data[0].value;
                                     responseInfo.Heading = responseInfo.Title;
@@ -511,7 +529,7 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
                                     if (validNameRegEx.test(softwarelist_name) !== true)
                                         throw new Error(`bad softwarelist_name`);
 
-                                    const software_data = await tools.getDataPayload(`ao-${application.Key}-software`, 'softwarelist_payload', { softwarelist_name }, responseInfo.Extention);
+                                    const software_data = await tools.databasePayload(application.DatabaseConfigs[1], 'softwarelist_payload', { softwarelist_name }, responseInfo.Extention);
 
                                     responseInfo.Title = software_data[0].value;
                                     responseInfo.Heading = responseInfo.Title;
@@ -533,14 +551,11 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
 
                             if (validNameRegEx.test(datafile_key) !== true)
                                 throw new Error(`bad datafile_key`);
-
-                            if (fbneoDatafileKeys.includes(datafile_key) === false)
-                                throw new Error(`unkown datafile_key`);
-                            
+                        
                             if (validNameRegEx.test(game_name) !== true)
                                 throw new Error(`bad game_name`);
 
-                            const fbneo_data = await tools.getDataPayload('ao-fbneo', 'game_payload', { datafile_key, game_name }, responseInfo.Extention);
+                            const fbneo_data = await tools.databasePayload(application.DatabaseConfigs[0], 'game_payload', { datafile_key, game_name }, responseInfo.Extention);
 
                             responseInfo.Title = fbneo_data[0].value;
                             responseInfo.Heading = responseInfo.Title;
@@ -550,8 +565,6 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
                         case 'tosec':
                             // Datafile
                             const tosec_category = requestInfo.UrlParts[1];
-                            if (['tosec', 'tosec-iso', 'tosec-pix'].includes(tosec_category) === false)
-                                throw new Error('Bad TOSEC category');
 
                             let name = decodeURIComponent(requestInfo.UrlParts[2]);
 
@@ -562,7 +575,7 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
                                 }
                             });
 
-                            const tosec_data = await tools.getDataPayload('ao-tosec', 'datafile_payload', { category: tosec_category }, responseInfo.Extention);
+                            const tosec_data = await tools.databasePayload(application.DatabaseConfigs[0], 'datafile_payload', { category: tosec_category }, responseInfo.Extention);
 
                             responseInfo.Title = tosec_data[0].value;
                             responseInfo.Heading = responseInfo.Title;
@@ -591,7 +604,7 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
                             if (validNameRegEx.test(software_name) !== true)
                                 throw new Error(`bad software_name`);
 
-                            const data = await tools.getDataPayload(`ao-${application.Key}-software`, 'software_payload', { softwarelist_name, software_name }, responseInfo.Extention);
+                            const data = await tools.databasePayload(application.DatabaseConfigs[1], 'software_payload', { softwarelist_name, software_name }, responseInfo.Extention);
 
                             responseInfo.Title = data[0].value;
                             responseInfo.Heading = responseInfo.Title;
@@ -613,7 +626,7 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
                                 }
                             });
 
-                            const tosecData = await tools.getDataPayload('ao-tosec', 'game_payload', { category: tosec_category, datafile_name, game_name }, responseInfo.Extention);
+                            const tosecData = await tools.databasePayload(application.DatabaseConfigs[0], 'game_payload', { category: tosec_category, datafile_name, game_name }, responseInfo.Extention);
 
                             responseInfo.Title = tosecData[0].value;
                             responseInfo.Heading = responseInfo.Title;
@@ -660,10 +673,9 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
         concurrentRequests--;
         res.end();
     }
-
 }
 
-export const getMachines = async (search: string, offset: number, limit: number, core: string) => {
+export const getMachines = async (config: any,  search: string, offset: number, limit: number) => {
 
     let commandText = 'SELECT COUNT(1) OVER() [ao_total], machine.name, machine.description, machine.year, machine.manufacturer, machine.romof, machine.cloneof FROM [machine] @search ORDER BY [machine].[name] OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY';
     commandText = commandText.replace('@offset', offset.toString());
@@ -683,7 +695,6 @@ export const getMachines = async (search: string, offset: number, limit: number,
 
     let data;
 
-    const config = tools.sqlConfig('my-mssql-server', `ao-${core}-machine`);
     const connection = new Connection(config);
     await tools.sqlOpen(connection);
 
@@ -695,29 +706,6 @@ export const getMachines = async (search: string, offset: number, limit: number,
     }
 
     return data;
-}
-
-const run = async () => {
-
-    process.stdin.on('data', (chunk: Buffer) => {
-		const command: string = chunk.toString().trim();
-		console.log(`COMMAND: ${command}`);
-
-		if (command === 'stop')
-			process.exit(0);
-	});
-
-    applicationServers['mame'] = new MameApplicationServer('mame', ['machine', 'software']);
-    applicationServers['hbmame'] = new MameApplicationServer('hbmame', ['machine', 'software']);
-    applicationServers['fbneo'] = new MameApplicationServer('fbneo', fbneoDatafileKeys);
-    applicationServers['tosec'] = new MameApplicationServer('tosec', ['tosec', 'tosec-iso', 'tosec-pix']);
-    
-    await Promise.all(Object.keys(applicationServers).map(async (key) => applicationServers[key].initialize()));
-
-    await loadAssets();
-
-    const server: http.Server = http.createServer(requestListener);
-    server.listen(32103);
 }
 
 run();

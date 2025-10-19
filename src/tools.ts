@@ -78,11 +78,27 @@ export const sqlConfig = (server: string, database: string) => {
     return sqlConfig;
 }
 
-export const getDataPayload = async (databaseName: string, tableName: string, keys: any, extention: string) => {
+export const databaseQuery = async (config: any, commandText: string) => {
+
+    const connection = new Connection(config);
+    await sqlOpen(connection);
+
+    let data;
+    try {
+        const request: Tedious.Request = new Request(commandText);
+
+        data = await sqlRequest(connection, request);
+    }
+    finally {
+        await sqlClose(connection);
+    }
+
+    return data;
+}
+
+export const databasePayload = async (config: any, tableName: string, keys: any, extention: string) => {
     if (extention === '')
         extention = 'html';
-
-    const config = sqlConfig('my-mssql-server', databaseName);
 
     const connection = new Connection(config);
     await sqlOpen(connection);
@@ -97,31 +113,6 @@ export const getDataPayload = async (databaseName: string, tableName: string, ke
             request.addParameter(keyName, TYPES.VarChar, keys[keyName]);
             console.log(`${keyName} / ${keys[keyName]}`);
         }));
-
-        const response = await sqlRequest(connection, request);
-
-        if (response.length === 0)
-            throw new Error('Data not found');
-
-        data = response[0];
-    }
-    finally {
-        await sqlClose(connection);
-    }
-
-    return data;
-}
-
-export const dataQuery = async (databaseName: string, commandText: string) => {
-
-    const config = sqlConfig('my-mssql-server', databaseName);
-
-    const connection = new Connection(config);
-    await sqlOpen(connection);
-
-    let data;
-    try {
-        const request: Tedious.Request = new Request(commandText);
 
         const response = await sqlRequest(connection, request);
 
