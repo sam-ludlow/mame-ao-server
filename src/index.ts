@@ -388,8 +388,16 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
             }
                 
             if (requestInfo.UrlParts.length > 1) {
-                if (application.SubKeys.includes(requestInfo.UrlParts[1]) == false)
-                    throw new Error(`The core "${application.Key}" does not have a sub set "${requestInfo.UrlParts[1]}"`);
+                let name = requestInfo.UrlParts[1];
+                switch (application.Key) {
+                    case 'fbneo':
+                        if (name.includes('.') === true)
+                            name = name.split('.')[0];
+                        break;
+                }
+
+                if (application.SubKeys.includes(name) == false)
+                    throw new Error(`The core "${application.Key}" does not have a sub set "${name}"`);
             }
 
             responseInfo.Info = application.Info;
@@ -614,8 +622,6 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
                         case 'tosec':
                             // Game
                             const tosec_category = requestInfo.UrlParts[1];
-                            if (['tosec', 'tosec-iso', 'tosec-pix'].includes(tosec_category) === false)
-                                throw new Error('Bad TOSEC category');
                             const datafile_name = decodeURIComponent(requestInfo.UrlParts[2]);
                             let game_name = decodeURIComponent(requestInfo.UrlParts[3]);
 

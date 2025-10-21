@@ -128,7 +128,18 @@ export const databasePayload = async (config: any, tableName: string, keys: any,
     return data;
 }
 
-export const htmlTable = (data: any[], columnDefs: any, dataset: string): string => {
+const encodeHTML = (html: string) : string => {
+    const lookup: any = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      "'": '&#39;',
+      '"': '&quot;'
+    };
+    return html.replace(/[&<>'"]/g, tag => lookup[tag]);
+}
+
+export const htmlTable = (data: any[], columnDefs: any, coreKey: string): string => {
 
     const columnNames = Object.keys(columnDefs);
 
@@ -144,27 +155,30 @@ export const htmlTable = (data: any[], columnDefs: any, dataset: string): string
         html += '<tr>';
         row.forEach((column: any) => {
             if (columnNames.includes(column.metadata.colName) === true) {
-                let value;
-                switch (column.metadata.colName) {
-                    case 'name':
-                        value = `<a href="/${dataset}/machine/${column.value}">${column.value}</a>`;
-                       break;
+                let value: string = column.value || '';
+                if (value !== '') {
+                    switch (column.metadata.colName) {
+                        case 'name':
+                            value = `<a href="/${coreKey}/machine/${value}">${value}</a>`;
+                            break;
 
-                    case 'romof':
-                        if (column.value)
-                            value = `<a href="/${dataset}/machine/${column.value}">${column.value}</a>`;
-                       break;
+                        case 'romof':
+                            if (column.value)
+                                value = `<a href="/${coreKey}/machine/${value}">${value}</a>`;
+                            break;
 
-                    case 'cloneof':
-                        if (column.value)
-                            value = `<a href="/${dataset}/machine/${column.value}">${column.value}</a>`;
-                       break;
+                        case 'cloneof':
+                            if (column.value)
+                                value = `<a href="/${coreKey}/machine/${value}">${value}</a>`;
+                            break;
 
-                    default:
-                        value = column.value;
-                        break;
+                        default:
+                            value = encodeHTML(column.value);
+                            break;
+                    }
                 }
-                html += `<td>${value || ''}</td>`;
+
+                html += `<td>${value}</td>`;
             }
         });
         html += '</tr>';
