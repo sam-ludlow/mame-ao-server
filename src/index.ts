@@ -583,7 +583,7 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
                                 }
                             });
 
-                            const tosec_data = await tools.databasePayload(application.DatabaseConfigs[0], 'datafile_payload', { category: tosec_category }, responseInfo.Extention);
+                            const tosec_data = await tools.databasePayload(application.DatabaseConfigs[0], 'datafile_payload', { category: tosec_category, name }, responseInfo.Extention);
 
                             responseInfo.Title = tosec_data[0].value;
                             responseInfo.Heading = responseInfo.Title;
