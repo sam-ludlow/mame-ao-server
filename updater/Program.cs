@@ -109,7 +109,6 @@ namespace updater
 
 						Run(mameAoPath, $"{core}-mssql directory=\"{directory}\" server=\"{databaseServer}\" names=\"{databaseNames}\"");
 						Run(mameAoPath, $"{core}-mssql-payload directory=\"{directory}\" server=\"{databaseServer}\" names=\"{databaseNames}\"");
-						Run(mameAoPath, $"{core}-mssql-payload-html directory=\"{directory}\" server=\"{databaseServer}\" names=\"{databaseNames}\"");
 
 						foreach (string databaseName in coresDatabases[core])
 						{

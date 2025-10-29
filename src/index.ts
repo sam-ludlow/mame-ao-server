@@ -49,21 +49,23 @@ export class ApplicationCore implements Application {
 
         const databaseServer = 'my-mssql-server';
 
+        const databaseNamePrefix = 'ao';
+
         switch (this.Key) {
             case 'mame':
             case 'hbmame':
                 this.SubKeys = ['machine', 'software'];
-                this.DatabaseConfigs = [ tools.sqlConfig(databaseServer, `ao-${this.Key}-machine`), tools.sqlConfig(databaseServer, `ao-${this.Key}-software`)];
+                this.DatabaseConfigs = [ tools.sqlConfig(databaseServer, `${databaseNamePrefix}-${this.Key}-machine`), tools.sqlConfig(databaseServer, `${databaseNamePrefix}-${this.Key}-software`)];
                 break;
 
             case 'fbneo':   //  TODO: Load from DB - build menu
                 this.SubKeys = ['arcade', 'channelf', 'coleco', 'fds', 'gamegear', 'megadrive', 'msx', 'neogeo', 'nes', 'ngp', 'pce', 'sg1000', 'sgx', 'sms', 'snes', 'spectrum', 'tg16', ];
-                this.DatabaseConfigs = [ tools.sqlConfig(databaseServer, `ao-${this.Key}`)];
+                this.DatabaseConfigs = [ tools.sqlConfig(databaseServer, `${databaseNamePrefix}-${this.Key}`)];
                 break;
 
             case 'tosec':
                 this.SubKeys = ['tosec', 'tosec-iso', 'tosec-pix'];
-                this.DatabaseConfigs = [ tools.sqlConfig(databaseServer, `ao-${this.Key}`)];
+                this.DatabaseConfigs = [ tools.sqlConfig(databaseServer, `${databaseNamePrefix}-${this.Key}`)];
                 break;
 
             default:
