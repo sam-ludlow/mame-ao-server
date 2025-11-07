@@ -668,14 +668,22 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
             res.write(responseInfo.Body);
         }
     }
-    catch (error) {
+    catch (e) {
+        const error = e as Error;
+        const status = 400;
 
         console.log(error);
 
-        res.writeHead(400, { 'Content-Type': 'text/html; charset=utf-8'});
+        res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8'});
 
-        res.write('error');
+        const errorBody: any = {
+            status,
+            name: error.name,
+            message: error.message,
+            stack: error.stack,
+        };
 
+        res.write(JSON.stringify(errorBody, null, '\t'));
     }
     finally {
         concurrentRequests--;
