@@ -408,9 +408,20 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
                 
                 case 1:
                     // Core
-                    responseInfo.Title = `${application.Key.toUpperCase()} (${application.Version})`;
+                    switch (application.Key) {
+                        case 'fbneo':
+                            const fbneo_data = await tools.databasePayload(application.DatabaseConfigs[0], 'root_payload', { key_1: '1' }, responseInfo.Extention);
+                            responseInfo.Title = fbneo_data[0].value;
+                            responseInfo.Body = fbneo_data[1].value;
+                            break;
+
+                        default:
+                            responseInfo.Title = `${application.Key.toUpperCase()} (${application.Version})`;
+                            responseInfo.Body = assets[`${application.Key}.html`];
+                            break;
+                    }
                     responseInfo.Heading = responseInfo.Title;
-                    responseInfo.Body = assets[`${application.Key}.html`];
+
                     break;
 
                 case 2:
