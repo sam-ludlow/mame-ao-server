@@ -24,20 +24,28 @@ table {
 }
 
 table.nav {
-	border-collapse: collapse;
 	width: 100%;
+    border-collapse: separate;
+    border-spacing: 2px;
+    background: transparent;
+}
+
+table.nav {
+	border: none;
 }
 
 td.nav-off {
 	text-decoration: none;
 	background-color: #1a75bc;
 	text-align: center;
+	border: none;
 }
 
 td.nav-on {
 	text-decoration: none;
 	background-color: #00ADEF;
 	text-align: center;
+	border: none;
 }
 
 a.nav-off {
@@ -94,4 +102,31 @@ td.nav-on {
 	text-decoration: none;
 	background-color: #00ADEF;
 	text-align: center;
+}
+
+.header {
+    background: black;
+    color: white;
+    width: 100%;
+    padding: 4px;
+    box-sizing: border-box;
+}
+.header::after {
+    content: "";
+    display: block;
+    clear: both;
+}
+.logo {
+    float: left;
+    margin-right: 4px;
+    height: 96px;
+}
+
+.header h1 {
+    margin: 0;
+}
+
+.footer {
+    background: black;
+    width: 100%;
 }

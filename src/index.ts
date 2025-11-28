@@ -307,14 +307,14 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
             return;
 
         case '/stylesheet.css':
-            res.setHeader('Content-Type', 'text/css');
+            res.setHeader('Content-Type', 'text/css; charset=utf-8');
             res.setHeader('Cache-Control', 'public, max-age=86400');
             res.write(assets['stylesheet.css']);
             res.end();
             return;
 
         case '/spludlow.svg':
-            res.setHeader('Content-Type', 'image/svg+xml');
+            res.setHeader('Content-Type', 'image/svg+xml; charset=utf-8');
             res.setHeader('Cache-Control', 'public, max-age=86400');
             res.write(assets['spludlow.svg']);
             res.end();
@@ -335,7 +335,7 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
     // Menu
     //
     const walkMenu = (current: any) => {
-        responseInfo.NavMenu += '<table class="nav"><tr>';
+        responseInfo.NavMenu += '<table class="nav"><tr class="nav">';
         
         let foundMenu: any;
 
