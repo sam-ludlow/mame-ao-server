@@ -121,7 +121,7 @@ namespace updater
 							Run(accessLinkerPath, $"mssql-backup filename=\"{backupFilename}\" mssql=\"{databaseServer}\" name=\"{databaseNameTemp}\"");
 						}
 
-						Get(stopUrl);
+						Get(stopUrl + core);
 
 						try
 						{
@@ -139,7 +139,7 @@ namespace updater
 						}
 						finally
 						{
-							Get(startUrl);
+							Get(startUrl + core);
 						}
 					}
 

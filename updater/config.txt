@@ -5,8 +5,8 @@ databasePrepare		CREATE USER [api] FOR LOGIN [api] WITH DEFAULT_SCHEMA=[dbo];ALT
 mameAoPath		C:\GIT\mame-ao\bin\Release\mame-ao.exe
 rootDirectory		C:\DATA
 databaseServer		Data Source='my-mssql-server';Integrated Security=True;TrustServerCertificate=True;
-startUrl		http://magic-start-web-url
-stopUrl			http://magic-stop-web-url
+startUrl		https://data.spludlow.co.uk/api/start?core=
+stopUrl			https://data.spludlow.co.uk/api/stop?core=
 mailServer		my-smtp-server
 mailFromAddress		from@email.com
 mailToAddress		to@email.com
