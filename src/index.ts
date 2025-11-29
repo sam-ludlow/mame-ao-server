@@ -193,6 +193,10 @@ export class RequestInfo {
                             if (Number.isNaN(this.Paramters.offset) == true || this.Paramters.offset < 0)
                                 this.Paramters.offset = 0;
                             break;
+
+                        case 'core':
+                            this.Paramters.core = pair[1];
+                            break;
                     }
                 }
             });
@@ -329,6 +333,49 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
 
         default:
             break;
+    }
+
+    //
+    //  API
+    //
+    if (requestInfo.UrlParts.length === 2 && requestInfo.UrlParts[0] === 'api') {
+
+        res.setHeader('Content-Type', 'application/json; charset=utf-8');
+
+        try {
+            const forwardedFor = req.headers['x-forwarded-for'];
+            
+            console.log(`API CLIENT:    ${req.socket.remoteAddress}    ${forwardedFor}`);
+
+            if (forwardedFor === undefined || Array.isArray(forwardedFor) === true || forwardedFor.startsWith('217.40.212.') === false)
+                throw new Error("Unauthorized");
+
+            switch (requestInfo.UrlParts[1]) {
+
+                case 'stop':
+                    console.log(`API STOP CORE: ${requestInfo.Paramters.core}`);
+                    delete applicationServers[requestInfo.Paramters.core];
+                    break;
+
+                case 'start':
+                    console.log(`API START CORE: ${requestInfo.Paramters.core}`);
+                    const app = new ApplicationCore(requestInfo.Paramters.core);
+                    await app.initialize();
+                    applicationServers[requestInfo.Paramters.core] = app;
+                    break;
+
+                default:
+                    throw new Error('Bad EP.');
+            }
+
+            res.write(JSON.stringify({ message: 'OK' }));
+
+        } catch (e: any) {
+            console.log(e);
+            res.write(JSON.stringify({ error_message: e.message }));
+        }
+        res.end();
+        return;
     }
 
     //
