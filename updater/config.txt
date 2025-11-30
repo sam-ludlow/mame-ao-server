@@ -4,7 +4,7 @@ cores			mame, hbmame, fbneo, tosec
 databasePrepare		CREATE USER [api] FOR LOGIN [api] WITH DEFAULT_SCHEMA=[dbo];ALTER ROLE [db_datareader] ADD MEMBER [api];
 mameAoPath		C:\GIT\mame-ao\bin\Release\mame-ao.exe
 rootDirectory		C:\DATA
-databaseServer		Data Source='my-mssql-server';Integrated Security=True;TrustServerCertificate=True;
+databaseServer		Server='my-mssql-server';Integrated Security=True;TrustServerCertificate=True;
 startUrl		https://data.spludlow.co.uk/api/start?core=
 stopUrl			https://data.spludlow.co.uk/api/stop?core=
 mailServer		my-smtp-server

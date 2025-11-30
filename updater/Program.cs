@@ -113,6 +113,9 @@ namespace updater
 						foreach (string databaseName in coresDatabases[core])
 						{
 							string databaseNameTemp = $"{databaseName}-temp";
+
+							Run(accessLinkerPath, $"mssql-shrink-ldf mssql=\"{databaseServer}Database={databaseNameTemp};\"");
+
 							string backupFilename = Path.Combine(backupDirectory, $"{databaseNameTemp}.bak");
 
 							Sql($"{databaseServer}Database={databaseNameTemp};", databasePrepare);
