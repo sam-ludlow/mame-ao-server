@@ -1,5 +1,5 @@
 import http from 'http';
-
+import os from 'os';
 import * as tools from './tools';
 
 import Tedious from 'tedious';
@@ -504,11 +504,21 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
                                         'description': 'Description',
                                         'year': 'Year',
                                         'manufacturer': 'Manufacturer',
-                                        'romof': 'Rom of',
                                         'cloneof': 'Clone of',
+                                        'romof': 'Rom of',
                                     };
 
-                                    let machineHtml: string = assets['mame-machine.html'].replace('@DATA@', tools.htmlTable(pageData, columnDefs, application.Key));
+                                    let machineHtml = `<table><tr>`;
+                                    machineHtml += Object.keys(columnDefs).map(columnName => `<th>${columnName}</th>`).join('');
+                                    machineHtml += '</tr>' + os.EOL;
+                                    
+                                    pageData.forEach((row) => {
+                                        machineHtml += row[1].value + os.EOL;
+                                    });
+                                    
+                                    machineHtml += '</table>';
+
+                                    machineHtml = assets['mame-machine.html'].replace('@DATA@', machineHtml);
                                     machineHtml = machineHtml.replace('@TOP@', nav);
                                     machineHtml = machineHtml.replace('@BOTTOM@', nav);
 
@@ -751,21 +761,45 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
 
 export const getMachines = async (config: any,  search: string, offset: number, limit: number) => {
 
-    let commandText = 'SELECT COUNT(1) OVER() [ao_total], machine.name, machine.description, machine.year, machine.manufacturer, machine.romof, machine.cloneof FROM [machine] @search ORDER BY [machine].[name] OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY';
+    let commandText;
+    
+    if (search.length > 0) {
+        commandText = `
+            WITH full_text_table AS (
+            SELECT 
+                machine_search_payload.[description], machine_search_payload.[html], free_text_table.[RANK] AS [ao_rank]
+            FROM FREETEXTTABLE(
+                    machine_search_payload,
+                    ([name], [description]),
+                    @search
+                ) AS free_text_table
+            JOIN machine_search_payload
+                ON machine_search_payload.[name] = free_text_table.[KEY]
+            )
+            SELECT
+                (SELECT COUNT(*) FROM full_text_table) AS [ao_total], [html], [ao_rank]
+            FROM full_text_table
+            ORDER BY [description] ASC
+            OFFSET @offset ROWS
+            FETCH NEXT @limit ROWS ONLY;
+        `;
+    } else {
+        commandText = `
+            SELECT COUNT(*) OVER() AS [ao_total], [html]
+            FROM [machine_search_payload]
+            ORDER BY [description] ASC
+            OFFSET @offset ROWS
+            FETCH NEXT @limit ROWS ONLY;
+        `;
+    }
+
     commandText = commandText.replace('@offset', offset.toString());
     commandText = commandText.replace('@limit', limit.toString());
 
-    const searchParts = search.split(' ').filter(p => p != '');
-
-    if (searchParts.length > 0)
-        commandText = commandText.replace('@search', 'WHERE ([name] LIKE @search OR [description] LIKE @search)');
-    else
-        commandText = commandText.replace('@search', '');
-
     const request: Tedious.Request = new Request(commandText);
 
-    if (searchParts.length > 0)
-        request.addParameter('search', TYPES.VarChar, `%${searchParts.join('%')}%`);
+    if (search.length > 0)
+        request.addParameter('search', TYPES.VarChar, search);
 
     let data;
 

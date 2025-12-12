@@ -1,7 +1,7 @@
 ﻿accessLinkerPath	C:\MAME-AO\access-linker.exe
 backupDirectory		C:\SQL-BACKUP
 cores			mame, hbmame, fbneo, tosec
-databasePrepare		CREATE USER [api] FOR LOGIN [api] WITH DEFAULT_SCHEMA=[dbo];ALTER ROLE [db_datareader] ADD MEMBER [api];
+databasePrepare		CREATE USER [api] FOR LOGIN [api] WITH DEFAULT_SCHEMA=[dbo];ALTER ROLE [db_datareader] ADD MEMBER [api];CREATE FULLTEXT CATALOG [ao_catalog] AS DEFAULT;
 mameAoPath		C:\GIT\mame-ao\bin\Release\mame-ao.exe
 rootDirectory		C:\DATA
 databaseServer		Server='my-mssql-server';Integrated Security=True;TrustServerCertificate=True;

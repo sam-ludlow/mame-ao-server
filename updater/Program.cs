@@ -101,6 +101,10 @@ namespace updater
 						Console.WriteLine($"{core} processing.");
 
 						Run(mameAoPath, $"{core}-xml directory=\"{directory}\"");
+						Run(mameAoPath, $"{core}-json directory=\"{directory}\"");
+						Run(mameAoPath, $"{core}-sqlite directory=\"{directory}\"");
+						//Run(mameAoPath, $"{core}-msaccess directory=\"{directory}\"");	error on server - no catching full error
+						Run(mameAoPath, $"{core}-zips directory=\"{directory}\"");
 
 						foreach (string databaseName in coresDatabases[core])
 							Run(accessLinkerPath, $"mssql-delete mssql=\"{databaseServer}\" name=\"{databaseName}-temp\"");
@@ -108,6 +112,10 @@ namespace updater
 						string databaseNames = String.Join(", ", coresDatabases[core].Select(name => $"{name}-temp"));
 
 						Run(mameAoPath, $"{core}-mssql directory=\"{directory}\" server=\"{databaseServer}\" names=\"{databaseNames}\"");
+
+						foreach (string databaseName in coresDatabases[core])
+							Sql($"{databaseServer}Database={databaseName}-temp;", databasePrepare);
+
 						Run(mameAoPath, $"{core}-mssql-payload directory=\"{directory}\" server=\"{databaseServer}\" names=\"{databaseNames}\"");
 
 						foreach (string databaseName in coresDatabases[core])
@@ -117,8 +125,6 @@ namespace updater
 							Run(accessLinkerPath, $"mssql-shrink-ldf mssql=\"{databaseServer}Database={databaseNameTemp};\"");
 
 							string backupFilename = Path.Combine(backupDirectory, $"{databaseNameTemp}.bak");
-
-							Sql($"{databaseServer}Database={databaseNameTemp};", databasePrepare);
 
 							File.Delete(backupFilename);
 							Run(accessLinkerPath, $"mssql-backup filename=\"{backupFilename}\" mssql=\"{databaseServer}\" name=\"{databaseNameTemp}\"");
