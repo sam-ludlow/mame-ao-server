@@ -111,7 +111,6 @@ export const databasePayload = async (config: any, tableName: string, keys: any,
 
         Object.keys(keys).forEach((keyName => {
             request.addParameter(keyName, TYPES.VarChar, keys[keyName]);
-            console.log(`${keyName} / ${keys[keyName]}`);
         }));
 
         const response = await sqlRequest(connection, request);

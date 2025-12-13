@@ -1,9 +1,10 @@
 import http from 'http';
 import os from 'os';
+import cluster from 'cluster';
+
 import * as tools from './tools';
 
 import Tedious from 'tedious';
-
 var Connection = require('tedious').Connection;
 var Request = require('tedious').Request;
 var TYPES = require('tedious').TYPES;
@@ -229,14 +230,6 @@ let concurrentRequests = 0;
 
 const run = async () => {
 
-    process.stdin.on('data', (chunk: Buffer) => {
-		const command: string = chunk.toString().trim();
-		console.log(`COMMAND: ${command}`);
-
-		if (command === 'stop')
-			process.exit(0);
-	});
-
     await loadAssets();
 
     const server: http.Server = http.createServer(requestListener);
@@ -283,7 +276,7 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
 
     const now: Date = new Date();
 
-    console.log(`${now.toUTCString()}\t${req.url}\t${req.method}\t${concurrentRequests}`);
+    process.send?.(`${now.toUTCString()}\t${process.pid}\t${concurrentRequests}\t${req.method}\t${req.url}`);
 
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Server', 'Spludlow Data Web/0.0');
@@ -816,4 +809,44 @@ export const getMachines = async (config: any,  search: string, offset: number, 
     return data;
 }
 
-run();
+//
+// Cluster
+//
+const runCluster = async () => {
+    if (cluster.isPrimary === true) {
+        console.log(`Master ${process.pid} running`);
+        
+        process.stdin.on('data', (chunk: Buffer) => {
+            const command: string = chunk.toString().trim();
+            console.log(`COMMAND: ${process.pid} ${command}`);
+
+            if (command === 'stop')
+                process.exit(0);
+        });
+
+        for (let i = 0; i < 4; ++i) {
+            const slave = cluster.fork();
+            slave.on("message", (message) => {
+                console.log(`#\t${message}\r`);
+            });
+        }
+
+        cluster.on("exit", (worker) => {
+            console.log(`Slave ${worker.process.pid} died. Restarting...`);
+            cluster.fork();
+        });
+
+    } else {
+        console.log(`Slave ${process.pid} running`);
+
+        process.send?.(`Starting\t${process.pid}`);
+        try {
+            await run();
+            process.send?.(`Started\t${process.pid}`);
+        } catch (e: any) {
+            process.send?.(`Error Starting\t${process.pid}\t${e}\t${e.stack}`);
+        }
+    }
+}
+
+runCluster();
