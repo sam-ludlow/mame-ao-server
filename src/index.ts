@@ -228,7 +228,7 @@ const applicationServers: any = {};
 const assets: any = {};
 let concurrentRequests = 0;
 
-const run = async () => {
+const startServer = async () => {
 
     await loadAssets();
 
@@ -276,7 +276,7 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
 
     const now: Date = new Date();
 
-    process.send?.(`${now.toUTCString()}\t${process.pid}\t${concurrentRequests}\t${req.method}\t${req.url}`);
+    console.log(`${now.toUTCString()}\t${process.pid}\t${concurrentRequests}\t${req.method}\t${req.url}`);
 
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Server', 'Spludlow Data Web/0.0');
@@ -326,49 +326,6 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
 
         default:
             break;
-    }
-
-    //
-    //  API
-    //
-    if (requestInfo.UrlParts.length === 2 && requestInfo.UrlParts[0] === 'api') {
-
-        res.setHeader('Content-Type', 'application/json; charset=utf-8');
-
-        try {
-            const forwardedFor = req.headers['x-forwarded-for'];
-            
-            console.log(`API CLIENT:    ${req.socket.remoteAddress}    ${forwardedFor}`);
-
-            if (forwardedFor === undefined || Array.isArray(forwardedFor) === true || forwardedFor.startsWith('217.40.212.') === false)
-                throw new Error("Unauthorized");
-
-            switch (requestInfo.UrlParts[1]) {
-
-                case 'stop':
-                    console.log(`API STOP CORE: ${requestInfo.Paramters.core}`);
-                    delete applicationServers[requestInfo.Paramters.core];
-                    break;
-
-                case 'start':
-                    console.log(`API START CORE: ${requestInfo.Paramters.core}`);
-                    const app = new ApplicationCore(requestInfo.Paramters.core);
-                    await app.initialize();
-                    applicationServers[requestInfo.Paramters.core] = app;
-                    break;
-
-                default:
-                    throw new Error('Bad EP.');
-            }
-
-            res.write(JSON.stringify({ message: 'OK' }));
-
-        } catch (e: any) {
-            console.log(e);
-            res.write(JSON.stringify({ error_message: e.message }));
-        }
-        res.end();
-        return;
     }
 
     //
@@ -814,6 +771,7 @@ export const getMachines = async (config: any,  search: string, offset: number, 
 //
 const runCluster = async () => {
     if (cluster.isPrimary === true) {
+
         console.log(`Master ${process.pid} running`);
         
         process.stdin.on('data', (chunk: Buffer) => {
@@ -824,27 +782,87 @@ const runCluster = async () => {
                 process.exit(0);
         });
 
-        for (let i = 0; i < 4; ++i) {
-            const slave = cluster.fork();
-            slave.on("message", (message) => {
-                console.log(`#\t${message}\r`);
-            });
-        }
+        for (let i = 0; i < 4; ++i)
+            cluster.fork();
 
         cluster.on("exit", (worker) => {
-            console.log(`Slave ${worker.process.pid} died. Restarting...`);
-            cluster.fork();
+            console.log(`Slave ${worker.process.pid} died.`);
+            //cluster.fork();
         });
 
-    } else {
-        console.log(`Slave ${process.pid} running`);
+        const masterServer: http.Server = http.createServer(async (req: http.IncomingMessage, res: http.ServerResponse) => {
 
-        process.send?.(`Starting\t${process.pid}`);
+            const requestInfo = new RequestInfo(req);
+
+            if (requestInfo.UrlParts.length === 2 && requestInfo.UrlParts[0] === 'api') {
+
+                res.setHeader('Content-Type', 'application/json; charset=utf-8');
+
+                try {
+/*                     const forwardedFor = req.headers['x-forwarded-for'];
+                    if (forwardedFor === undefined || Array.isArray(forwardedFor) === true || forwardedFor.startsWith('217.40.212.') === false)
+                        throw new Error("Unauthorized"); */
+
+                    switch (requestInfo.UrlParts[1]) {
+
+                        case 'stop':
+                        case 'start':
+                            for (const id in cluster.workers) {
+                                const worker = cluster.workers[id];
+                                if (worker)
+                                    worker.send(`${requestInfo.UrlParts[1]}\t${requestInfo.Paramters.core}`);
+                            }
+                            break;
+
+                        default:
+                            throw new Error('Bad EP.');
+                    }
+
+                    res.write(JSON.stringify({ message: 'OK' }));
+
+                } catch (e: any) {
+                    console.log(e);
+                    res.write(JSON.stringify({ error_message: e.message }));
+                }
+            }
+
+            res.end();
+        });
+
+        masterServer.listen(32104);
+
+    } else {
+
+        console.log(`Starting\t${process.pid}`);
         try {
-            await run();
-            process.send?.(`Started\t${process.pid}`);
+
+            await startServer();
+            
+            process.on("message", async (message: string) => {
+
+                const messageParts = message.split('\t');
+                const core = messageParts[1];
+
+                switch (messageParts[0]) {
+                    case 'stop':
+                        delete applicationServers[core];
+                        console.log(`slave stopped ${process.pid} ${core}`);
+                        break;
+                    case 'start':
+                        const app = new ApplicationCore(core);
+                        await app.initialize();
+                        applicationServers[core] = app;
+                        console.log(`slave started ${process.pid} ${core}`);
+                        break;
+                    default:
+                        console.log(`slave bad message ${process.pid} ${message}`);
+                        break;
+                }
+            });
+
+            console.log(`Started\t${process.pid}`);
         } catch (e: any) {
-            process.send?.(`Error Starting\t${process.pid}\t${e}\t${e.stack}`);
+            console.log(`Error Starting\t${process.pid}\t${e}\t${e.stack}`);
         }
     }
 }
