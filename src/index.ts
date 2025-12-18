@@ -276,7 +276,9 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
 
     const now: Date = new Date();
 
-    console.log(`${now.toUTCString()}\t${process.pid}\t${concurrentRequests}\t${req.method}\t${req.url}`);
+    const forwardedFor = req.headers['x-forwarded-for'] || 'local';
+
+    console.log(`${now.toUTCString()}\t${process.pid}\t${concurrentRequests}\t${forwardedFor}\t${req.method}\t${req.url}`);
 
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Server', 'Spludlow Data Web/0.0');
@@ -314,6 +316,13 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
             res.setHeader('Content-Type', 'image/svg+xml; charset=utf-8');
             res.setHeader('Cache-Control', 'public, max-age=86400');
             res.write(assets['spludlow.svg']);
+            res.end();
+            return;
+        
+        case '/robots.txt':
+            res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+            res.setHeader('Cache-Control', 'public, max-age=86400');
+            res.write('');
             res.end();
             return;
 
@@ -799,10 +808,6 @@ const runCluster = async () => {
                 res.setHeader('Content-Type', 'application/json; charset=utf-8');
 
                 try {
-/*                     const forwardedFor = req.headers['x-forwarded-for'];
-                    if (forwardedFor === undefined || Array.isArray(forwardedFor) === true || forwardedFor.startsWith('217.40.212.') === false)
-                        throw new Error("Unauthorized"); */
-
                     switch (requestInfo.UrlParts[1]) {
 
                         case 'stop':
