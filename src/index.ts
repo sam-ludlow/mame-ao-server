@@ -1,6 +1,9 @@
 import http from 'http';
 import os from 'os';
 import cluster from 'cluster';
+import fs from 'fs';
+import path from 'path';
+import { pipeline } from "stream/promises";
 
 import * as tools from './tools';
 
@@ -224,11 +227,17 @@ export class ResponeInfo {
 
 const coreKeys = ['mame', 'hbmame', 'fbneo', 'tosec'];
 
+let mameAoDataDirectory: string = 'C:\\ao-data';
 const applicationServers: any = {};
 const assets: any = {};
-let concurrentRequests = 0;
+let concurrentRequests: number = 0;
 
 const startServer = async () => {
+
+    if (fs.existsSync(mameAoDataDirectory) === false)
+        mameAoDataDirectory = 'E:\\ao-data';    // production
+
+    console.log(mameAoDataDirectory);
 
     await loadAssets();
 
@@ -365,13 +374,15 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
     //
     // Routing
     //
-    const validExtentions = [ '', 'xml', 'json', 'html' ];
+    const validExtentions = [ '', 'xml', 'json', 'html', 'png', 'jpg' ];
 
     const extentionContentTypes: { [key: string]: any } = {
         '': 'text/html; charset=utf-8',
         'html': 'text/html; charset=utf-8',
         'json': 'application/json; charset=utf-8',
         'xml': 'text/xml; charset=utf-8',
+        'png': 'image/png',
+        'jpg': 'image/jpeg',
     };
 
     concurrentRequests++;
@@ -545,12 +556,18 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
 
                                     if (validNameRegEx.test(machine_name) !== true)
                                         throw new Error(`bad machine name`);
-                            
-                                    const data = await tools.databasePayload(application.DatabaseConfigs[0], 'machine_payload', { machine_name }, responseInfo.Extention);
 
-                                    responseInfo.Title = data[0].value;
-                                    responseInfo.Heading = responseInfo.Title;
-                                    responseInfo.Body = data[1].value;
+                                    if (responseInfo.Extention === 'png' || responseInfo.Extention === 'jpg') {
+                                        responseInfo.Title = '@stream';
+                                        responseInfo.Body = path.join(mameAoDataDirectory, `${requestInfo.UrlParts[0]}-snap`, responseInfo.Extention, `${machine_name}.${responseInfo.Extention}`);
+
+                                    } else {
+                                        const data = await tools.databasePayload(application.DatabaseConfigs[0], 'machine_payload', { machine_name }, responseInfo.Extention);
+
+                                        responseInfo.Title = data[0].value;
+                                        responseInfo.Heading = responseInfo.Title;
+                                        responseInfo.Body = data[1].value;
+                                    }
                                     break;
 
                                 case 'software':
@@ -641,11 +658,17 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
                             if (validNameRegEx.test(software_name) !== true)
                                 throw new Error(`bad software_name`);
 
-                            const data = await tools.databasePayload(application.DatabaseConfigs[1], 'software_payload', { softwarelist_name, software_name }, responseInfo.Extention);
+                            if (responseInfo.Extention === 'png' || responseInfo.Extention === 'jpg') {
+                                responseInfo.Title = '@stream';
+                                responseInfo.Body = path.join(mameAoDataDirectory, `${requestInfo.UrlParts[0]}-snap`, responseInfo.Extention, softwarelist_name, `${software_name}.${responseInfo.Extention}`);
 
-                            responseInfo.Title = data[0].value;
-                            responseInfo.Heading = responseInfo.Title;
-                            responseInfo.Body = data[1].value;
+                            } else {
+                                const data = await tools.databasePayload(application.DatabaseConfigs[1], 'software_payload', { softwarelist_name, software_name }, responseInfo.Extention);
+
+                                responseInfo.Title = data[0].value;
+                                responseInfo.Heading = responseInfo.Title;
+                                responseInfo.Body = data[1].value;
+                            }
                             break;
 
                         case 'tosec':
@@ -676,24 +699,47 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
         if (responseInfo.Body === '')
             throw new Error('Route');
 
-        res.writeHead(200, { 'Content-Type': extentionContentTypes[responseInfo.Extention] });
+        switch (responseInfo.Title)
+        {
+            case '@stream':
+                try {
+                    await fs.promises.access(responseInfo.Body, fs.constants.F_OK);
+                } catch (e: any) {
+                    throw new Error(`snap not available ${e.message}`);
+                }
 
-        if (responseInfo.Extention === '') {
+                res.writeHead(200, {
+                    'Content-Type': extentionContentTypes[responseInfo.Extention],
+                    'Cache-Control': 'public, max-age=86400',
+                });
+                
+                const readStream = fs.createReadStream(responseInfo.Body);
+                await pipeline(readStream, res);
 
-            let html = assets['master.html'];
+                break;
 
-            html = html.replace('@HEAD@', `<title>${responseInfo.Title}</title>`);
+            default:
+                res.writeHead(200, { 'Content-Type': extentionContentTypes[responseInfo.Extention] });
 
-            html = html.replace('@NAV@', responseInfo.NavMenu);
-            html = html.replace('@INFO@', responseInfo.Info);
+                if (responseInfo.Extention === '') {
+                    let html = assets['master.html'];
 
-            html = html.replace('@H1@', responseInfo.Heading);
-            html = html.replace('@BODY@', responseInfo.Body);
+                    html = html.replace('@HEAD@', `<title>${responseInfo.Title}</title>`);
 
-            res.write(html);
-        } else {
-            res.write(responseInfo.Body);
+                    html = html.replace('@NAV@', responseInfo.NavMenu);
+                    html = html.replace('@INFO@', responseInfo.Info);
+
+                    html = html.replace('@H1@', responseInfo.Heading);
+                    html = html.replace('@BODY@', responseInfo.Body);
+
+                    res.write(html);
+                } else {
+                    res.write(responseInfo.Body);
+                }
+                break;
         }
+
+
     }
     catch (e) {
         const error = e as Error;
