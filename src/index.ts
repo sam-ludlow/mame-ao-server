@@ -4,6 +4,7 @@ import cluster from 'cluster';
 import fs from 'fs';
 import path from 'path';
 import { pipeline } from "stream/promises";
+import { randomUUID } from 'crypto';
 
 import * as tools from './tools';
 
@@ -13,6 +14,8 @@ var Request = require('tedious').Request;
 var TYPES = require('tedious').TYPES;
 
 var validNameRegEx = /^[a-zA-Z0-9-_]+$/;
+var validUUIDRegEx = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
 
 export interface Application {
     Key: string;
@@ -278,6 +281,15 @@ const loadAssets = async () => {
     }));
 }
 
+const readStringBody = (req: http.IncomingMessage): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        let body = '';
+        req.on('data', chunk => body += chunk);
+        req.on('end', () => resolve(body));
+        req.on('error', reject);
+    });
+}
+
 const requestListener: http.RequestListener = async (req: http.IncomingMessage, res: http.ServerResponse) => {
 
     const requestInfo = new RequestInfo(req);
@@ -344,6 +356,91 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
 
         default:
             break;
+    }
+
+    //
+    //  API
+    //
+    if (requestInfo.UrlParts.length === 2 && requestInfo.UrlParts[0] === 'api') {
+
+        const snapHomeDirectory = path.join(mameAoDataDirectory, 'snap-home');
+        const snapMaxSize = 64 * 1024 * 1024;
+
+        try {
+
+            switch (requestInfo.UrlParts[1]) {
+
+                case 'phone-home':
+                    if (req.method !== 'POST')
+                        throw new Error('Phone home bad method.');
+
+                    switch (req.headers['content-type']?.split(';')[0]) {
+
+                        case 'application/json':
+                            const snapStartTime = new Date();
+                            const body = await readStringBody(req);
+                            const token = randomUUID().toString();
+
+                            await savePhoneHome(snapStartTime, req, body, token);
+
+                            res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8'});
+                            res.write(JSON.stringify({ token }));
+                            break;
+
+                        case 'image/png':
+                            let authHeader = req.headers['authorization'];
+                            if (authHeader === undefined || authHeader.startsWith('Bearer ') === false)
+                                throw new Error('authorization Bearer missing');
+                            authHeader = authHeader.substring(7);
+                            if (validUUIDRegEx.test(authHeader) === false)
+                                throw new Error('authorization Bearer format');
+
+                            //  TODO: Validate token in DB
+
+                            const snapFilename = path.join(snapHomeDirectory, `${authHeader}.png`);
+                            const fileStream = fs.createWriteStream(snapFilename);
+
+                            if (fs.existsSync(snapFilename))
+                                throw new Error('Snap already submitted.');
+
+                            let bytes = 0;
+                            req.on('data', chunk => {
+                                bytes += chunk.length;
+                                if (bytes > snapMaxSize)
+                                    req.destroy(new Error('Snap too big.'));
+                            });
+
+                            try {
+                                await pipeline(req, fileStream);
+                            }
+                            catch (e) {
+                                fileStream.destroy();
+                                if (fs.existsSync(snapFilename))
+                                    fs.unlinkSync(snapFilename);
+                                throw e;
+                            }
+
+                            res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8'});
+                            res.write(JSON.stringify({}));
+                            break;
+
+                        default:
+                            throw new Error('Phone home bad content-type.');
+                    }
+                    break;
+
+                default:
+                    throw new Error('Bad API Endpoint.');
+            }
+
+        } catch (e: any) {
+            console.log(e);
+
+            res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8'});
+            res.write(JSON.stringify({ error_message: e.message }));
+        }
+        res.end();
+        return;
     }
 
     //
@@ -761,6 +858,39 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
     finally {
         concurrentRequests--;
         res.end();
+    }
+}
+
+const phoneHomeDatabaseConfig = tools.sqlConfig('my-mssql-server', 'SpludlowV1');
+
+const savePhoneHome = async (startTime: Date, req: http.IncomingMessage, body: string, token: string) => {
+
+    const commandText = `
+        INSERT INTO [PhoneHomes] ([RequestTime], [RequestAddress], [RequestAgent], [ResponseTime], [BodyLength], [Body], [Status], [token])
+        VALUES (@RequestTime, @RequestAddress, @RequestAgent, @ResponseTime, @BodyLength, @Body, @Status, @token);
+    `;
+    const request: Tedious.Request = new Request(commandText);
+
+    let address = req.headers['x-forwarded-for'] || 'local';
+    if (Array.isArray(address))
+        address = address[0];
+
+    request.addParameter('RequestTime', TYPES.DateTime2, startTime);
+    request.addParameter('RequestAddress', TYPES.VarChar, address.split(':')[0]);
+    request.addParameter('RequestAgent', TYPES.NVarChar, req.headers['user-agent'] || '');
+    request.addParameter('ResponseTime', TYPES.Int, Date.now() - startTime.getTime());
+    request.addParameter('BodyLength', TYPES.Int, body.length);
+    request.addParameter('Body', TYPES.NVarChar, body);
+    request.addParameter('Status', TYPES.Int, 0);
+    request.addParameter('token', TYPES.Char, token);
+
+    const connection = new Connection(phoneHomeDatabaseConfig);
+    await tools.sqlOpen(connection);
+    try {
+        await tools.sqlRequest(connection, request);
+    }
+    finally {
+        await tools.sqlClose(connection);
     }
 }
 
