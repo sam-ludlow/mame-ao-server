@@ -656,7 +656,7 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
 
                                     if (responseInfo.Extention === 'png' || responseInfo.Extention === 'jpg') {
                                         responseInfo.Title = '@stream';
-                                        responseInfo.Body = path.join(mameAoDataDirectory, `${requestInfo.UrlParts[0]}-snap`, responseInfo.Extention, `${machine_name}.${responseInfo.Extention}`);
+                                        responseInfo.Body = path.join(mameAoDataDirectory, 'snap', requestInfo.UrlParts[0], responseInfo.Extention, `${machine_name}.${responseInfo.Extention}`);
 
                                     } else {
                                         const data = await tools.databasePayload(application.DatabaseConfigs[0], 'machine_payload', { machine_name }, responseInfo.Extention);
@@ -757,7 +757,7 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
 
                             if (responseInfo.Extention === 'png' || responseInfo.Extention === 'jpg') {
                                 responseInfo.Title = '@stream';
-                                responseInfo.Body = path.join(mameAoDataDirectory, `${requestInfo.UrlParts[0]}-snap`, responseInfo.Extention, softwarelist_name, `${software_name}.${responseInfo.Extention}`);
+                                responseInfo.Body = path.join(mameAoDataDirectory, 'snap', requestInfo.UrlParts[0], responseInfo.Extention, softwarelist_name, `${software_name}.${responseInfo.Extention}`);
 
                             } else {
                                 const data = await tools.databasePayload(application.DatabaseConfigs[1], 'software_payload', { softwarelist_name, software_name }, responseInfo.Extention);
