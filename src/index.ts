@@ -75,16 +75,24 @@ export class ApplicationCore implements Application {
                 this.DatabaseConfigs = [ tools.sqlConfig(databaseServer, `${databaseNamePrefix}-${this.Key}`)];
                 break;
 
+            case 'snap':
+                // Not a real core
+                this.Info = 'this is work in progress, I have big plans';
+                break;
+
             default:
                 throw new Error(`Unknown core key: ${this.Key}`);
         }
 
-        const metadata = await tools.databaseQuery(this.DatabaseConfigs[0], 'SELECT [version], [info] FROM [_metadata]');
-        if (metadata.length === 0)
-            throw new Error('_metadata not found');
+        if (this.DatabaseConfigs.length > 0) {
+            const metadata = await tools.databaseQuery(this.DatabaseConfigs[0], 'SELECT [version], [info] FROM [_metadata]');
+            if (metadata.length === 0)
+                throw new Error('_metadata not found');
 
-        this.Version = metadata[0][0].value;
-        this.Info = metadata[0][1].value;
+            this.Version = metadata[0][0].value;
+            this.Info = metadata[0][1].value;
+        }
+
     }
 }
 
@@ -228,7 +236,7 @@ export class ResponeInfo {
     public Extention: string = '';
 }
 
-const coreKeys = ['mame', 'hbmame', 'fbneo', 'tosec'];
+const coreKeys = ['mame', 'hbmame', 'fbneo', 'tosec', 'snap'];
 
 let mameAoDataDirectory: string = 'C:\\ao-data';
 const applicationServers: any = {};
@@ -361,76 +369,118 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
     //
     //  API
     //
-    if (requestInfo.UrlParts.length === 2 && requestInfo.UrlParts[0] === 'api') {
+    if (requestInfo.UrlParts[0] === 'api') {
 
         const snapHomeDirectory = path.join(mameAoDataDirectory, 'snap-home');
         const snapMaxSize = 64 * 1024 * 1024;
 
         try {
 
-            switch (requestInfo.UrlParts[1]) {
+            switch (requestInfo.UrlParts.length) {
 
-                case 'phone-home':
-                    if (req.method !== 'POST')
-                        throw new Error('Phone home bad method.');
+                case 2:
+                    switch (requestInfo.UrlParts[1]) {
 
-                    switch (req.headers['content-type']?.split(';')[0]) {
+                        case 'phone-home':
+                            if (req.method !== 'POST')
+                                throw new Error('Phone home bad method.');
 
-                        case 'application/json':
-                            const snapStartTime = new Date();
-                            const body = await readStringBody(req);
-                            const token = randomUUID().toString();
+                            switch (req.headers['content-type']?.split(';')[0]) {
 
-                            await savePhoneHome(snapStartTime, req, body, token);
+                                case 'application/json':
+                                    const snapStartTime = new Date();
+                                    const body = await readStringBody(req);
+                                    const token = randomUUID().toString();
 
-                            res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8'});
-                            res.write(JSON.stringify({ token }));
-                            break;
+                                    await savePhoneHome(snapStartTime, req, body, token);
 
-                        case 'image/png':
-                            let authHeader = req.headers['authorization'];
-                            if (authHeader === undefined || authHeader.startsWith('Bearer ') === false)
-                                throw new Error('authorization Bearer missing');
-                            authHeader = authHeader.substring(7);
-                            if (validUUIDRegEx.test(authHeader) === false)
-                                throw new Error('authorization Bearer format');
+                                    res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8'});
+                                    res.write(JSON.stringify({ token }));
+                                    break;
 
-                            //  TODO: Validate token in DB
+                                case 'image/png':
+                                    let authHeader = req.headers['authorization'];
+                                    if (authHeader === undefined || authHeader.startsWith('Bearer ') === false)
+                                        throw new Error('authorization Bearer missing');
+                                    authHeader = authHeader.substring(7);
+                                    if (validUUIDRegEx.test(authHeader) === false)
+                                        throw new Error('authorization Bearer format');
 
-                            const snapFilename = path.join(snapHomeDirectory, `${authHeader}.png`);
-                            const fileStream = fs.createWriteStream(snapFilename);
+                                    //  TODO: Validate token in DB
 
-                            if (fs.existsSync(snapFilename))
-                                throw new Error('Snap already submitted.');
+                                    const snapFilename = path.join(snapHomeDirectory, `${authHeader}.png`);
+                                    const fileStream = fs.createWriteStream(snapFilename);
 
-                            let bytes = 0;
-                            req.on('data', chunk => {
-                                bytes += chunk.length;
-                                if (bytes > snapMaxSize)
-                                    req.destroy(new Error('Snap too big.'));
-                            });
+                                    if (fs.existsSync(snapFilename))
+                                        throw new Error('Snap already submitted.');
 
-                            try {
-                                await pipeline(req, fileStream);
+                                    let bytes = 0;
+                                    req.on('data', chunk => {
+                                        bytes += chunk.length;
+                                        if (bytes > snapMaxSize)
+                                            req.destroy(new Error('Snap too big.'));
+                                    });
+
+                                    try {
+                                        await pipeline(req, fileStream);
+                                    }
+                                    catch (e) {
+                                        fileStream.destroy();
+                                        if (fs.existsSync(snapFilename))
+                                            fs.unlinkSync(snapFilename);
+                                        throw e;
+                                    }
+
+                                    res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8'});
+                                    res.write(JSON.stringify({}));
+                                    break;
+
+                                default:
+                                    throw new Error('Phone home bad content-type.');
                             }
-                            catch (e) {
-                                fileStream.destroy();
-                                if (fs.existsSync(snapFilename))
-                                    fs.unlinkSync(snapFilename);
-                                throw e;
-                            }
-
-                            res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8'});
-                            res.write(JSON.stringify({}));
                             break;
 
                         default:
-                            throw new Error('Phone home bad content-type.');
+                            throw new Error('Bad API (2) Endpoint.');
+                    }
+                    break;
+
+                case 3:
+                    switch (requestInfo.UrlParts[1]) {
+
+                        case 'snap-home':
+                            let submit_token = requestInfo.UrlParts[2];
+                            if (submit_token.endsWith('.png') === false)
+                                throw new Error('expect guid.png');
+                            submit_token = submit_token.slice(0, -4);
+
+                            if (validUUIDRegEx.test(submit_token) === false)
+                                throw new Error('submit_token format');
+
+                            const snapFilename = path.join(mameAoDataDirectory, 'snap-submit', `${submit_token}.png`);
+
+                            try {
+                                await fs.promises.access(snapFilename, fs.constants.F_OK);
+                            } catch (e: any) {
+                                throw new Error(`snap home available ${e.message}`);
+                            }
+
+                            res.writeHead(200, {
+                                'Content-Type': 'image/png',
+                                'Cache-Control': 'public, max-age=86400',
+                            });
+                            
+                            const readStream = fs.createReadStream(snapFilename);
+                            await pipeline(readStream, res);
+                            break;
+
+                        default:
+                            throw new Error('Bad API (3) Endpoint.');
                     }
                     break;
 
                 default:
-                    throw new Error('Bad API Endpoint.');
+                    throw new Error('API Bad route');
             }
 
         } catch (e: any) {
@@ -527,6 +577,44 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
                             const fbneo_data = await tools.databasePayload(application.DatabaseConfigs[0], 'root_payload', { key_1: '1' }, responseInfo.Extention);
                             responseInfo.Title = fbneo_data[0].value;
                             responseInfo.Body = fbneo_data[1].value;
+                            break;
+
+                        case 'snap':
+
+                            const snapData = await tools.databaseQuery(phoneHomeDatabaseConfig, 'SELECT * FROM [snap_submit] ORDER BY [snap_submit_id] DESC');
+
+                            let snapTable = '<table><tr><th>Snap Submitted</th><th>Uploaded</th><th>Snapped By</th><th>Core</th><th>Version</th><th>Machine</th><th>Software List</th><th>Software</th><th>Existing</th></tr>';
+
+                            snapTable += snapData.map(dataRow => {
+                                const snap_uploaded = dataRow[1].value.toISOString();
+                                const display_name = dataRow[2].value;
+                                const core_name = dataRow[3].value;
+                                const core_version = dataRow[4].value;
+                                const machine_name = dataRow[5].value;
+                                const softwarelist_name = dataRow[6].value || '';
+                                const software_name = dataRow[7].value || '';
+                                const existing = dataRow[8].value;
+                                const image_token = dataRow[9].value;
+
+                                const submit_url = `https://data.spludlow.co.uk/api/snap-home/${image_token}.png`;
+
+                                let existing_column = 'NEW';
+                                if (existing === true) {
+                                    if (softwarelist_name === '')
+                                        existing_column = `<img src="https://data.spludlow.co.uk/${core_name}/machine/${machine_name}.png" loading="lazy" alt="${machine_name}">`;
+                                    else
+                                        existing_column = `<img src="https://data.spludlow.co.uk/${core_name}/software/${softwarelist_name}/${software_name}.png" loading="lazy" alt="${software_name}">`;
+                                }
+
+                                return `<tr><td><img src="${submit_url}" loading="lazy" alt="${machine_name}"></td><td>${snap_uploaded}</td><td>${display_name}</td><td>${core_name}</td><td>${core_version}</td><td>${machine_name}</td><td>${softwarelist_name}</td><td>${software_name}</td><td>${existing_column}</td></tr>`;
+                            }).join(os.EOL);
+
+                            snapTable += '</table>';
+
+                            responseInfo.Title = 'snap submissions';
+                            responseInfo.Heading = responseInfo.Title;
+                            responseInfo.Body = snapTable;
+
                             break;
 
                         default:
