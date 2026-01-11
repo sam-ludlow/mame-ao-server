@@ -178,6 +178,11 @@ const rootMenu: any[] =
             },
         ],
     },
+    {
+        text: 'SNAP',
+        title: 'Snap Home',
+        href: '/snap',
+    },
 ];
 
 export class RequestInfo {
@@ -450,14 +455,19 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
 
                         case 'snap-home':
                             let submit_token = requestInfo.UrlParts[2];
-                            if (submit_token.endsWith('.png') === false)
-                                throw new Error('expect guid.png');
+                            if (submit_token.length !== 40)
+                                throw new Error('expect guid.png/guid.jpg');
+
+                            const snapExtention = submit_token.substring(36); 
                             submit_token = submit_token.slice(0, -4);
 
                             if (validUUIDRegEx.test(submit_token) === false)
-                                throw new Error('submit_token format');
+                                throw new Error('submit_token guid format');
 
-                            const snapFilename = path.join(mameAoDataDirectory, 'snap-submit', `${submit_token}.png`);
+                            if (snapExtention !== '.png' && snapExtention !== '.jpg')
+                                throw new Error('expect extention .png/.jpg');
+
+                            const snapFilename = path.join(mameAoDataDirectory, 'snap-submit', `${submit_token}${snapExtention}`);
 
                             try {
                                 await fs.promises.access(snapFilename, fs.constants.F_OK);
@@ -586,7 +596,7 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
                             let snapTable = '<table><tr><th>Snap Submitted</th><th>Uploaded</th><th>Snapped By</th><th>Core</th><th>Version</th><th>Machine</th><th>Software List</th><th>Software</th><th>Existing</th></tr>';
 
                             snapTable += snapData.map(dataRow => {
-                                const snap_uploaded = dataRow[1].value.toISOString();
+                                const snap_uploaded = dataRow[1].value.toISOString().slice(0, -5).replace('T', ' ');
                                 const display_name = dataRow[2].value;
                                 const core_name = dataRow[3].value;
                                 const core_version = dataRow[4].value;
@@ -596,24 +606,26 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
                                 const existing = dataRow[8].value;
                                 const image_token = dataRow[9].value;
 
-                                const submit_url = `https://data.spludlow.co.uk/api/snap-home/${image_token}.png`;
+                                const submit_url = `<a href="/api/snap-home/${image_token}.png"><img src="/api/snap-home/${image_token}.jpg" loading="lazy" alt="${machine_name}"></a>`;
 
                                 let existing_column = 'NEW';
                                 if (existing === true) {
                                     if (softwarelist_name === '')
-                                        existing_column = `<img src="https://data.spludlow.co.uk/${core_name}/machine/${machine_name}.png" loading="lazy" alt="${machine_name}">`;
+                                        existing_column = `<a href="/${core_name}/machine/${machine_name}.png"><img src="/${core_name}/machine/${machine_name}.jpg" loading="lazy" alt="${machine_name}"></a>`;
                                     else
-                                        existing_column = `<img src="https://data.spludlow.co.uk/${core_name}/software/${softwarelist_name}/${software_name}.png" loading="lazy" alt="${software_name}">`;
+                                        existing_column = `<a href="/${core_name}/software/${softwarelist_name}/${software_name}.png"><img src="/${core_name}/software/${softwarelist_name}/${software_name}.jpg" loading="lazy" alt="${software_name}"></a>`;
                                 }
 
-                                return `<tr><td><img src="${submit_url}" loading="lazy" alt="${machine_name}"></td><td>${snap_uploaded}</td><td>${display_name}</td><td>${core_name}</td><td>${core_version}</td><td>${machine_name}</td><td>${softwarelist_name}</td><td>${software_name}</td><td>${existing_column}</td></tr>`;
+                                return `<tr><td>${submit_url}</td><td>${snap_uploaded}</td><td>${display_name}</td><td>${core_name}</td><td>${core_version}</td><td>${machine_name}</td><td>${softwarelist_name}</td><td>${software_name}</td><td>${existing_column}</td></tr>`;
                             }).join(os.EOL);
 
                             snapTable += '</table>';
 
-                            responseInfo.Title = 'snap submissions';
+                            responseInfo.Title = 'Snap Home';
                             responseInfo.Heading = responseInfo.Title;
-                            responseInfo.Body = snapTable;
+                            responseInfo.Body = '<h2>Submissions</h2><p>MAME-AO Snap Home pictures are displayed here see the <a href="https://github.com/sam-ludlow/mame-ao?tab=readme-ov-file#snap-home">README</a> for more details.</p>' +
+                                '<p>Please allow a few minutes for this page to get updated. Submittions will be reviewed, if aproved they will be assimilated.</p>' +
+                                snapTable;
 
                             break;
 
