@@ -2,7 +2,8 @@
   "name": "mame-ao-server",
   "version": "1.0.0",
   "description": "Retro computer hardware & software reference web",
-  "main": "src/index.js",
+  "main": "./dist/index.js",
+  "type": "module",
   "scripts": {
     "start": "tsc && node ./dist/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -22,6 +23,6 @@
   },
   "devDependencies": {
     "typescript": "^5.x",
-    "@types/node": "^22.x"
+    "@types/node": "^24.x"
   }
 }

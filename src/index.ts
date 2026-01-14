@@ -3,15 +3,13 @@ import os from 'os';
 import cluster from 'cluster';
 import fs from 'fs';
 import path from 'path';
-import { pipeline } from "stream/promises";
+import { pipeline } from 'stream/promises';
 import { randomUUID } from 'crypto';
 
-import * as tools from './tools';
+import * as tools from './tools.js';
 
 import Tedious from 'tedious';
-var Connection = require('tedious').Connection;
-var Request = require('tedious').Request;
-var TYPES = require('tedious').TYPES;
+import { Connection, Request, TYPES } from 'tedious';
 
 var validNameRegEx = /^[a-zA-Z0-9-_]+$/;
 var validUUIDRegEx = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
@@ -969,7 +967,7 @@ const savePhoneHome = async (startTime: Date, req: http.IncomingMessage, body: s
         INSERT INTO [PhoneHomes] ([RequestTime], [RequestAddress], [RequestAgent], [ResponseTime], [BodyLength], [Body], [Status], [token])
         VALUES (@RequestTime, @RequestAddress, @RequestAgent, @ResponseTime, @BodyLength, @Body, @Status, @token);
     `;
-    const request: Tedious.Request = new Request(commandText);
+    const request: Tedious.Request = new Request(commandText, () => {});
 
     let address = req.headers['x-forwarded-for'] || 'local';
     if (Array.isArray(address))
@@ -1031,7 +1029,7 @@ export const getMachines = async (config: any,  search: string, offset: number, 
     commandText = commandText.replace('@offset', offset.toString());
     commandText = commandText.replace('@limit', limit.toString());
 
-    const request: Tedious.Request = new Request(commandText);
+    const request: Tedious.Request = new Request(commandText, () => {});
 
     if (search.length > 0)
         request.addParameter('search', TYPES.VarChar, search);

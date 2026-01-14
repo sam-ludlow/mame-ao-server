@@ -1,9 +1,6 @@
 import fs from 'fs';
 import Tedious from 'tedious';
-
-var Connection = require('tedious').Connection;
-var Request = require('tedious').Request;
-var TYPES = require('tedious').TYPES;
+import { Connection, Request, TYPES } from 'tedious';
 
 export const directoryFiles = async (directory: string): Promise<string[]> => {
     return fs.readdirSync(directory);
@@ -85,7 +82,7 @@ export const databaseQuery = async (config: any, commandText: string) => {
 
     let data;
     try {
-        const request: Tedious.Request = new Request(commandText);
+        const request: Tedious.Request = new Request(commandText, () => {});
 
         data = await sqlRequest(connection, request);
     }
@@ -107,7 +104,7 @@ export const databasePayload = async (config: any, tableName: string, keys: any,
     try {
         const wheres: string[] = Object.keys(keys).map(keyName => `[${keyName}] = @${keyName}`);
         const commandText = `SELECT [title], [${extention}] FROM [${tableName}] WHERE (${wheres.join(' AND ')})`;
-        const request: Tedious.Request = new Request(commandText);
+        const request: Tedious.Request = new Request(commandText, () => {});
 
         Object.keys(keys).forEach((keyName => {
             request.addParameter(keyName, TYPES.VarChar, keys[keyName]);
