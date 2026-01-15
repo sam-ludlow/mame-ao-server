@@ -315,6 +315,7 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
     res.setHeader('Access-Control-Allow-Origin', '*');
 
     if (concurrentRequests > 1024) {
+        console.log(`503\t${process.pid}\t${concurrentRequests}`);
         res.writeHead(503, { 'Content-Type': 'text/html; charset=utf-8'});
         res.write('<h1>Server Busy - Try Later</h1>');
         res.end();
@@ -493,8 +494,10 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
         } catch (e: any) {
             console.log(e);
 
-            res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8'});
-            res.write(JSON.stringify({ error_message: e.message }));
+            if (res.headersSent === false) {
+                res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8'});
+                res.write(JSON.stringify({ error_message: e.message }));
+            }
         }
         res.end();
         return;
@@ -937,20 +940,22 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
     }
     catch (e) {
         const error = e as Error;
-        const status = 400;
-
         console.log(error);
 
-        res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8'});
+        if (res.headersSent === false) {
+            const status = 400;
 
-        const errorBody: any = {
-            status,
-            name: error.name,
-            message: error.message,
-            stack: error.stack,
-        };
+            res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8'});
 
-        res.write(JSON.stringify(errorBody, null, '\t'));
+            const errorBody: any = {
+                status,
+                name: error.name,
+                message: error.message,
+                stack: error.stack,
+            };
+
+            res.write(JSON.stringify(errorBody, null, '\t'));
+        }
     }
     finally {
         concurrentRequests--;
