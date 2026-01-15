@@ -313,7 +313,6 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
     console.log(`${now.toUTCString()}\t${process.pid}\t${concurrentRequests}\t${forwardedFor}\t${req.method}\t${req.url}`);
 
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Server', 'Spludlow Data Web/0.0');
 
     if (concurrentRequests > 1024) {
         res.writeHead(503, { 'Content-Type': 'text/html; charset=utf-8'});
@@ -354,7 +353,7 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
         case '/robots.txt':
             res.setHeader('Content-Type', 'text/plain; charset=utf-8');
             res.setHeader('Cache-Control', 'public, max-age=86400');
-            res.write('');
+            res.write(assets['robots.txt']);
             res.end();
             return;
 
