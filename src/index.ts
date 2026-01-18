@@ -591,7 +591,7 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
 
                         case 'snap':
 
-                            const snapData = await tools.databaseQuery(phoneHomeDatabaseConfig, 'SELECT * FROM [snap_submit] ORDER BY [snap_submit_id] DESC');
+                            const snapData = await tools.databaseQuery(phoneHomeDatabaseConfig, 'SELECT * FROM [snap_submit] WHERE ([status] = 0) ORDER BY [snap_submit_id] DESC');
 
                             let snapTable = '<table><tr><th>Snap Submitted</th><th>Uploaded</th><th>Snapped By</th><th>Core</th><th>Version</th><th>Machine</th><th>Software List</th><th>Software</th><th>Existing</th></tr>';
 
