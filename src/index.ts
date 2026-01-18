@@ -314,7 +314,7 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
 
     res.setHeader('Access-Control-Allow-Origin', '*');
 
-    if (concurrentRequests > 1024) {
+    if (concurrentRequests > 512) {
         console.log(`503\t${process.pid}\t${concurrentRequests}`);
         res.writeHead(503, { 'Content-Type': 'text/html; charset=utf-8'});
         res.write('<h1>Server Busy - Try Later</h1>');
@@ -963,13 +963,13 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
     }
 }
 
-const phoneHomeDatabaseConfig = tools.sqlConfig('my-mssql-server', 'SpludlowV1');
+const phoneHomeDatabaseConfig = tools.sqlConfig('my-mssql-server', 'ao-master');
 
 const savePhoneHome = async (startTime: Date, req: http.IncomingMessage, body: string, token: string) => {
 
     const commandText = `
-        INSERT INTO [PhoneHomes] ([RequestTime], [RequestAddress], [RequestAgent], [ResponseTime], [BodyLength], [Body], [Status], [token])
-        VALUES (@RequestTime, @RequestAddress, @RequestAgent, @ResponseTime, @BodyLength, @Body, @Status, @token);
+        INSERT INTO [phone_home] ([request_time], [request_address], [request_agent], [response_time], [body_length], [body], [status], [token])
+        VALUES (@request_time, @request_address, @request_agent, @response_time, @body_length, @body, @status, @token);
     `;
     const request: Tedious.Request = new Request(commandText, () => {});
 
@@ -977,13 +977,13 @@ const savePhoneHome = async (startTime: Date, req: http.IncomingMessage, body: s
     if (Array.isArray(address))
         address = address[0];
 
-    request.addParameter('RequestTime', TYPES.DateTime2, startTime);
-    request.addParameter('RequestAddress', TYPES.VarChar, address.split(':')[0]);
-    request.addParameter('RequestAgent', TYPES.NVarChar, req.headers['user-agent'] || '');
-    request.addParameter('ResponseTime', TYPES.Int, Date.now() - startTime.getTime());
-    request.addParameter('BodyLength', TYPES.Int, body.length);
-    request.addParameter('Body', TYPES.NVarChar, body);
-    request.addParameter('Status', TYPES.Int, 0);
+    request.addParameter('request_time', TYPES.DateTime2, startTime);
+    request.addParameter('request_address', TYPES.VarChar, address.split(':')[0]);
+    request.addParameter('request_agent', TYPES.NVarChar, req.headers['user-agent'] || '');
+    request.addParameter('response_time', TYPES.Int, Date.now() - startTime.getTime());
+    request.addParameter('body_length', TYPES.Int, body.length);
+    request.addParameter('body', TYPES.NVarChar, body);
+    request.addParameter('status', TYPES.Int, 0);
     request.addParameter('token', TYPES.Char, token);
 
     const connection = new Connection(phoneHomeDatabaseConfig);
