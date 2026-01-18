@@ -1,0 +1,144 @@
+USE [master]
+GO
+/****** Object:  Database [ao-master]    Script Date: 18/01/2026 10:42:57 ******/
+CREATE DATABASE [ao-master]
+ CONTAINMENT = NONE
+ ON  PRIMARY 
+( NAME = N'ao-master', FILENAME = N'J:\Microsoft SQL Server\MSSQL16.MSSQLSERVER\MSSQL\DATA\ao-master.mdf' , SIZE = 139264KB , MAXSIZE = UNLIMITED, FILEGROWTH = 65536KB )
+ LOG ON 
+( NAME = N'ao-master_log', FILENAME = N'J:\Microsoft SQL Server\MSSQL16.MSSQLSERVER\MSSQL\DATA\ao-master_log.ldf' , SIZE = 73728KB , MAXSIZE = 2048GB , FILEGROWTH = 65536KB )
+ WITH CATALOG_COLLATION = DATABASE_DEFAULT, LEDGER = OFF
+GO
+ALTER DATABASE [ao-master] SET COMPATIBILITY_LEVEL = 160
+GO
+IF (1 = FULLTEXTSERVICEPROPERTY('IsFullTextInstalled'))
+begin
+EXEC [ao-master].[dbo].[sp_fulltext_database] @action = 'enable'
+end
+GO
+ALTER DATABASE [ao-master] SET ANSI_NULL_DEFAULT OFF 
+GO
+ALTER DATABASE [ao-master] SET ANSI_NULLS OFF 
+GO
+ALTER DATABASE [ao-master] SET ANSI_PADDING OFF 
+GO
+ALTER DATABASE [ao-master] SET ANSI_WARNINGS OFF 
+GO
+ALTER DATABASE [ao-master] SET ARITHABORT OFF 
+GO
+ALTER DATABASE [ao-master] SET AUTO_CLOSE OFF 
+GO
+ALTER DATABASE [ao-master] SET AUTO_SHRINK OFF 
+GO
+ALTER DATABASE [ao-master] SET AUTO_UPDATE_STATISTICS ON 
+GO
+ALTER DATABASE [ao-master] SET CURSOR_CLOSE_ON_COMMIT OFF 
+GO
+ALTER DATABASE [ao-master] SET CURSOR_DEFAULT  GLOBAL 
+GO
+ALTER DATABASE [ao-master] SET CONCAT_NULL_YIELDS_NULL OFF 
+GO
+ALTER DATABASE [ao-master] SET NUMERIC_ROUNDABORT OFF 
+GO
+ALTER DATABASE [ao-master] SET QUOTED_IDENTIFIER OFF 
+GO
+ALTER DATABASE [ao-master] SET RECURSIVE_TRIGGERS OFF 
+GO
+ALTER DATABASE [ao-master] SET  DISABLE_BROKER 
+GO
+ALTER DATABASE [ao-master] SET AUTO_UPDATE_STATISTICS_ASYNC OFF 
+GO
+ALTER DATABASE [ao-master] SET DATE_CORRELATION_OPTIMIZATION OFF 
+GO
+ALTER DATABASE [ao-master] SET TRUSTWORTHY OFF 
+GO
+ALTER DATABASE [ao-master] SET ALLOW_SNAPSHOT_ISOLATION OFF 
+GO
+ALTER DATABASE [ao-master] SET PARAMETERIZATION SIMPLE 
+GO
+ALTER DATABASE [ao-master] SET READ_COMMITTED_SNAPSHOT OFF 
+GO
+ALTER DATABASE [ao-master] SET HONOR_BROKER_PRIORITY OFF 
+GO
+ALTER DATABASE [ao-master] SET RECOVERY SIMPLE 
+GO
+ALTER DATABASE [ao-master] SET  MULTI_USER 
+GO
+ALTER DATABASE [ao-master] SET PAGE_VERIFY CHECKSUM  
+GO
+ALTER DATABASE [ao-master] SET DB_CHAINING OFF 
+GO
+ALTER DATABASE [ao-master] SET FILESTREAM( NON_TRANSACTED_ACCESS = OFF ) 
+GO
+ALTER DATABASE [ao-master] SET TARGET_RECOVERY_TIME = 60 SECONDS 
+GO
+ALTER DATABASE [ao-master] SET DELAYED_DURABILITY = DISABLED 
+GO
+ALTER DATABASE [ao-master] SET ACCELERATED_DATABASE_RECOVERY = OFF  
+GO
+EXEC sys.sp_db_vardecimal_storage_format N'ao-master', N'ON'
+GO
+ALTER DATABASE [ao-master] SET QUERY_STORE = ON
+GO
+ALTER DATABASE [ao-master] SET QUERY_STORE (OPERATION_MODE = READ_WRITE, CLEANUP_POLICY = (STALE_QUERY_THRESHOLD_DAYS = 30), DATA_FLUSH_INTERVAL_SECONDS = 900, INTERVAL_LENGTH_MINUTES = 60, MAX_STORAGE_SIZE_MB = 1000, QUERY_CAPTURE_MODE = AUTO, SIZE_BASED_CLEANUP_MODE = AUTO, MAX_PLANS_PER_QUERY = 200, WAIT_STATS_CAPTURE_MODE = ON)
+GO
+USE [ao-master]
+GO
+/****** Object:  User [api]    Script Date: 18/01/2026 10:42:57 ******/
+CREATE USER [api] FOR LOGIN [api] WITH DEFAULT_SCHEMA=[dbo]
+GO
+ALTER ROLE [db_datareader] ADD MEMBER [api]
+GO
+ALTER ROLE [db_datawriter] ADD MEMBER [api]
+GO
+/****** Object:  Table [dbo].[phone_home]    Script Date: 18/01/2026 10:42:58 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[phone_home](
+	[phone_home_id] [bigint] IDENTITY(1,1) NOT NULL,
+	[request_time] [datetime2](7) NOT NULL,
+	[request_address] [varchar](15) NOT NULL,
+	[request_agent] [nvarchar](max) NOT NULL,
+	[response_time] [int] NOT NULL,
+	[body_length] [int] NOT NULL,
+	[body] [nvarchar](max) NOT NULL,
+	[status] [int] NOT NULL,
+	[process_time] [datetime2](7) NULL,
+	[token] [char](36) NULL,
+ CONSTRAINT [PK_phone_home] PRIMARY KEY CLUSTERED 
+(
+	[phone_home_id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[snap_submit]    Script Date: 18/01/2026 10:42:58 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[snap_submit](
+	[snap_submit_id] [bigint] IDENTITY(1,1) NOT NULL,
+	[snap_uploaded] [datetime2](7) NOT NULL,
+	[display_name] [nvarchar](32) NULL,
+	[core_name] [varchar](8) NOT NULL,
+	[core_version] [varchar](16) NOT NULL,
+	[machine_name] [varchar](32) NOT NULL,
+	[softwarelist_name] [varchar](32) NULL,
+	[software_name] [varchar](32) NULL,
+	[existing] [bit] NOT NULL,
+	[image_token] [char](36) NOT NULL,
+	[status] [int] NULL,
+	[process_time] [datetime2](7) NULL,
+	[phone_home_id] [bigint] NULL,
+ CONSTRAINT [PK_snap_submit] PRIMARY KEY CLUSTERED 
+(
+	[snap_submit_id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+USE [master]
+GO
+ALTER DATABASE [ao-master] SET  READ_WRITE 
+GO
