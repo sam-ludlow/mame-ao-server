@@ -1,6 +1,5 @@
 USE [master]
 GO
-/****** Object:  Database [ao-master]    Script Date: 18/01/2026 10:42:57 ******/
 CREATE DATABASE [ao-master]
  CONTAINMENT = NONE
  ON  PRIMARY 
@@ -84,14 +83,28 @@ ALTER DATABASE [ao-master] SET QUERY_STORE (OPERATION_MODE = READ_WRITE, CLEANUP
 GO
 USE [ao-master]
 GO
-/****** Object:  User [api]    Script Date: 18/01/2026 10:42:57 ******/
 CREATE USER [api] FOR LOGIN [api] WITH DEFAULT_SCHEMA=[dbo]
 GO
 ALTER ROLE [db_datareader] ADD MEMBER [api]
 GO
 ALTER ROLE [db_datawriter] ADD MEMBER [api]
 GO
-/****** Object:  Table [dbo].[phone_home]    Script Date: 18/01/2026 10:42:58 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[payload](
+	[payload_key] [varchar](16) NOT NULL,
+	[title] [nvarchar](max) NULL,
+	[xml] [nvarchar](max) NULL,
+	[json] [nvarchar](max) NULL,
+	[html] [nvarchar](max) NULL,
+ CONSTRAINT [PK_payload] PRIMARY KEY NONCLUSTERED 
+(
+	[payload_key] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -113,7 +126,6 @@ CREATE TABLE [dbo].[phone_home](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[snap_submit]    Script Date: 18/01/2026 10:42:58 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON

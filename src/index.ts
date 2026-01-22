@@ -75,7 +75,7 @@ export class ApplicationCore implements Application {
 
             case 'snap':
                 // Not a real core
-                this.Info = 'this is work in progress, I have big plans';
+                this.Info = '';
                 break;
 
             default:
@@ -590,8 +590,10 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
                             break;
 
                         case 'snap':
-
-                            const snapData = await tools.databaseQuery(phoneHomeDatabaseConfig, 'SELECT * FROM [snap_submit] WHERE ([status] = 0) ORDER BY [snap_submit_id] DESC');
+                            const [snapData, snap_totals_data] = await Promise.all([
+                                tools.databaseQuery(phoneHomeDatabaseConfig, 'SELECT * FROM [snap_submit] WHERE ([status] = 0) ORDER BY [snap_submit_id] DESC'),
+                                tools.databasePayload(phoneHomeDatabaseConfig, 'payload', { payload_key: 'snap-stats' }, 'html'),
+                            ]);
 
                             let snapTable = '<table><tr><th>Snap Submitted</th><th>Uploaded</th><th>Snapped By</th><th>Core</th><th>Version</th><th>Machine</th><th>Software List</th><th>Software</th><th>Existing</th></tr>';
 
@@ -620,6 +622,11 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
                             }).join(os.EOL);
 
                             snapTable += '</table>';
+
+                            responseInfo.Info = snap_totals_data[0].value;
+
+                            snapTable += `<hr />`;
+                            snapTable += snap_totals_data[1].value;
 
                             responseInfo.Title = 'Snap Home';
                             responseInfo.Heading = responseInfo.Title;
