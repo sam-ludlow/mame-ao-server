@@ -1043,16 +1043,16 @@ export const getMachines = async (config: any,  search: string, offset: number, 
             ) AS tmp_total_rows
             CROSS JOIN (
                 SELECT
-                    payload.[${payloadColumnName}],
+                    machine_search_payload.[${payloadColumnName}],
                     search_results.[RANK]
                 FROM FREETEXTTABLE(
                     machine_search_payload,
                     ([name], [description]),
                     @search
                 ) AS search_results
-                JOIN machine_search_payload AS payload
-                    ON payload.[name] = search_results.[KEY]
-                ORDER BY search_results.[RANK] DESC
+                JOIN machine_search_payload
+                    ON machine_search_payload.[name] = search_results.[KEY]
+                ORDER BY search_results.[RANK] DESC, machine_search_payload.[description] ASC
                 OFFSET @offset ROWS
                 FETCH NEXT @limit ROWS ONLY
             ) AS tmp_page_rows;
