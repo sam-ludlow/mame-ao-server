@@ -53,7 +53,6 @@ export class ApplicationCore implements Application {
     public initialize = async (): Promise<any> => {
 
         const databaseServer = 'my-mssql-server';
-
         const databaseNamePrefix = 'ao';
 
         switch (this.Key) {
@@ -195,7 +194,7 @@ export class RequestInfo {
 
         [this.Url, this.Query] = (req.url || '/').split('?');
 
-        this.Paramters = { search: '', offset: 0, limit: 1000 };
+        this.Paramters = { search: '', offset: 0, limit: 250 };
 
         if (this.Query !== undefined) {
             this.Query.split('&').forEach(queryPart => {
@@ -651,8 +650,11 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
                         case 'hbmame':
                             switch (requestInfo.UrlParts[1]) {
                                 case 'machine':
+
+                                    const displayMode: string = 'html_card'; //  'html'  'html_card'
+
                                     // Machine Search
-                                    const pageData = await getMachines(application.DatabaseConfigs[0], requestInfo.Paramters.search, requestInfo.Paramters.offset, requestInfo.Paramters.limit);
+                                    const pageData = await getMachines(application.DatabaseConfigs[0], requestInfo.Paramters.search, requestInfo.Paramters.offset, requestInfo.Paramters.limit, displayMode);
 
                                     let viewCount = pageData.length;
                                     let totalCount = viewCount === 0 ? 0 : pageData[0].filter((r: any) => r.metadata.colName === 'ao_total')[0].value;
@@ -673,24 +675,42 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
 
                                     nav += `view:${viewCount} total:${totalCount}`;
 
-                                    const columnDefs = {
-                                        'name': 'Name',
-                                        'description': 'Description',
-                                        'year': 'Year',
-                                        'manufacturer': 'Manufacturer',
-                                        'cloneof': 'Clone of',
-                                        'romof': 'Rom of',
-                                    };
+                                    let machineHtml = '';
 
-                                    let machineHtml = `<table><tr>`;
-                                    machineHtml += Object.keys(columnDefs).map(columnName => `<th>${columnName}</th>`).join('');
-                                    machineHtml += '</tr>' + os.EOL;
-                                    
-                                    pageData.forEach((row) => {
-                                        machineHtml += row[1].value + os.EOL;
-                                    });
-                                    
-                                    machineHtml += '</table>';
+                                    switch (displayMode) {
+
+                                        case 'html':
+                                            const columnDefs = {
+                                                'name': 'Name',
+                                                'description': 'Description',
+                                                'year': 'Year',
+                                                'manufacturer': 'Manufacturer',
+                                                'cloneof': 'Clone of',
+                                                'romof': 'Rom of',
+                                            };
+
+                                            machineHtml = `<table><tr>`;
+                                            machineHtml += Object.keys(columnDefs).map(columnName => `<th>${columnName}</th>`).join('');
+                                            machineHtml += '</tr>' + os.EOL;
+                                            
+                                            pageData.forEach((row) => {
+                                                machineHtml += row[1].value + os.EOL;
+                                            });
+                                            
+                                            machineHtml += '</table>';
+                                            break;
+
+                                        case 'html_card':
+                                            machineHtml = '<div class="card-grid">';
+                                            pageData.forEach((row) => {
+                                                machineHtml += row[1].value + os.EOL;
+                                            });
+                                            machineHtml += '</div>' + os.EOL;
+                                            break;
+
+                                        default:
+                                            throw new Error(`Bad display mode ${displayMode}`);
+                                    }
 
                                     machineHtml = assets['mame-machine.html'].replace('@DATA@', machineHtml);
                                     machineHtml = machineHtml.replace('@TOP@', nav);
@@ -1003,37 +1023,53 @@ const savePhoneHome = async (startTime: Date, req: http.IncomingMessage, body: s
     }
 }
 
-export const getMachines = async (config: any,  search: string, offset: number, limit: number) => {
+export const getMachines = async (config: any,  search: string, offset: number, limit: number, payloadColumnName: string) => {
 
     let commandText;
     
     if (search.length > 0) {
         commandText = `
-            WITH full_text_table AS (
-            SELECT 
-                machine_search_payload.[description], machine_search_payload.[html], free_text_table.[RANK] AS [ao_rank]
-            FROM FREETEXTTABLE(
+            SELECT
+                tmp_total_rows.ao_total,
+                tmp_page_rows.[${payloadColumnName}],
+                tmp_page_rows.[RANK]
+            FROM (
+                SELECT COUNT(*) AS ao_total
+                FROM FREETEXTTABLE(
                     machine_search_payload,
                     ([name], [description]),
                     @search
-                ) AS free_text_table
-            JOIN machine_search_payload
-                ON machine_search_payload.[name] = free_text_table.[KEY]
-            )
-            SELECT
-                (SELECT COUNT(*) FROM full_text_table) AS [ao_total], [html], [ao_rank]
-            FROM full_text_table
-            ORDER BY [description] ASC
-            OFFSET @offset ROWS
-            FETCH NEXT @limit ROWS ONLY;
+                )
+            ) AS tmp_total_rows
+            CROSS JOIN (
+                SELECT
+                    payload.[${payloadColumnName}],
+                    search_results.[RANK]
+                FROM FREETEXTTABLE(
+                    machine_search_payload,
+                    ([name], [description]),
+                    @search
+                ) AS search_results
+                JOIN machine_search_payload AS payload
+                    ON payload.[name] = search_results.[KEY]
+                ORDER BY search_results.[RANK] DESC
+                OFFSET @offset ROWS
+                FETCH NEXT @limit ROWS ONLY
+            ) AS tmp_page_rows;
         `;
     } else {
         commandText = `
-            SELECT COUNT(*) OVER() AS [ao_total], [html]
-            FROM [machine_search_payload]
-            ORDER BY [description] ASC
-            OFFSET @offset ROWS
-            FETCH NEXT @limit ROWS ONLY;
+            SELECT tmp_total_rows.[ao_total], tmp_page_rows.[${payloadColumnName}]
+            FROM (
+                SELECT COUNT(*) AS ao_total
+                FROM machine_search_payload
+            ) tmp_total_rows
+            CROSS JOIN (
+                SELECT [${payloadColumnName}]
+                FROM machine_search_payload
+                ORDER BY description
+                OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY
+            ) tmp_page_rows;
         `;
     }
 
