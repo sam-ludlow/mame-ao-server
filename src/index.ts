@@ -194,7 +194,7 @@ export class RequestInfo {
 
         [this.Url, this.Query] = (req.url || '/').split('?');
 
-        this.Paramters = { search: '', offset: 0, limit: 250 };
+        this.Paramters = { search: '', offset: 0, limit: 250, view: 'grid' };
 
         if (this.Query !== undefined) {
             this.Query.split('&').forEach(queryPart => {
@@ -213,6 +213,11 @@ export class RequestInfo {
 
                         case 'core':
                             this.Paramters.core = pair[1];
+                            break;
+
+                        case 'view':
+                            if (['grid', 'list'].includes(pair[1]) === true)
+                                this.Paramters.view = pair[1];
                             break;
                     }
                 }
@@ -650,8 +655,7 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
                         case 'hbmame':
                             switch (requestInfo.UrlParts[1]) {
                                 case 'machine':
-
-                                    const displayMode: string = 'html_card'; //  'html'  'html_card'
+                                    const displayMode: string = requestInfo.Paramters.view === 'grid' ? 'html_card' : 'html';
 
                                     // Machine Search
                                     const pageData = await getMachines(application.DatabaseConfigs[0], requestInfo.Paramters.search, requestInfo.Paramters.offset, requestInfo.Paramters.limit, displayMode);
@@ -662,14 +666,14 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
                                     let nav = '';
                                     let prevOffset = requestInfo.Paramters.offset - requestInfo.Paramters.limit;
                                     if (prevOffset >= 0)
-                                        nav += `<a href="${requestInfo.Url}?search=${requestInfo.Paramters.search}&offset=${prevOffset}">PREV</a> &bull; `;
+                                        nav += `<a href="${requestInfo.Url}?search=${requestInfo.Paramters.search}&offset=${prevOffset}&view=${requestInfo.Paramters.view}">PREV</a> &bull; `;
                                     else
                                         nav += 'PREV &bull; ';
 
 
                                     let nextOffset = requestInfo.Paramters.offset + requestInfo.Paramters.limit;
                                     if (nextOffset < totalCount)
-                                        nav += `<a href="${requestInfo.Url}?search=${requestInfo.Paramters.search}&offset=${nextOffset}">NEXT</a> &bull; `;
+                                        nav += `<a href="${requestInfo.Url}?search=${requestInfo.Paramters.search}&offset=${nextOffset}&view=${requestInfo.Paramters.view}">NEXT</a> &bull; `;
                                     else
                                         nav += 'NEXT &bull; ';
 

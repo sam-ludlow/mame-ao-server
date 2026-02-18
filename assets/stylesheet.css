@@ -189,3 +189,14 @@ td.nav-on {
   font-weight: 400;
   font-size: 0.8rem;
 }
+
+.toolbar {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.view-toggle {
+    display: flex;
+    gap: 8px;
+    margin-left: auto;
+}

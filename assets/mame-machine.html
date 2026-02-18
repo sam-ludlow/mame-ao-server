@@ -24,20 +24,53 @@
         const inputText = document.getElementById('inputText');
         inputText.value = _parameters.search;
         inputText.focus();
+
+        switch (_parameters['view']) {
+            case 'list':
+                document.getElementById("view-list").checked = true;
+                break;
+            default:
+                document.getElementById("view-grid").checked = true;
+                _parameters['view'] = 'grid';
+                break;
+        }
     }
 
-    const searchButton = async () => {
-        
-        const inputText = document.getElementById('inputText');
-        document.location = `${_path}?search=${encodeURIComponent(inputText.value)}`;
+    const gotoLocation = () => {
+        document.location = `${_path}?` + Object.keys(_parameters).map((key) => `${key}=${encodeURIComponent(_parameters[key])}`).join('&');
+    }
+
+    const searchButton = () => {
+        _parameters['search'] = document.getElementById('inputText').value;
+        _parameters['offset'] = 0;
+        gotoLocation();
+    }
+
+    const changeView = (view) => {
+        _parameters['view'] = view;
+        gotoLocation();
     }
 
     window.onload = load;
 
 </script>
 
-<input id="inputText" type="text" style="width:480px;" />
-<button type="submit" onclick="searchButton(); return false;">Search</button>
+<div class="toolbar">
+    <input id="inputText" type="text" style="width:480px;" />
+    <button type="submit" onclick="searchButton(); return false;">Search</button>
+
+    <div class="view-toggle">
+        <label class="view-option">
+            <input id="view-grid" type="radio" name="view" value="grid" onchange="changeView('grid')">
+            grid
+        </label>
+
+        <label class="view-option">
+            <input id="view-list" type="radio" name="view" value="list" onchange="changeView('list')">
+            list
+        </label>
+    </div>
+</div>
 
 <hr />
 
