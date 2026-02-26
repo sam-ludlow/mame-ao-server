@@ -182,6 +182,16 @@ const rootMenu: any[] =
     },
 ];
 
+const defaultParamters: any = {
+    offset: 0,
+    limit: 250,
+    search: '',
+    view: 'grid',
+    electronic: true,
+    mechanical: false,
+    device: false
+};
+
 export class RequestInfo {
 
     public Url: string;
@@ -194,7 +204,7 @@ export class RequestInfo {
 
         [this.Url, this.Query] = (req.url || '/').split('?');
 
-        this.Paramters = { search: '', offset: 0, limit: 250, view: 'grid' };
+        this.Paramters = { ...defaultParamters };
 
         if (this.Query !== undefined) {
             this.Query.split('&').forEach(queryPart => {
@@ -218,6 +228,12 @@ export class RequestInfo {
                         case 'view':
                             if (['grid', 'list'].includes(pair[1]) === true)
                                 this.Paramters.view = pair[1];
+                            break;
+
+                        case 'electronic':
+                        case 'mechanical':
+                        case 'device':
+                            this.Paramters[pair[0]] = ['true', '1', 'yes'].includes(pair[1]);
                             break;
                     }
                 }
@@ -658,22 +674,35 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
                                     const displayMode: string = requestInfo.Paramters.view === 'grid' ? 'html_card' : 'html';
 
                                     // Machine Search
-                                    const pageData = await getMachines(application.DatabaseConfigs[0], requestInfo.Paramters.search, requestInfo.Paramters.offset, requestInfo.Paramters.limit, displayMode);
+                                    const pageData = await getMachines(application.DatabaseConfigs[0], requestInfo.Paramters.search, requestInfo.Paramters.offset, requestInfo.Paramters.limit,
+                                        displayMode, requestInfo.Paramters.electronic, requestInfo.Paramters.mechanical, requestInfo.Paramters.device);
 
                                     let viewCount = pageData.length;
                                     let totalCount = viewCount === 0 ? 0 : pageData[0].filter((r: any) => r.metadata.colName === 'ao_total')[0].value;
 
+                                    const goLocationUrl = (offset: number) => {
+                                        const paramters = { ...requestInfo.Paramters };
+                                        paramters.offset = offset;
+
+                                        const parts: string[] = Object.keys(requestInfo.Paramters).filter(key => paramters[key] !== defaultParamters[key]);
+
+                                        if (parts.length === 0)
+                                            return requestInfo.Url;
+
+                                        return requestInfo.Url + '?' + parts.map((key) => `${key}=${encodeURIComponent(paramters[key])}`).join('&');
+                                    };
+
                                     let nav = '';
                                     let prevOffset = requestInfo.Paramters.offset - requestInfo.Paramters.limit;
                                     if (prevOffset >= 0)
-                                        nav += `<a href="${requestInfo.Url}?search=${requestInfo.Paramters.search}&offset=${prevOffset}&view=${requestInfo.Paramters.view}">PREV</a> &bull; `;
+                                        nav += `<a href="${goLocationUrl(prevOffset)}">PREV</a> &bull; `;
                                     else
                                         nav += 'PREV &bull; ';
 
 
                                     let nextOffset = requestInfo.Paramters.offset + requestInfo.Paramters.limit;
                                     if (nextOffset < totalCount)
-                                        nav += `<a href="${requestInfo.Url}?search=${requestInfo.Paramters.search}&offset=${nextOffset}&view=${requestInfo.Paramters.view}">NEXT</a> &bull; `;
+                                        nav += `<a href="${goLocationUrl(nextOffset)}">NEXT</a> &bull; `;
                                     else
                                         nav += 'NEXT &bull; ';
 
@@ -1027,53 +1056,50 @@ const savePhoneHome = async (startTime: Date, req: http.IncomingMessage, body: s
     }
 }
 
-export const getMachines = async (config: any,  search: string, offset: number, limit: number, payloadColumnName: string) => {
+export const getMachines = async (config: any,  search: string, offset: number, limit: number, payloadColumnName: string, iselectronic: boolean, ismechanical: boolean, isdevice: boolean) => {
 
     let commandText;
-    
+
     if (search.length > 0) {
         commandText = `
-            SELECT
-                tmp_total_rows.ao_total,
-                tmp_page_rows.[${payloadColumnName}],
-                tmp_page_rows.[RANK]
-            FROM (
-                SELECT COUNT(*) AS ao_total
-                FROM FREETEXTTABLE(
-                    machine_search_payload,
-                    ([name], [description]),
-                    @search
-                )
-            ) AS tmp_total_rows
-            CROSS JOIN (
+            WITH SearchResults AS (
                 SELECT
-                    machine_search_payload.[${payloadColumnName}],
-                    search_results.[RANK]
+                    m.[${payloadColumnName}],
+                    m.[description],
+                    s.[RANK],
+                    COUNT(*) OVER() AS ao_total
                 FROM FREETEXTTABLE(
-                    machine_search_payload,
-                    ([name], [description]),
-                    @search
-                ) AS search_results
-                JOIN machine_search_payload
-                    ON machine_search_payload.[name] = search_results.[KEY]
-                ORDER BY search_results.[RANK] DESC, machine_search_payload.[description] ASC
-                OFFSET @offset ROWS
-                FETCH NEXT @limit ROWS ONLY
-            ) AS tmp_page_rows;
+                        machine_search_payload,
+                        ([name], [description]),
+                        @search
+                    ) AS s
+                JOIN machine_search_payload AS m
+                    ON m.[name] = s.[KEY]
+                WHERE (@iselectronic = 1 AND iselectronic = 1) OR (@ismechanical = 1 AND ismechanical = 1) OR (@isdevice = 1 AND isdevice = 1)
+            )
+            SELECT
+                ao_total,
+                [${payloadColumnName}],
+                [RANK]
+            FROM SearchResults
+            ORDER BY [RANK] DESC, [description] ASC
+            OFFSET @offset ROWS
+            FETCH NEXT @limit ROWS ONLY;
         `;
     } else {
         commandText = `
-            SELECT tmp_total_rows.[ao_total], tmp_page_rows.[${payloadColumnName}]
-            FROM (
-                SELECT COUNT(*) AS ao_total
+            WITH Filtered AS (
+                SELECT 
+                    [${payloadColumnName}],
+                    description,
+                    COUNT(*) OVER() AS ao_total
                 FROM machine_search_payload
-            ) tmp_total_rows
-            CROSS JOIN (
-                SELECT [${payloadColumnName}]
-                FROM machine_search_payload
-                ORDER BY description
-                OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY
-            ) tmp_page_rows;
+                WHERE (@iselectronic = 1 AND iselectronic = 1) OR (@ismechanical = 1 AND ismechanical = 1) OR (@isdevice = 1 AND isdevice = 1)
+            )
+            SELECT ao_total, [${payloadColumnName}]
+            FROM Filtered
+            ORDER BY description
+            OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY;
         `;
     }
 
@@ -1084,6 +1110,10 @@ export const getMachines = async (config: any,  search: string, offset: number, 
 
     if (search.length > 0)
         request.addParameter('search', TYPES.VarChar, search);
+
+    request.addParameter('iselectronic', TYPES.Bit, iselectronic);
+    request.addParameter('ismechanical', TYPES.Bit, ismechanical);
+    request.addParameter('isdevice', TYPES.Bit, isdevice);
 
     let data;
 

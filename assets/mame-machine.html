@@ -2,28 +2,52 @@
 
     const _path = document.location.pathname;
 
-    const _parameters = {};
+    const _defaultParamters = {
+        offset: 0,
+        limit: 250,
+        search: '',
+        view: 'grid',
+        electronic: true,
+        mechanical: false,
+        device: false
+    };
 
-    const load = async () => {
+    const _parameters = { ..._defaultParamters };
+
+    const load = () => {
         if (window.location.href.includes('?')) {
             const parts = window.location.href.split('?')[1].split('&');
             parts.forEach((part) => {
                 const pair = part.split('=');
-                _parameters[pair[0]] = decodeURIComponent(pair[1]);
+                const key = pair[0];
+                const value = decodeURIComponent(pair[1]);
+
+                switch (key) {
+                    case 'offset':
+                        _parameters[key] = parseInt(_parameters[value], 10);
+                        break;
+
+                    case 'search':
+                    case 'view':
+                        _parameters[key] = value;
+                        break;
+
+                    case 'electronic':
+                    case 'mechanical':
+                    case 'device':
+                        _parameters[key] = ['true', '1', 'yes'].includes(value);
+                        break;
+                }
             });
         }
-
-        if (_parameters['offset'] === undefined)
-            _parameters['offset'] = 0;
-        else
-            _parameters['offset'] = parseInt(_parameters['offset'], 10);
-
-        if (_parameters['search'] === undefined)
-            _parameters['search'] = '';
 
         const inputText = document.getElementById('inputText');
         inputText.value = _parameters.search;
         inputText.focus();
+
+        document.getElementById("electronic").checked = _parameters.electronic;
+        document.getElementById("mechanical").checked = _parameters.mechanical;
+        document.getElementById("device").checked = _parameters.device;
 
         switch (_parameters['view']) {
             case 'list':
@@ -37,7 +61,12 @@
     }
 
     const gotoLocation = () => {
-        document.location = `${_path}?` + Object.keys(_parameters).map((key) => `${key}=${encodeURIComponent(_parameters[key])}`).join('&');
+        const parts = Object.keys(_parameters).filter(key => _parameters[key] !== _defaultParamters[key]);
+
+        if (parts.length === 0)
+            document.location = _path;
+        else
+            document.location = _path + '?' + parts.map((key) => `${key}=${encodeURIComponent(_parameters[key])}`).join('&');
     }
 
     const searchButton = () => {
@@ -46,8 +75,14 @@
         gotoLocation();
     }
 
-    const changeView = (view) => {
-        _parameters['view'] = view;
+    const changeView = (input) => {
+        _parameters['view'] = input.value;
+        gotoLocation();
+    }
+
+    const changeType = (input) => {
+        _parameters[input.id] = input.checked;
+        _parameters['offset'] = 0;
         gotoLocation();
     }
 
@@ -56,17 +91,23 @@
 </script>
 
 <div class="toolbar">
-    <input id="inputText" type="text" style="width:480px;" />
-    <button type="submit" onclick="searchButton(); return false;">Search</button>
-
-    <div class="view-toggle">
-        <label class="view-option">
-            <input id="view-grid" type="radio" name="view" value="grid" onchange="changeView('grid')">
+    <div>
+        <input id="inputText" type="text" style="width:480px;" />
+        <button type="submit" onclick="searchButton(); return false;">Search</button>
+        <br />
+        <input type="checkbox" id="electronic" onclick="changeType(this);"><label for="electronic">electronic</label>
+        <input type="checkbox" id="mechanical" onclick="changeType(this);"><label for="mechanical">mechanical</label>
+        <input type="checkbox" id="device" onclick="changeType(this);"><label for="device">device</label>
+    </div>
+    
+    <div>
+        <label>
+            <input id="view-grid" type="radio" name="view" value="grid" onchange="changeView(this);">
             grid
         </label>
 
-        <label class="view-option">
-            <input id="view-list" type="radio" name="view" value="list" onchange="changeView('list')">
+        <label>
+            <input id="view-list" type="radio" name="view" value="list" onchange="changeView(this);">
             list
         </label>
     </div>
