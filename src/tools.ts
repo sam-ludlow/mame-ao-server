@@ -107,7 +107,12 @@ export const databasePayload = async (config: any, tableName: string, keys: any,
         const request: Tedious.Request = new Request(commandText, () => {});
 
         Object.keys(keys).forEach((keyName => {
-            request.addParameter(keyName, TYPES.VarChar, keys[keyName]);
+
+            let dataType = TYPES.VarChar;
+            if (keyName == 'game_name')
+                dataType = TYPES.NVarChar;
+
+            request.addParameter(keyName, dataType, keys[keyName]);
         }));
 
         const response = await sqlRequest(connection, request);
