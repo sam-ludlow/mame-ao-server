@@ -188,8 +188,8 @@ const defaultParamters: any = {
     search: '',
     view: 'grid',
     electronic: true,
-    mechanical: false,
-    device: false
+    mechanical: true,
+    device: true,
 };
 
 export class RequestInfo {
@@ -1062,44 +1062,44 @@ export const getMachines = async (config: any,  search: string, offset: number, 
 
     if (search.length > 0) {
         commandText = `
-            WITH SearchResults AS (
+            WITH tmp_search_rows AS (
                 SELECT
-                    m.[${payloadColumnName}],
-                    m.[description],
-                    s.[RANK],
+                    machine_search_payload.[${payloadColumnName}],
+                    machine_search_payload.[description],
+                    seacrh_result.[RANK],
                     COUNT(*) OVER() AS ao_total
                 FROM FREETEXTTABLE(
                         machine_search_payload,
                         ([name], [description]),
                         @search
-                    ) AS s
-                JOIN machine_search_payload AS m
-                    ON m.[name] = s.[KEY]
+                    ) AS seacrh_result
+                JOIN machine_search_payload AS machine_search_payload
+                    ON machine_search_payload.[name] = seacrh_result.[KEY]
                 WHERE (@iselectronic = 1 AND iselectronic = 1) OR (@ismechanical = 1 AND ismechanical = 1) OR (@isdevice = 1 AND isdevice = 1)
             )
             SELECT
                 ao_total,
                 [${payloadColumnName}],
                 [RANK]
-            FROM SearchResults
+            FROM tmp_search_rows
             ORDER BY [RANK] DESC, [description] ASC
             OFFSET @offset ROWS
             FETCH NEXT @limit ROWS ONLY;
         `;
     } else {
         commandText = `
-            WITH Filtered AS (
-                SELECT 
-                    [${payloadColumnName}],
-                    description,
-                    COUNT(*) OVER() AS ao_total
+            SELECT tmp_total_rows.[ao_total], tmp_page_rows.[${payloadColumnName}]
+            FROM (
+                SELECT COUNT(*) AS ao_total
                 FROM machine_search_payload
                 WHERE (@iselectronic = 1 AND iselectronic = 1) OR (@ismechanical = 1 AND ismechanical = 1) OR (@isdevice = 1 AND isdevice = 1)
-            )
-            SELECT ao_total, [${payloadColumnName}]
-            FROM Filtered
-            ORDER BY description
-            OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY;
+            ) tmp_total_rows
+            CROSS JOIN (
+                SELECT [${payloadColumnName}]
+                FROM machine_search_payload
+                ORDER BY description
+                OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY
+            ) tmp_page_rows;
         `;
     }
 
