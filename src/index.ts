@@ -1097,6 +1097,7 @@ export const getMachines = async (config: any,  search: string, offset: number, 
             CROSS JOIN (
                 SELECT [${payloadColumnName}]
                 FROM machine_search_payload
+                WHERE (@iselectronic = 1 AND iselectronic = 1) OR (@ismechanical = 1 AND ismechanical = 1) OR (@isdevice = 1 AND isdevice = 1)
                 ORDER BY description
                 OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY
             ) tmp_page_rows;
