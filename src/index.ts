@@ -299,16 +299,21 @@ const startServer = async () => {
 
 const loadAssets = async () => {
 
-    const directory = './assets';
+    let directory = './assets';
+    let filenames: string[] = await tools.directoryFiles(directory);
+    await Promise.all(filenames.map(async filename => {
+        if (filename !== 'images') {
+            if (filename.endsWith('.ico') === true)
+                assets[filename] = await tools.fileReadBuffer(`${directory}/${filename}`);
+            else
+                assets[filename] = await tools.fileRead(`${directory}/${filename}`);
+        }
+    }));
 
-    const filenames: string[] = await tools.directoryFiles(directory);
-
-     await Promise.all(filenames.map(async filename => {
-
-        if (filename.endsWith('.ico') === true)
-            assets[filename] = await tools.fileReadBuffer(`${directory}/${filename}`);
-        else
-            assets[filename] = await tools.fileRead(`${directory}/${filename}`);
+    directory = './assets/images';
+    filenames = await tools.directoryFiles(directory);
+    await Promise.all(filenames.map(async filename => {
+        assets['images/' + filename] = await tools.fileReadBuffer(`${directory}/${filename}`);
     }));
 }
 
@@ -368,6 +373,14 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
             res.setHeader('Content-Type', 'image/svg+xml; charset=utf-8');
             res.setHeader('Cache-Control', 'public, max-age=86400');
             res.write(assets['spludlow.svg']);
+            res.end();
+            return;
+
+        case '/images/back.png':
+        case '/images/next.png':
+            res.setHeader('Content-Type', 'image/png');
+            res.setHeader('Cache-Control', 'public, max-age=86400');
+            res.write(assets[req.url.substring(1)]);
             res.end();
             return;
         
@@ -693,20 +706,19 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
                                     };
 
                                     let nav = '';
-                                    let prevOffset = requestInfo.Paramters.offset - requestInfo.Paramters.limit;
-                                    if (prevOffset >= 0)
-                                        nav += `<a href="${goLocationUrl(prevOffset)}">PREV</a> &bull; `;
-                                    else
-                                        nav += 'PREV &bull; ';
 
+                                    let prevOffset = requestInfo.Paramters.offset - requestInfo.Paramters.limit;
+                                    nav += prevOffset >= 0 ?
+                                        `<a href="${goLocationUrl(prevOffset)}"><img src="/images/back.png" alt="Navigate back a page" /></a> &bull;` :
+                                        '<div><img src="/images/back.png" alt="On first page" /></div> &bull;';
 
                                     let nextOffset = requestInfo.Paramters.offset + requestInfo.Paramters.limit;
-                                    if (nextOffset < totalCount)
-                                        nav += `<a href="${goLocationUrl(nextOffset)}">NEXT</a> &bull; `;
-                                    else
-                                        nav += 'NEXT &bull; ';
+                                    nav += nextOffset < totalCount ?
+                                        `<a href="${goLocationUrl(nextOffset)}"><img src="/images/next.png" alt="Navigate to next page" /></a> &bull;` :
+                                        '<div><img src="/images/next.png" alt="On last page" /></div> &bull;';
 
-                                    nav += `view:${viewCount} total:${totalCount}`;
+                                    nav += `<div>page ${requestInfo.Paramters.offset / requestInfo.Paramters.limit + 1} of ${Math.ceil(totalCount / requestInfo.Paramters.limit)}</div> &bull;` +
+                                        `<div>viewing ${viewCount} of ${totalCount}</div>`;
 
                                     let machineHtml = '';
 

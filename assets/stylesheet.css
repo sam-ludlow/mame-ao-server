@@ -192,9 +192,7 @@ td.nav-on {
 
 .toolbar {
     display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
+    gap: 12px;
 }
-.toolbar > div:last-child {
-    text-align: right;
-}
+

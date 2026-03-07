@@ -99,7 +99,11 @@
         <input type="checkbox" id="mechanical" onclick="changeType(this);"><label for="mechanical">mechanical</label>
         <input type="checkbox" id="device" onclick="changeType(this);"><label for="device">device</label>
     </div>
-    
+</div>
+<hr />
+<div class="toolbar">
+    @TOP@
+    &bull;
     <div>
         <label>
             <input id="view-grid" type="radio" name="view" value="grid" onchange="changeView(this);">
@@ -112,9 +116,9 @@
         </label>
     </div>
 </div>
-
 <hr />
-
-@TOP@
 @DATA@
-@BOTTOM@
+<hr />
+<div class="toolbar">
+    @BOTTOM@
+</div>
