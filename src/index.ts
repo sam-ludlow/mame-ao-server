@@ -716,9 +716,14 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
                                     nav += nextOffset < totalCount ?
                                         `<a href="${goLocationUrl(nextOffset)}"><img src="/images/next.png" alt="Navigate to next page" /></a> &bull;` :
                                         '<div><img src="/images/next.png" alt="On last page" /></div> &bull;';
+                                    
+                                    let lastOffset = Math.floor(totalCount / requestInfo.Paramters.limit) * requestInfo.Paramters.limit;
+                                    if (totalCount > 0 && totalCount % requestInfo.Paramters.limit === 0)
+                                        lastOffset -= requestInfo.Paramters.limit;
 
-                                    nav += `<div>page ${requestInfo.Paramters.offset / requestInfo.Paramters.limit + 1} of ${Math.ceil(totalCount / requestInfo.Paramters.limit)}</div> &bull;` +
-                                        `<div>viewing ${viewCount} of ${totalCount}</div>`;
+                                    nav += `<div>page <a href="${goLocationUrl(0)}">${requestInfo.Paramters.offset / requestInfo.Paramters.limit + 1}</a> ` +
+                                        `of <a href="${goLocationUrl(lastOffset)}">${Math.ceil(totalCount / requestInfo.Paramters.limit)}</a></div> &bull;` +
+                                        `<div>view ${viewCount} of ${totalCount}</div>`;
 
                                     let machineHtml = '';
 
