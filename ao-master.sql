@@ -112,7 +112,7 @@ GO
 CREATE TABLE [dbo].[phone_home](
 	[phone_home_id] [bigint] IDENTITY(1,1) NOT NULL,
 	[request_time] [datetime2](7) NOT NULL,
-	[request_address] [varchar](15) NOT NULL,
+	[request_address] [varchar](128) NOT NULL,
 	[request_agent] [nvarchar](max) NOT NULL,
 	[response_time] [int] NOT NULL,
 	[body_length] [int] NOT NULL,
