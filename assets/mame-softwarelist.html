@@ -1,0 +1,113 @@
+<script type="text/javascript">
+
+    const _path = document.location.pathname;
+
+    const _defaultParamters = {
+        offset: 0,
+        limit: 250,
+        search: '',
+        view: 'grid',
+        electronic: true,
+        mechanical: true,
+        device: true,
+    };
+
+    const _parameters = { ..._defaultParamters };
+
+    const load = () => {
+        if (window.location.href.includes('?')) {
+            const parts = window.location.href.split('?')[1].split('&');
+            parts.forEach((part) => {
+                const pair = part.split('=');
+                const key = pair[0];
+                const value = decodeURIComponent(pair[1]);
+
+                switch (key) {
+                    case 'offset':
+                        _parameters[key] = parseInt(value, 10);
+                        break;
+
+                    case 'search':
+                    case 'view':
+                        _parameters[key] = value;
+                        break;
+
+                }
+            });
+        }
+
+        const inputText = document.getElementById('inputText');
+        inputText.value = _parameters.search;
+        inputText.focus();
+
+        switch (_parameters['view']) {
+            case 'list':
+                document.getElementById("view-list").checked = true;
+                break;
+            default:
+                document.getElementById("view-grid").checked = true;
+                _parameters['view'] = 'grid';
+                break;
+        }
+    }
+
+    const gotoLocation = () => {
+        const parts = Object.keys(_parameters).filter(key => _parameters[key] !== _defaultParamters[key]);
+
+        if (parts.length === 0)
+            document.location = _path;
+        else
+            document.location = _path + '?' + parts.map((key) => `${key}=${encodeURIComponent(_parameters[key])}`).join('&');
+    }
+
+    const searchButton = () => {
+        _parameters['search'] = document.getElementById('inputText').value;
+        _parameters['offset'] = 0;
+        gotoLocation();
+    }
+
+    const changeView = (input) => {
+        _parameters['view'] = input.value;
+        gotoLocation();
+    }
+
+    const changeType = (input) => {
+        _parameters[input.id] = input.checked;
+        _parameters['offset'] = 0;
+        gotoLocation();
+    }
+
+    window.onload = load;
+
+</script>
+
+<div class="toolbar">
+    <div>
+        <input id="inputText" type="text" style="width:480px;" />
+        <button type="submit" onclick="searchButton(); return false;">Search</button>
+        <br />
+
+    </div>
+</div>
+<hr />
+<div class="toolbar">
+    @TOP@
+    &bull;
+    <div>
+        <label>
+            <input id="view-grid" type="radio" name="view" value="grid" onchange="changeView(this);">
+            grid
+        </label>
+
+        <label>
+            <input id="view-list" type="radio" name="view" value="list" onchange="changeView(this);">
+            list
+        </label>
+    </div>
+</div>
+<hr />
+@DATA@
+<hr />
+<div class="toolbar">
+    @BOTTOM@
+</div>

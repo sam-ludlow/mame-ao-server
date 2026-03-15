@@ -693,37 +693,10 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
                                     let viewCount = pageData.length;
                                     let totalCount = viewCount === 0 ? 0 : pageData[0].filter((r: any) => r.metadata.colName === 'ao_total')[0].value;
 
-                                    const goLocationUrl = (offset: number) => {
-                                        const paramters = { ...requestInfo.Paramters };
-                                        paramters.offset = offset;
 
-                                        const parts: string[] = Object.keys(requestInfo.Paramters).filter(key => paramters[key] !== defaultParamters[key]);
+                                    let nav = makePageNav(requestInfo, viewCount, totalCount);
 
-                                        if (parts.length === 0)
-                                            return requestInfo.Url;
 
-                                        return requestInfo.Url + '?' + parts.map((key) => `${key}=${encodeURIComponent(paramters[key])}`).join('&');
-                                    };
-
-                                    let nav = '';
-
-                                    let prevOffset = requestInfo.Paramters.offset - requestInfo.Paramters.limit;
-                                    nav += prevOffset >= 0 ?
-                                        `<a href="${goLocationUrl(prevOffset)}"><img src="/images/back.png" alt="Navigate back a page" /></a> &bull;` :
-                                        '<div><img src="/images/back.png" alt="On first page" /></div> &bull;';
-
-                                    let nextOffset = requestInfo.Paramters.offset + requestInfo.Paramters.limit;
-                                    nav += nextOffset < totalCount ?
-                                        `<a href="${goLocationUrl(nextOffset)}"><img src="/images/next.png" alt="Navigate to next page" /></a> &bull;` :
-                                        '<div><img src="/images/next.png" alt="On last page" /></div> &bull;';
-                                    
-                                    let lastOffset = Math.floor(totalCount / requestInfo.Paramters.limit) * requestInfo.Paramters.limit;
-                                    if (totalCount > 0 && totalCount % requestInfo.Paramters.limit === 0)
-                                        lastOffset -= requestInfo.Paramters.limit;
-
-                                    nav += `<div>page <a href="${goLocationUrl(0)}">${requestInfo.Paramters.offset / requestInfo.Paramters.limit + 1}</a> ` +
-                                        `of <a href="${goLocationUrl(lastOffset)}">${Math.ceil(totalCount / requestInfo.Paramters.limit)}</a></div> &bull;` +
-                                        `<div>view ${viewCount} of ${totalCount}</div>`;
 
                                     let machineHtml = '';
 
@@ -857,11 +830,71 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
                                     if (validNameRegEx.test(softwarelist_name) !== true)
                                         throw new Error(`bad softwarelist_name`);
 
-                                    const software_data = await tools.databasePayload(application.DatabaseConfigs[1], 'softwarelist_payload', { softwarelist_name }, responseInfo.Extention);
 
-                                    responseInfo.Title = software_data[0].value;
+                                    const displayMode: string = requestInfo.Paramters.view === 'grid' ? 'html_card' : 'html';
+
+                                    //  TODO: pass software list (seeing all now)
+
+                                    const pageData = await getSoftwares(application.DatabaseConfigs[1], requestInfo.Paramters.search, requestInfo.Paramters.offset, requestInfo.Paramters.limit, displayMode);
+
+                                    //console.log(pageData);
+
+                                    let viewCount = pageData.length;
+                                    let totalCount = viewCount === 0 ? 0 : pageData[0].filter((r: any) => r.metadata.colName === 'ao_total')[0].value;
+
+
+                                    let nav = makePageNav(requestInfo, viewCount, totalCount);
+
+
+
+                                    let html = '';
+
+                                    switch (displayMode) {
+
+                                        case 'html':
+                                            const columnDefs = {
+                                                'name': 'Name',
+                                                'description': 'Description',
+                                                'year': 'Year',
+                                                'publisher': 'Publisher',
+                                            };
+
+                                            html = `<table><tr>`;
+                                            html += Object.keys(columnDefs).map(columnName => `<th>${columnName}</th>`).join('');
+                                            html += '</tr>' + os.EOL;
+                                            
+                                            pageData.forEach((row) => {
+                                                html += row[1].value + os.EOL;
+                                            });
+                                            
+                                            html += '</table>';
+                                            break;
+
+                                        case 'html_card':
+                                            html = '<div class="card-grid">';
+                                            pageData.forEach((row) => {
+                                                html += row[1].value + os.EOL;
+                                            });
+                                            html += '</div>' + os.EOL;
+                                            break;
+
+                                        default:
+                                            throw new Error(`Bad display mode ${displayMode}`);
+                                    }
+
+                                    html = assets['mame-softwarelist.html'].replace('@DATA@', html);
+                                    html = html.replace('@TOP@', nav);
+                                    html = html.replace('@BOTTOM@', nav);
+
+                                    responseInfo.Title = `${application.Key.toUpperCase()} (${application.Version}) SOFTWARE LIST`;
                                     responseInfo.Heading = responseInfo.Title;
-                                    responseInfo.Body = software_data[1].value;
+                                    responseInfo.Body = html;
+
+                                    //const software_data = await tools.databasePayload(application.DatabaseConfigs[1], 'softwarelist_payload', { softwarelist_name }, responseInfo.Extention);
+
+/*                                     responseInfo.Title = software_data[0].value;
+                                    responseInfo.Heading = responseInfo.Title;
+                                    responseInfo.Body = software_data[1].value; */
                                     break;
                             }
                             break;
@@ -1040,6 +1073,43 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
     }
 }
 
+const goLocationUrl = (requestInfo: RequestInfo, offset: number) => {
+    const paramters = { ...requestInfo.Paramters };
+    paramters.offset = offset;
+
+    const parts: string[] = Object.keys(requestInfo.Paramters).filter(key => paramters[key] !== defaultParamters[key]);
+
+    if (parts.length === 0)
+        return requestInfo.Url;
+
+    return requestInfo.Url + '?' + parts.map((key) => `${key}=${encodeURIComponent(paramters[key])}`).join('&');
+};
+
+const makePageNav = (requestInfo: RequestInfo, viewCount: number, totalCount: number): string => {
+
+    let nav = '';
+
+    let prevOffset = requestInfo.Paramters.offset - requestInfo.Paramters.limit;
+    nav += prevOffset >= 0 ?
+        `<a href="${goLocationUrl(requestInfo, prevOffset)}"><img src="/images/back.png" alt="Navigate back a page" /></a> &bull;` :
+        '<div><img src="/images/back.png" alt="On first page" /></div> &bull;';
+
+    let nextOffset = requestInfo.Paramters.offset + requestInfo.Paramters.limit;
+    nav += nextOffset < totalCount ?
+        `<a href="${goLocationUrl(requestInfo, nextOffset)}"><img src="/images/next.png" alt="Navigate to next page" /></a> &bull;` :
+        '<div><img src="/images/next.png" alt="On last page" /></div> &bull;';
+    
+    let lastOffset = Math.floor(totalCount / requestInfo.Paramters.limit) * requestInfo.Paramters.limit;
+    if (totalCount > 0 && totalCount % requestInfo.Paramters.limit === 0)
+        lastOffset -= requestInfo.Paramters.limit;
+
+    nav += `<div>page <a href="${goLocationUrl(requestInfo, 0)}">${requestInfo.Paramters.offset / requestInfo.Paramters.limit + 1}</a> ` +
+        `of <a href="${goLocationUrl(requestInfo, lastOffset)}">${Math.ceil(totalCount / requestInfo.Paramters.limit)}</a></div> &bull;` +
+        `<div>view ${viewCount} of ${totalCount}</div>`;
+
+    return nav;
+}
+
 const phoneHomeDatabaseConfig = tools.sqlConfig('my-mssql-server', 'ao-master');
 
 const savePhoneHome = async (startTime: Date, req: http.IncomingMessage, body: string, token: string) => {
@@ -1132,6 +1202,74 @@ export const getMachines = async (config: any,  search: string, offset: number, 
     request.addParameter('iselectronic', TYPES.Bit, iselectronic);
     request.addParameter('ismechanical', TYPES.Bit, ismechanical);
     request.addParameter('isdevice', TYPES.Bit, isdevice);
+
+    let data;
+
+    const connection = new Connection(config);
+    await tools.sqlOpen(connection);
+
+    try {
+        data = await tools.sqlRequest(connection, request);
+    }
+    finally {
+        await tools.sqlClose(connection);
+    }
+
+    return data;
+}
+
+export const getSoftwares = async (config: any,  search: string, offset: number, limit: number, payloadColumnName: string) => {
+
+    let commandText;
+
+    if (search.length > 0) {
+        commandText = `
+            WITH tmp_search_rows AS (
+                SELECT
+                    software_search_payload.[${payloadColumnName}],
+                    software_search_payload.[description],
+                    seacrh_result.[RANK],
+                    COUNT(*) OVER() AS ao_total
+                FROM FREETEXTTABLE(
+                        software_search_payload,
+                        ([software_name], [description]),
+                        @search
+                    ) AS seacrh_result
+                JOIN software_search_payload AS software_search_payload
+                    ON software_search_payload.[key] = seacrh_result.[KEY]
+            )
+            SELECT
+                ao_total,
+                [${payloadColumnName}],
+                [RANK]
+            FROM tmp_search_rows
+            ORDER BY [RANK] DESC, [description] ASC
+            OFFSET @offset ROWS
+            FETCH NEXT @limit ROWS ONLY;
+        `;
+    } else {
+        commandText = `
+            SELECT tmp_total_rows.[ao_total], tmp_page_rows.[${payloadColumnName}]
+            FROM (
+                SELECT COUNT(*) AS ao_total
+                FROM software_search_payload
+            ) tmp_total_rows
+            CROSS JOIN (
+                SELECT [${payloadColumnName}]
+                FROM software_search_payload
+                ORDER BY description
+                OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY
+            ) tmp_page_rows;
+        `;
+    }
+
+    commandText = commandText.replace('@offset', offset.toString());
+    commandText = commandText.replace('@limit', limit.toString());
+
+    const request: Tedious.Request = new Request(commandText, () => {});
+
+    if (search.length > 0)
+        request.addParameter('search', TYPES.VarChar, search);
 
     let data;
 
