@@ -38,6 +38,7 @@ export class ApplicationCore implements Application {
 
     public SubKeys: string[];
     public DatabaseConfigs: any[];
+    public Cache: any;
 
     constructor(key: string) {
 
@@ -48,6 +49,8 @@ export class ApplicationCore implements Application {
 
         this.SubKeys = [];
         this.DatabaseConfigs = [];
+
+        this.Cache = {};
     }
 
     public initialize = async (): Promise<any> => {
@@ -60,6 +63,12 @@ export class ApplicationCore implements Application {
             case 'hbmame':
                 this.SubKeys = ['machine', 'software'];
                 this.DatabaseConfigs = [ tools.sqlConfig(databaseServer, `${databaseNamePrefix}-${this.Key}-machine`), tools.sqlConfig(databaseServer, `${databaseNamePrefix}-${this.Key}-software`)];
+
+                const softwareListData = await tools.databaseQuery(this.DatabaseConfigs[1], 'SELECT [name], [description] FROM [softwarelist] ORDER BY [description]');
+                this.Cache["softwarelist"] = {};
+                softwareListData.forEach((item) => {
+                    this.Cache["softwarelist"][item[0].value] = item[1].value;
+                });
                 break;
 
             case 'fbneo':   //  TODO: Load from DB - build menu
@@ -693,10 +702,7 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
                                     let viewCount = pageData.length;
                                     let totalCount = viewCount === 0 ? 0 : pageData[0].filter((r: any) => r.metadata.colName === 'ao_total')[0].value;
 
-
                                     let nav = makePageNav(requestInfo, viewCount, totalCount);
-
-
 
                                     let machineHtml = '';
 
@@ -830,71 +836,76 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
                                     if (validNameRegEx.test(softwarelist_name) !== true)
                                         throw new Error(`bad softwarelist_name`);
 
+                                    if (responseInfo.Extention === '') {
+                                        const displayMode: string = requestInfo.Paramters.view === 'grid' ? 'html_card' : 'html';
 
-                                    const displayMode: string = requestInfo.Paramters.view === 'grid' ? 'html_card' : 'html';
+                                        const pageData = await getSoftwares(application.DatabaseConfigs[1], softwarelist_name, requestInfo.Paramters.search, requestInfo.Paramters.offset, requestInfo.Paramters.limit, displayMode);
 
-                                    //  TODO: pass software list (seeing all now)
+                                        let viewCount = pageData.length;
+                                        let totalCount = viewCount === 0 ? 0 : pageData[0].filter((r: any) => r.metadata.colName === 'ao_total')[0].value;
 
-                                    const pageData = await getSoftwares(application.DatabaseConfigs[1], requestInfo.Paramters.search, requestInfo.Paramters.offset, requestInfo.Paramters.limit, displayMode);
+                                        let nav = makePageNav(requestInfo, viewCount, totalCount);
 
-                                    //console.log(pageData);
+                                        let html = '';
 
-                                    let viewCount = pageData.length;
-                                    let totalCount = viewCount === 0 ? 0 : pageData[0].filter((r: any) => r.metadata.colName === 'ao_total')[0].value;
+                                        html += '';
 
+                                        switch (displayMode) {
 
-                                    let nav = makePageNav(requestInfo, viewCount, totalCount);
+                                            case 'html':
+                                                const columnDefs = {
+                                                    'name': 'Name',
+                                                    'description': 'Description',
+                                                    'year': 'Year',
+                                                    'publisher': 'Publisher',
+                                                    'cloneof': 'cloneof',
+                                                    'roms': 'roms',
+                                                    'disks': 'disks',
+                                                    'rom_size': 'rom_size',
+                                                    'rom_size_text': 'rom_size_text',
+                                                    'disk_size': 'disk_size',
+                                                    'disk_size_text': 'disk_size_text',
+                                                };
 
+                                                html = `<table><tr>`;
+                                                html += Object.keys(columnDefs).map(columnName => `<th>${columnName}</th>`).join('');
+                                                html += '</tr>' + os.EOL;
+                                                
+                                                pageData.forEach((row) => {
+                                                    html += row[1].value + os.EOL;
+                                                });
+                                                
+                                                html += '</table>';
+                                                break;
 
+                                            case 'html_card':
+                                                html = '<div class="card-grid">';
+                                                pageData.forEach((row) => {
+                                                    html += row[1].value + os.EOL;
+                                                });
+                                                html += '</div>' + os.EOL;
+                                                break;
 
-                                    let html = '';
+                                            default:
+                                                throw new Error(`Bad display mode ${displayMode}`);
+                                        }
 
-                                    switch (displayMode) {
+                                        html = assets['mame-softwarelist.html'].replace('@DATA@', html);
+                                        html = html.replace('@TOP@', nav);
+                                        html = html.replace('@BOTTOM@', nav);
 
-                                        case 'html':
-                                            const columnDefs = {
-                                                'name': 'Name',
-                                                'description': 'Description',
-                                                'year': 'Year',
-                                                'publisher': 'Publisher',
-                                            };
+                                        responseInfo.Title = `${application.Cache["softwarelist"][softwarelist_name]} - ${application.Key.toUpperCase()} (${application.Version}) software list`;
+                                        responseInfo.Heading = responseInfo.Title;
+                                        responseInfo.Body = html;
 
-                                            html = `<table><tr>`;
-                                            html += Object.keys(columnDefs).map(columnName => `<th>${columnName}</th>`).join('');
-                                            html += '</tr>' + os.EOL;
-                                            
-                                            pageData.forEach((row) => {
-                                                html += row[1].value + os.EOL;
-                                            });
-                                            
-                                            html += '</table>';
-                                            break;
+                                    } else {
+                                        const software_data = await tools.databasePayload(application.DatabaseConfigs[1], 'softwarelist_payload', { softwarelist_name }, responseInfo.Extention);
 
-                                        case 'html_card':
-                                            html = '<div class="card-grid">';
-                                            pageData.forEach((row) => {
-                                                html += row[1].value + os.EOL;
-                                            });
-                                            html += '</div>' + os.EOL;
-                                            break;
-
-                                        default:
-                                            throw new Error(`Bad display mode ${displayMode}`);
+                                        responseInfo.Title = software_data[0].value;
+                                        responseInfo.Heading = responseInfo.Title;
+                                        responseInfo.Body = software_data[1].value;
                                     }
 
-                                    html = assets['mame-softwarelist.html'].replace('@DATA@', html);
-                                    html = html.replace('@TOP@', nav);
-                                    html = html.replace('@BOTTOM@', nav);
-
-                                    responseInfo.Title = `${application.Key.toUpperCase()} (${application.Version}) SOFTWARE LIST`;
-                                    responseInfo.Heading = responseInfo.Title;
-                                    responseInfo.Body = html;
-
-                                    //const software_data = await tools.databasePayload(application.DatabaseConfigs[1], 'softwarelist_payload', { softwarelist_name }, responseInfo.Extention);
-
-/*                                     responseInfo.Title = software_data[0].value;
-                                    responseInfo.Heading = responseInfo.Title;
-                                    responseInfo.Body = software_data[1].value; */
                                     break;
                             }
                             break;
@@ -1218,7 +1229,7 @@ export const getMachines = async (config: any,  search: string, offset: number, 
     return data;
 }
 
-export const getSoftwares = async (config: any,  search: string, offset: number, limit: number, payloadColumnName: string) => {
+export const getSoftwares = async (config: any,  softwarelist_name: string, search: string, offset: number, limit: number, payloadColumnName: string) => {
 
     let commandText;
 
@@ -1237,6 +1248,7 @@ export const getSoftwares = async (config: any,  search: string, offset: number,
                     ) AS seacrh_result
                 JOIN software_search_payload AS software_search_payload
                     ON software_search_payload.[key] = seacrh_result.[KEY]
+                WHERE (softwarelist_name = @softwarelist_name)
             )
             SELECT
                 ao_total,
@@ -1253,10 +1265,12 @@ export const getSoftwares = async (config: any,  search: string, offset: number,
             FROM (
                 SELECT COUNT(*) AS ao_total
                 FROM software_search_payload
+                WHERE (softwarelist_name = @softwarelist_name)
             ) tmp_total_rows
             CROSS JOIN (
                 SELECT [${payloadColumnName}]
                 FROM software_search_payload
+                WHERE (softwarelist_name = @softwarelist_name)
                 ORDER BY description
                 OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY
             ) tmp_page_rows;
@@ -1267,6 +1281,8 @@ export const getSoftwares = async (config: any,  search: string, offset: number,
     commandText = commandText.replace('@limit', limit.toString());
 
     const request: Tedious.Request = new Request(commandText, () => {});
+
+    request.addParameter('softwarelist_name', TYPES.VarChar, softwarelist_name);
 
     if (search.length > 0)
         request.addParameter('search', TYPES.VarChar, search);
