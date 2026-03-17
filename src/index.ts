@@ -846,9 +846,9 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
 
                                         let nav = makePageNav(requestInfo, viewCount, totalCount);
 
-                                        let html = '';
+                                        const softwarelist_description = application.Cache["softwarelist"][softwarelist_name];
 
-                                        html += '';
+                                        let html = '';
 
                                         switch (displayMode) {
 
@@ -867,7 +867,7 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
                                                     'disk_size_text': 'disk_size_text',
                                                 };
 
-                                                html = `<table><tr>`;
+                                                html += `<table><tr>`;
                                                 html += Object.keys(columnDefs).map(columnName => `<th>${columnName}</th>`).join('');
                                                 html += '</tr>' + os.EOL;
                                                 
@@ -879,7 +879,7 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
                                                 break;
 
                                             case 'html_card':
-                                                html = '<div class="card-grid">';
+                                                html += '<div class="card-grid">';
                                                 pageData.forEach((row) => {
                                                     html += row[1].value + os.EOL;
                                                 });
@@ -893,8 +893,9 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
                                         html = assets['mame-softwarelist.html'].replace('@DATA@', html);
                                         html = html.replace('@TOP@', nav);
                                         html = html.replace('@BOTTOM@', nav);
+                                        html = html.replace('@PAYLOAD_LINKS@', `<a href="${softwarelist_name}.xml">XML</a> &bull; <a href="${softwarelist_name}.json">JSON</a>`);
 
-                                        responseInfo.Title = `${application.Cache["softwarelist"][softwarelist_name]} - ${application.Key.toUpperCase()} (${application.Version}) software list`;
+                                        responseInfo.Title = `${softwarelist_description} - ${application.Key.toUpperCase()} (${application.Version}) software list`;
                                         responseInfo.Heading = responseInfo.Title;
                                         responseInfo.Body = html;
 
