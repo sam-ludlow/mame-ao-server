@@ -196,8 +196,11 @@ const defaultParamters: any = {
     limit: 250,
     search: '',
     view: 'grid',
-    electronic: true,
-    mechanical: true,
+
+    arcade: true,
+    software: true,
+    gamble: true,
+    other: true,
     device: true,
 };
 
@@ -239,8 +242,10 @@ export class RequestInfo {
                                 this.Paramters.view = pair[1];
                             break;
 
-                        case 'electronic':
-                        case 'mechanical':
+                        case 'arcade':
+                        case 'software':
+                        case 'gamble':
+                        case 'other':
                         case 'device':
                             this.Paramters[pair[0]] = ['true', '1', 'yes'].includes(pair[1]);
                             break;
@@ -696,9 +701,8 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
                                     const displayMode: string = requestInfo.Paramters.view === 'grid' ? 'html_card' : 'html';
 
                                     // Machine Search
-                                    const pageData = await getMachines(application.DatabaseConfigs[0], requestInfo.Paramters.search, requestInfo.Paramters.offset, requestInfo.Paramters.limit,
-                                        displayMode, requestInfo.Paramters.electronic, requestInfo.Paramters.mechanical, requestInfo.Paramters.device);
-
+                                    const pageData = await getMachines(application.DatabaseConfigs[0], requestInfo.Paramters, displayMode);
+                                    
                                     let viewCount = pageData.length;
                                     let totalCount = viewCount === 0 ? 0 : pageData[0].filter((r: any) => r.metadata.colName === 'ao_total')[0].value;
 
@@ -1155,11 +1159,11 @@ const savePhoneHome = async (startTime: Date, req: http.IncomingMessage, body: s
     }
 }
 
-export const getMachines = async (config: any,  search: string, offset: number, limit: number, payloadColumnName: string, iselectronic: boolean, ismechanical: boolean, isdevice: boolean) => {
+export const getMachines = async (config: any, paramters: any, payloadColumnName: string) => {
 
     let commandText;
 
-    if (search.length > 0) {
+    if (paramters.search.length > 0) {
         commandText = `
             WITH tmp_search_rows AS (
                 SELECT
@@ -1174,7 +1178,7 @@ export const getMachines = async (config: any,  search: string, offset: number, 
                     ) AS seacrh_result
                 JOIN machine_search_payload AS machine_search_payload
                     ON machine_search_payload.[name] = seacrh_result.[KEY]
-                WHERE (@iselectronic = 1 AND iselectronic = 1) OR (@ismechanical = 1 AND ismechanical = 1) OR (@isdevice = 1 AND isdevice = 1)
+                @WHERE
             )
             SELECT
                 ao_total,
@@ -1191,29 +1195,32 @@ export const getMachines = async (config: any,  search: string, offset: number, 
             FROM (
                 SELECT COUNT(*) AS ao_total
                 FROM machine_search_payload
-                WHERE (@iselectronic = 1 AND iselectronic = 1) OR (@ismechanical = 1 AND ismechanical = 1) OR (@isdevice = 1 AND isdevice = 1)
+                @WHERE
             ) tmp_total_rows
             CROSS JOIN (
                 SELECT [${payloadColumnName}]
                 FROM machine_search_payload
-                WHERE (@iselectronic = 1 AND iselectronic = 1) OR (@ismechanical = 1 AND ismechanical = 1) OR (@isdevice = 1 AND isdevice = 1)
+                @WHERE
                 ORDER BY description
                 OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY
             ) tmp_page_rows;
         `;
     }
 
-    commandText = commandText.replace('@offset', offset.toString());
-    commandText = commandText.replace('@limit', limit.toString());
+    commandText = commandText.replace('@offset', paramters.offset.toString());
+    commandText = commandText.replace('@limit', paramters.limit.toString());
+
+    const machineTypes = ['arcade', 'software', 'gamble', 'other', 'device'];
+
+    if ((machineTypes.every(type => paramters[type] === true)) || (machineTypes.every(type => paramters[type] === false)))
+        commandText = commandText.replaceAll('@WHERE', '');
+    else
+        commandText = commandText.replaceAll('@WHERE', 'WHERE ' + machineTypes.filter(type => paramters[type] === true).map(type => `([type] = '${type}')`).join(' OR '));
 
     const request: Tedious.Request = new Request(commandText, () => {});
 
-    if (search.length > 0)
-        request.addParameter('search', TYPES.VarChar, search);
-
-    request.addParameter('iselectronic', TYPES.Bit, iselectronic);
-    request.addParameter('ismechanical', TYPES.Bit, ismechanical);
-    request.addParameter('isdevice', TYPES.Bit, isdevice);
+    if (paramters.search.length > 0)
+        request.addParameter('search', TYPES.VarChar, paramters.search);
 
     let data;
 
