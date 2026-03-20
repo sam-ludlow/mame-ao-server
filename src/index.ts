@@ -196,13 +196,17 @@ const defaultParamters: any = {
     limit: 250,
     search: '',
     view: 'grid',
-
-    arcade: true,
-    software: true,
-    gamble: true,
-    other: true,
-    device: true,
+    type: [],
 };
+
+// TODO : make better
+const _machine_types = [
+    'arcade',
+    'software',
+    'gamble',
+    'other',
+    'device',
+];
 
 export class RequestInfo {
 
@@ -216,7 +220,7 @@ export class RequestInfo {
 
         [this.Url, this.Query] = (req.url || '/').split('?');
 
-        this.Paramters = { ...defaultParamters };
+        this.Paramters = { ...defaultParamters, type: [...defaultParamters.type], };
 
         if (this.Query !== undefined) {
             this.Query.split('&').forEach(queryPart => {
@@ -242,12 +246,9 @@ export class RequestInfo {
                                 this.Paramters.view = pair[1];
                             break;
 
-                        case 'arcade':
-                        case 'software':
-                        case 'gamble':
-                        case 'other':
-                        case 'device':
-                            this.Paramters[pair[0]] = ['true', '1', 'yes'].includes(pair[1]);
+                        case 'type':
+                            if (_machine_types.includes(pair[1]) && !this.Paramters.type.includes(pair[1]))
+                                this.Paramters.type.push(pair[1]);
                             break;
                     }
                 }
@@ -1093,7 +1094,12 @@ const goLocationUrl = (requestInfo: RequestInfo, offset: number) => {
     const paramters = { ...requestInfo.Paramters };
     paramters.offset = offset;
 
-    const parts: string[] = Object.keys(requestInfo.Paramters).filter(key => paramters[key] !== defaultParamters[key]);
+    const parts: string[] = Object.keys(requestInfo.Paramters).filter((key): boolean => {
+        if (Array.isArray(paramters[key]))
+            return paramters[key].length > 0;
+        else 
+            return paramters[key] !== defaultParamters[key]
+    });
 
     if (parts.length === 0)
         return requestInfo.Url;
@@ -1210,12 +1216,11 @@ export const getMachines = async (config: any, paramters: any, payloadColumnName
     commandText = commandText.replace('@offset', paramters.offset.toString());
     commandText = commandText.replace('@limit', paramters.limit.toString());
 
-    const machineTypes = ['arcade', 'software', 'gamble', 'other', 'device'];
 
-    if ((machineTypes.every(type => paramters[type] === true)) || (machineTypes.every(type => paramters[type] === false)))
+    if (paramters.type.length === 0)
         commandText = commandText.replaceAll('@WHERE', '');
     else
-        commandText = commandText.replaceAll('@WHERE', 'WHERE ' + machineTypes.filter(type => paramters[type] === true).map(type => `([type] = '${type}')`).join(' OR '));
+        commandText = commandText.replaceAll('@WHERE', 'WHERE ' + paramters.type.map((type: string) => `([type] = '${type}')`).join(' OR '));
 
     const request: Tedious.Request = new Request(commandText, () => {});
 

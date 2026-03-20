@@ -194,8 +194,14 @@ td.nav-on {
 }
 
 .toolbar {
-    display: flex;
-    align-items: center;
-    gap: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
+.toolbar-input {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 8px;
+}
