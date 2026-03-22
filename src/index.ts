@@ -203,6 +203,7 @@ const defaultParamters: any = {
 const _machine_types = [
     'arcade',
     'software',
+    'pinball',
     'gamble',
     'other',
     'device',
