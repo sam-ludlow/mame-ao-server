@@ -142,7 +142,23 @@ td.nav-on {
 
 .card {
   width: 100%;
-  background-color: #bde0f5;
+  background-color: #f2f2f2;
+}
+.card-gg {
+  width: 100%;
+  background-color: #e6ffe6;
+}
+.card-ig {
+  width: 100%;
+  background-color: #ffffe6;
+}
+.card-pg {
+  width: 100%;
+  background-color: #fff0e6;
+}
+.card-pp {
+  width: 100%;
+  background-color: #ffe6e6;
 }
 
 .card-thumb {
@@ -150,7 +166,7 @@ td.nav-on {
   height: 128px;
   margin: 0 auto;
   color: #fff;
-  background-color: #000;
+  background-color: #262626;
   display: grid;
   place-items: center;
   text-align: center;
