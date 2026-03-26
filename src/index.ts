@@ -197,9 +197,10 @@ const defaultParamters: any = {
     search: '',
     view: 'grid',
     type: [],
+    status: [],
+    mechanical: null,
+    clone: null,
 };
-
-// TODO : make better
 const _machine_types = [
     'arcade',
     'software',
@@ -207,6 +208,12 @@ const _machine_types = [
     'gamble',
     'other',
     'device',
+];
+const _machine_statuses = [
+    'good',
+    'imperfect',
+    'preliminary',
+    'bad',
 ];
 
 export class RequestInfo {
@@ -221,7 +228,7 @@ export class RequestInfo {
 
         [this.Url, this.Query] = (req.url || '/').split('?');
 
-        this.Paramters = { ...defaultParamters, type: [...defaultParamters.type], };
+        this.Paramters = JSON.parse(JSON.stringify(defaultParamters));
 
         if (this.Query !== undefined) {
             this.Query.split('&').forEach(queryPart => {
@@ -250,6 +257,21 @@ export class RequestInfo {
                         case 'type':
                             if (_machine_types.includes(pair[1]) && !this.Paramters.type.includes(pair[1]))
                                 this.Paramters.type.push(pair[1]);
+                            break;
+
+                        case 'status':
+                            if (_machine_statuses.includes(pair[1]) && !this.Paramters.status.includes(pair[1]))
+                                this.Paramters.status.push(pair[1]);
+                            break;
+
+                        case 'mechanical':
+                            if (['true', 'false'].includes(pair[1]))
+                                this.Paramters.mechanical = pair[1] === 'true';
+                            break;
+
+                        case 'clone':
+                            if (['true', 'false'].includes(pair[1]))
+                                this.Paramters.clone = pair[1] === 'true';
                             break;
                     }
                 }
@@ -364,7 +386,13 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
     }
 
     if (req.method === 'OPTIONS') {
-        res.setHeader("Allow", "OPTIONS, GET");
+        res.writeHead(200, { 'Allow': 'OPTIONS, GET' });
+        res.end();
+        return;
+    }
+
+    if (req.method === 'HEAD') {
+        res.writeHead(200);
         res.end();
         return;
     }
@@ -1092,20 +1120,30 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
 }
 
 const goLocationUrl = (requestInfo: RequestInfo, offset: number) => {
-    const paramters = { ...requestInfo.Paramters };
-    paramters.offset = offset;
+    const parameters = JSON.parse(JSON.stringify(requestInfo.Paramters));
+    parameters.offset = offset;
 
-    const parts: string[] = Object.keys(requestInfo.Paramters).filter((key): boolean => {
-        if (Array.isArray(paramters[key]))
-            return paramters[key].length > 0;
+    const partKeys = Object.keys(parameters).filter((key) => {
+        if (Array.isArray(parameters[key]))
+            return parameters[key].length > 0;
         else 
-            return paramters[key] !== defaultParamters[key]
+            return parameters[key] !== defaultParamters[key];
+    });
+
+    const parts: string[] = [];
+
+    partKeys.forEach(key => {
+        const value = parameters[key];
+        if (Array.isArray(value))
+            value.forEach(itemValue => parts.push(`${key}=${encodeURIComponent(itemValue)}`));
+        else
+            parts.push(`${key}=${encodeURIComponent(value)}`);
     });
 
     if (parts.length === 0)
         return requestInfo.Url;
 
-    return requestInfo.Url + '?' + parts.map((key) => `${key}=${encodeURIComponent(paramters[key])}`).join('&');
+    return requestInfo.Url + '?' + parts.join('&');
 };
 
 const makePageNav = (requestInfo: RequestInfo, viewCount: number, totalCount: number): string => {
@@ -1170,7 +1208,7 @@ export const getMachines = async (config: any, paramters: any, payloadColumnName
 
     let commandText;
 
-    if (paramters.search.length > 0) {
+    if (paramters.search.length !== 0) {
         commandText = `
             WITH tmp_search_rows AS (
                 SELECT
@@ -1217,15 +1255,25 @@ export const getMachines = async (config: any, paramters: any, payloadColumnName
     commandText = commandText.replace('@offset', paramters.offset.toString());
     commandText = commandText.replace('@limit', paramters.limit.toString());
 
+    const wheres: string[] = [];
 
-    if (paramters.type.length === 0)
-        commandText = commandText.replaceAll('@WHERE', '');
-    else
-        commandText = commandText.replaceAll('@WHERE', 'WHERE ' + paramters.type.map((type: string) => `([type] = '${type}')`).join(' OR '));
+    if (paramters.type.length !== 0 && paramters.type.length !== _machine_types.length)
+        wheres.push(paramters.type.map((type: string) => `([type] = '${type}')`).join(' OR '));
+
+    if (paramters.status.length !== 0)
+        wheres.push(paramters.status.map((status: string) => `([ao_status] = '${status}')`).join(' OR '));
+
+    if (paramters.mechanical !== null)
+        wheres.push(`([ismechanical] = ${paramters.mechanical ? '1' : '0'})`);
+
+    if (paramters.clone !== null)
+        wheres.push(`([isclone] = ${paramters.clone ? '1' : '0'})`);
+
+    commandText = wheres.length === 0 ? commandText.replaceAll('@WHERE', '') : commandText.replaceAll('@WHERE', `WHERE ((${wheres.join(') AND (')}))`);
 
     const request: Tedious.Request = new Request(commandText, () => {});
 
-    if (paramters.search.length > 0)
+    if (paramters.search.length !== 0)
         request.addParameter('search', TYPES.VarChar, paramters.search);
 
     let data;

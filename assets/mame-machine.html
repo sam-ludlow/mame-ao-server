@@ -8,11 +8,10 @@
         search: '',
         view: 'grid',
         type: [],
+        status: [],
+        mechanical: null,
+        clone: null,
     };
-
-    const _parameters = { ..._defaultParamters, type: [..._defaultParamters.type], };
-
-    // TODO : make better
     const _machine_types = [
         'arcade',
         'software',
@@ -21,6 +20,13 @@
         'other',
         'device',
     ];
+    const _machine_statuses = [
+        'good',
+        'imperfect',
+        'preliminary',
+        'bad',
+    ];
+    const _parameters = JSON.parse(JSON.stringify(_defaultParamters));
 
     const load = () => {
         if (window.location.href.includes('?')) {
@@ -43,6 +49,20 @@
                     case 'type':
                         if (_machine_types.includes(value) && !_parameters.type.includes(value))
                             _parameters.type.push(value);
+
+                    case 'status':
+                        if (_machine_statuses.includes(value) && !_parameters.status.includes(value))
+                            _parameters.status.push(value);
+                        break;
+
+                    case 'mechanical':
+                        if (['true', 'false'].includes(value))
+                            _parameters.mechanical = value === 'true';
+                        break;
+
+                    case 'clone':
+                        if (['true', 'false'].includes(value))
+                            _parameters.clone = value === 'true';
                         break;
                 }
             });
@@ -56,6 +76,24 @@
             document.getElementById("type-all").checked = true;
         else
             _parameters.type.forEach(type => document.getElementById(`type-${type}`).checked = true);
+
+        document.querySelectorAll('input[name="status"]').forEach(cb => cb.checked = _parameters.status.includes(cb.value));
+
+        if (_parameters.mechanical === null)
+            document.getElementById("mechanical-all").checked = true;
+        else
+            if (_parameters.mechanical === true)
+                document.getElementById("mechanical-mechanical").checked = true;
+            else
+                document.getElementById("mechanical-electronic").checked = true;
+
+        if (_parameters.clone === null)
+            document.getElementById("clone-all").checked = true;
+        else
+            if (_parameters.clone === true)
+                document.getElementById("clone-clone").checked = true;
+            else
+                document.getElementById("clone-parent").checked = true;
 
         switch (_parameters['view']) {
             case 'list':
@@ -111,16 +149,38 @@
         gotoLocation();
     }
 
+    const changeStatus = () => {
+        _parameters.status = Array.from(document.querySelectorAll('input[name="status"]:checked')).map(item => item.value);
+        _parameters['offset'] = 0;
+        gotoLocation();
+    }
+
+    const changeClone = (input) => {
+        _parameters.clone = null;
+        if (input.value !== 'all')
+            _parameters.clone = input.value === 'clone';
+        _parameters['offset'] = 0;
+        gotoLocation();
+    }
+
+    const changeMechanical = (input) => {
+        _parameters.mechanical = null;
+        if (input.value !== 'all')
+            _parameters.mechanical = input.value === 'mechanical';
+        _parameters['offset'] = 0;
+        gotoLocation();
+    }
+
     window.onload = load;
 
 </script>
 
 <div class="toolbar-input">
-    <div>
-        <input id="inputText" type="text" style="width:480px;" />
-        <button type="submit" onclick="searchButton(); return false;">Search</button>
-    </div>
-    <div>
+    <input id="inputText" type="text" placeholder="Machine name & description" />
+    <button type="submit" onclick="searchButton(); return false;">Search</button>
+</div>
+<div class="toolbar">
+    <div class="checkbox-group">
         <label><input id="type-arcade" type="radio" name="type" value="arcade" onchange="changeType(this);">arcade</label>
         <label><input id="type-software" type="radio" name="type" value="software" onchange="changeType(this);">software</label>
         <label><input id="type-pinball" type="radio" name="type" value="pinball" onchange="changeType(this);">pinball</label>
@@ -128,6 +188,22 @@
         <label><input id="type-other" type="radio" name="type" value="other" onchange="changeType(this);">other</label>
         <label><input id="type-device" type="radio" name="type" value="device" onchange="changeType(this);">device</label>
         <label><input id="type-all" type="radio" name="type" value="all" onchange="changeType(this);">all</label>
+    </div>
+    <div class="checkbox-group">
+        <label><input type="checkbox" name="status" value="good" onchange="changeStatus(this);">good</label>
+        <label><input type="checkbox" name="status" value="imperfect" onchange="changeStatus(this);">imperfect</label>
+        <label><input type="checkbox" name="status" value="preliminary" onchange="changeStatus(this);">preliminary</label>
+        <label><input type="checkbox" name="status" value="bad" onchange="changeStatus(this);">bad</label>
+    </div>
+    <div class="checkbox-group">
+        <label><input id="clone-parent" type="radio" name="clone" value="parent" onchange="changeClone(this);">parent</label>
+        <label><input id="clone-clone" type="radio" name="clone" value="clone" onchange="changeClone(this);">clone</label>
+        <label><input id="clone-all" type="radio" name="clone" value="all" onchange="changeClone(this);">all</label>
+    </div>
+    <div class="checkbox-group">
+        <label><input id="mechanical-electronic" type="radio" name="mechanical" value="electronic" onchange="changeMechanical(this);">electronic</label>
+        <label><input id="mechanical-mechanical" type="radio" name="mechanical" value="mechanical" onchange="changeMechanical(this);">mechanical</label>
+        <label><input id="mechanical-all" type="radio" name="mechanical" value="all" onchange="changeMechanical(this);">all</label>
     </div>
 </div>
 <hr />

@@ -211,13 +211,27 @@ td.nav-on {
 
 .toolbar {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.checkbox-group {
+  border: 1px solid #00adef;
+  padding: 8px;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
 }
 
 .toolbar-input {
   display: flex;
-  flex-direction: column;
-  gap: 12px;
+  gap: 8px;
   padding: 8px;
 }
+
+.toolbar-input input {
+  flex: 1;
+  padding: 4px;
+  box-sizing: border-box;
+}
+
