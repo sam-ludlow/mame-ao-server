@@ -414,9 +414,10 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
             return;
 
         case '/spludlow.svg':
+        case '/mame-ao.svg':
             res.setHeader('Content-Type', 'image/svg+xml; charset=utf-8');
             res.setHeader('Cache-Control', 'public, max-age=86400');
-            res.write(assets['spludlow.svg']);
+            res.write(assets[req.url.substring(1)]);
             res.end();
             return;
 

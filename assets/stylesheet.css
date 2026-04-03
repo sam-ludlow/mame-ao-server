@@ -1,181 +1,102 @@
 ﻿body {
-	font-family: sans-serif;
-	background-color: #c6eafb;
+  font-family: sans-serif;
+  background: #c6eafb;
 }
 
-hr {
-	color: #00ADEF;
-	background-color: #00ADEF;
-	height: 6px;
-	border: none;
-	padding-left: 0px;
-}
-
-hr.px2 {
-	color: #00ADEF;
-	background-color: #00ADEF;
-	height: 2px;
-	border: none;
-	padding-left: 0px;
-}
-
-table {
-	border-collapse: collapse;
-}
-
-table.nav {
-	width: 100%;
-    border-collapse: separate;
-    border-spacing: 2px;
-    background: transparent;
-}
-
-table.nav {
-	border: none;
-}
-
-td.nav-off {
-	text-decoration: none;
-	background-color: #1a75bc;
-	text-align: center;
-	border: none;
-}
-
-td.nav-on {
-	text-decoration: none;
-	background-color: #00ADEF;
-	text-align: center;
-	border: none;
-}
-
-a.nav-off {
-	text-decoration: none;
-	color: #FFFFFF;
-}
-
-a.nav-on {
-	text-decoration: none;
-	color: #FFFF00;
-}
-
-th, td {
-	padding: 2px;
-	text-align: left;
-}
-
-table, th, td {
-	border: 1px solid black;
-}
-
-th {
-	background-color: #555;
-	color: #fff;
-}
-
-tr {
-	color: #000;
-	background-color: #ddd;
-}
-
-tr:nth-child(even) {
-	color: #000;
-	background-color: #eee;
-}
-
-a.nav-off {
-	text-decoration: none;
-	color: #FFFFFF;
-}
-
-a.nav-on {
-	text-decoration: none;
-	color: #FFFF00;
-}
-
-td.nav-off {
-	text-decoration: none;
-	background-color: #1a75bc;
-	text-align: center;
-}
-
-td.nav-on {
-	text-decoration: none;
-	background-color: #00ADEF;
-	text-align: center;
+.header,
+.footer {
+  background: #000;
+  color: #fff;
+  padding: 4px;
+  box-sizing: border-box;
 }
 
 .header {
-    background: black;
-    color: white;
-    width: 100%;
-    padding: 4px;
-    box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 24px 24px 0 0;
 }
-.header::after {
-    content: "";
-    display: block;
-    clear: both;
+.logo { height: 96px; }
+.header h1 { margin: 0; }
+
+hr {
+  background: #00adef;
+  height: 6px;
+  border: 0;
 }
-.logo {
-    float: left;
-    margin-right: 4px;
-    height: 96px;
+hr.px2 { height: 2px; }
+
+table { border-collapse: collapse; }
+th, td {
+  padding: 2px;
+  text-align: left;
+  border: 1px solid #000;
+}
+th {
+  background: #555;
+  color: #fff;
 }
 
-.header h1 {
-    margin: 0;
-}
+tr { background: #ddd; }
+tr:nth-child(even) { background: #eee; }
 
-.footer {
-    background: black;
-    color: white;
-    width: 100%;
-    padding: 4px;
-    box-sizing: border-box;
+table.nav {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 2px;
+  background: transparent;
+  border: 0;
 }
+td.nav-off,
+td.nav-on {
+  text-align: center;
+  border: 0;
+}
+td.nav-off { background: #1a75bc; }
+td.nav-on  { background: #00adef; }
+a.nav-off,
+a.nav-on {
+    text-decoration: none;
+}
+a.nav-off { color: #fff; }
+a.nav-on  { color: #ff0; }
 
 .card-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(192px, 1fr));
-  gap: 8px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(192px, 1fr));
+    gap: 8px;
 }
 
-.card {
-  width: 100%;
-  background-color: #f2f2f2;
-}
-.card-gg {
-  width: 100%;
-  background-color: #e6ffe6;
-}
-.card-ig {
-  width: 100%;
-  background-color: #ffffe6;
-}
-.card-pg {
-  width: 100%;
-  background-color: #fff0e6;
-}
+.card,
+.card-gg,
+.card-ig,
+.card-pg,
 .card-pp {
-  width: 100%;
-  background-color: #ffe6e6;
+    width: 100%;
 }
+
+.card    { background: #f2f2f2; }
+.card-gg { background: #e6ffe6; }
+.card-ig { background: #ffffe6; }
+.card-pg { background: #fff0e6; }
+.card-pp { background: #ffe6e6; }
 
 .card-thumb {
   width: 128px;
   height: 128px;
   margin: 0 auto;
-  color: #fff;
-  background-color: #262626;
   display: grid;
   place-items: center;
   text-align: center;
+  color: #fff;
+  background: #262626;
 }
 
 .card-link {
+  display: block;
   text-decoration: none;
   color: inherit;
-  display: block;
 }
 
 .card-img {
@@ -192,20 +113,11 @@ td.nav-on {
   text-align: center;
 }
 
-.card-name {
-  font-weight: 600;
-  font-size: 1.0rem;
-}
-.card-description {
-  font-weight: 400;
-  font-size: 0.8rem;
-}
-.card-year {
-  font-weight: 600;
-  font-size: 0.8rem;
-}
+.card-name { font: 600 1rem sans-serif; }
+.card-year { font: 600 0.8rem sans-serif; }
+
+.card-description,
 .card-manufacturer {
-  font-weight: 400;
   font-size: 0.8rem;
 }
 
@@ -214,24 +126,19 @@ td.nav-on {
   flex-wrap: wrap;
   gap: 8px;
 }
-
 .checkbox-group {
   border: 1px solid #00adef;
   padding: 8px;
   display: flex;
-  flex-wrap: nowrap;
   gap: 8px;
 }
-
 .toolbar-input {
   display: flex;
   gap: 8px;
   padding: 8px;
 }
-
 .toolbar-input input {
   flex: 1;
   padding: 4px;
   box-sizing: border-box;
 }
-
