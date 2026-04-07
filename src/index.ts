@@ -2,6 +2,7 @@ import http from 'http';
 import os from 'os';
 import cluster from 'cluster';
 import fs from 'fs';
+import { readFile } from "fs/promises";
 import path from 'path';
 import { pipeline } from 'stream/promises';
 import { randomUUID } from 'crypto';
@@ -304,12 +305,27 @@ const applicationServers: any = {};
 const assets: any = {};
 let concurrentRequests: number = 0;
 
+const magnetScrapes: any = {};  //  TODO: Handle refresh
+
+const loadMagnetScrapes = async () => {
+    const content = await readFile(path.join(mameAoDataDirectory, 'magnets.txt'), 'utf-8');
+    for (let line of content.split(/\r?\n/)) {
+        line = line.trim();
+        if (line.length === 0)
+            continue;
+        const parts = line.split('\t');
+        magnetScrapes[`/magnets/${parts[0]}.html`] = await (await fetch(parts[1])).text();
+    }
+}
+
 const startServer = async () => {
 
     if (fs.existsSync(mameAoDataDirectory) === false)
         mameAoDataDirectory = 'E:\\ao-data';    // production
 
     console.log(mameAoDataDirectory);
+
+    await loadMagnetScrapes();
 
     await loadAssets();
 
@@ -440,6 +456,13 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
             res.setHeader('Content-Type', 'application/json; charset=utf-8');
             res.setHeader('Cache-Control', 'public, max-age=86400');
             res.write('{}');
+            res.end();
+            return;
+
+        case '/magnets/mame.html':
+        case '/magnets/hbmame.html':
+            res.setHeader('Content-Type', 'text/html; charset=utf-8');
+            res.write(magnetScrapes[req.url]);
             res.end();
             return;
 
