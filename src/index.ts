@@ -6,6 +6,7 @@ import { readFile } from "fs/promises";
 import path from 'path';
 import { pipeline } from 'stream/promises';
 import { randomUUID } from 'crypto';
+import crypto from 'crypto';
 
 import * as tools from './tools.js';
 
@@ -301,12 +302,15 @@ export class ResponeInfo {
 const coreKeys = ['mame', 'hbmame', 'fbneo', 'tosec', 'snap'];
 
 let mameAoDataDirectory: string = 'C:\\ao-data';
+if (fs.existsSync(mameAoDataDirectory) === false)
+    mameAoDataDirectory = 'E:\\ao-data';    // production
+console.log(mameAoDataDirectory);
+
 const applicationServers: any = {};
 const assets: any = {};
 let concurrentRequests: number = 0;
 
-const magnetScrapes: any = {};  //  TODO: Handle refresh
-
+const magnetScrapes: any = {};  //  TODO: depreciate
 const loadMagnetScrapes = async () => {
     const content = await readFile(path.join(mameAoDataDirectory, 'magnets.txt'), 'utf-8');
     for (let line of content.split(/\r?\n/)) {
@@ -319,11 +323,6 @@ const loadMagnetScrapes = async () => {
 }
 
 const startServer = async () => {
-
-    if (fs.existsSync(mameAoDataDirectory) === false)
-        mameAoDataDirectory = 'E:\\ao-data';    // production
-
-    console.log(mameAoDataDirectory);
 
     await loadMagnetScrapes();
 
@@ -459,10 +458,18 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
             res.end();
             return;
 
+        //  TODO: depreciate
         case '/magnets/mame.html':
         case '/magnets/hbmame.html':
             res.setHeader('Content-Type', 'text/html; charset=utf-8');
             res.write(magnetScrapes[req.url]);
+            res.end();
+            return;
+
+        case '/api/magnets/mame':
+        case '/api/magnets/hbmame':
+            res.setHeader('Content-Type', 'application/json; charset=utf-8');
+            res.write(await (await fetch(`http://localhost:32104/api/magnets?core=${requestInfo.UrlParts[2]}`)).text());
             res.end();
             return;
 
@@ -1388,6 +1395,31 @@ export const getSoftwares = async (config: any,  softwarelist_name: string, sear
     return data;
 }
 
+const magnetKey = 'RRt08v+YWc2+910RGOhZO7DrNVnHKae8MDJyJNOd950=';
+
+const magnets: any = {};  //  TODO: Handle refresh
+
+const loadMagnets = async () => {
+    const content = await readFile(path.join(mameAoDataDirectory, 'magnets.txt'), 'utf-8');
+    for (let line of content.split(/\r?\n/)) {
+        line = line.trim();
+        if (line.length === 0)
+            continue;
+        const parts = line.split('\t');
+
+        const core = parts[0];
+        const html = await (await fetch(parts[1])).text();
+        const iv = crypto.randomBytes(16);
+        const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(magnetKey, 'base64'), iv);
+        const encrypted = Buffer.concat([cipher.update(html, 'utf8'), cipher.final()]);
+
+        magnets[core] = {
+            body: encrypted.toString('base64'),
+            iv: iv.toString('base64'),
+        };
+    }
+}
+
 //
 // Cluster
 //
@@ -1395,6 +1427,8 @@ const runCluster = async () => {
     if (cluster.isPrimary === true) {
 
         console.log(`Master ${process.pid} running`);
+
+        await loadMagnets();
         
         process.stdin.on('data', (chunk: Buffer) => {
             const command: string = chunk.toString().trim();
@@ -1421,22 +1455,25 @@ const runCluster = async () => {
                 res.setHeader('Content-Type', 'application/json; charset=utf-8');
 
                 try {
-                    switch (requestInfo.UrlParts[1]) {
 
-                        case 'stop':
-                        case 'start':
+                    switch (requestInfo.Url) {
+                        case '/api/stop':
+                        case '/api/start':
                             for (const id in cluster.workers) {
                                 const worker = cluster.workers[id];
                                 if (worker)
                                     worker.send(`${requestInfo.UrlParts[1]}\t${requestInfo.Paramters.core}`);
-                            }
+                            }                    
+                            res.write(JSON.stringify({ message: 'OK' }));
+                            break;
+
+                        case '/api/magnets':
+                            res.write(JSON.stringify(magnets[requestInfo.Paramters.core]));
                             break;
 
                         default:
                             throw new Error('Bad EP.');
                     }
-
-                    res.write(JSON.stringify({ message: 'OK' }));
 
                 } catch (e: any) {
                     console.log(e);
