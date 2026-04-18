@@ -310,21 +310,7 @@ const applicationServers: any = {};
 const assets: any = {};
 let concurrentRequests: number = 0;
 
-const magnetScrapes: any = {};  //  TODO: depreciate
-const loadMagnetScrapes = async () => {
-    const content = await readFile(path.join(mameAoDataDirectory, 'magnets.txt'), 'utf-8');
-    for (let line of content.split(/\r?\n/)) {
-        line = line.trim();
-        if (line.length === 0)
-            continue;
-        const parts = line.split('\t');
-        magnetScrapes[`/magnets/${parts[0]}.html`] = await (await fetch(parts[1])).text();
-    }
-}
-
 const startServer = async () => {
-
-    await loadMagnetScrapes();
 
     await loadAssets();
 
@@ -455,14 +441,6 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
             res.setHeader('Content-Type', 'application/json; charset=utf-8');
             res.setHeader('Cache-Control', 'public, max-age=86400');
             res.write('{}');
-            res.end();
-            return;
-
-        //  TODO: depreciate
-        case '/magnets/mame.html':
-        case '/magnets/hbmame.html':
-            res.setHeader('Content-Type', 'text/html; charset=utf-8');
-            res.write(magnetScrapes[req.url]);
             res.end();
             return;
 
@@ -1397,7 +1375,7 @@ export const getSoftwares = async (config: any,  softwarelist_name: string, sear
 
 const magnetKey = 'RRt08v+YWc2+910RGOhZO7DrNVnHKae8MDJyJNOd950=';
 
-const magnets: any = {};  //  TODO: Handle refresh
+const magnets: any = {};
 
 const loadMagnets = async () => {
     const content = await readFile(path.join(mameAoDataDirectory, 'magnets.txt'), 'utf-8');
@@ -1409,6 +1387,8 @@ const loadMagnets = async () => {
 
         const core = parts[0];
         const html = await (await fetch(parts[1])).text();
+        const sha1 = crypto.createHash('sha1').update(html).digest('hex');
+
         const iv = crypto.randomBytes(16);
         const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(magnetKey, 'base64'), iv);
         const encrypted = Buffer.concat([cipher.update(html, 'utf8'), cipher.final()]);
@@ -1416,7 +1396,10 @@ const loadMagnets = async () => {
         magnets[core] = {
             body: encrypted.toString('base64'),
             iv: iv.toString('base64'),
+            sha1,
         };
+
+        console.log(`Magnet Loaded:\t${core}\t${sha1}`);
     }
 }
 
@@ -1469,6 +1452,11 @@ const runCluster = async () => {
 
                         case '/api/magnets':
                             res.write(JSON.stringify(magnets[requestInfo.Paramters.core]));
+                            break;
+
+                        case '/api/magnets_refresh':
+                            await loadMagnets();
+                            res.write(JSON.stringify({ message: 'OK' }));
                             break;
 
                         default:
