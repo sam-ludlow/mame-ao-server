@@ -93,6 +93,19 @@ export const databaseQuery = async (config: any, commandText: string) => {
     return data;
 }
 
+export const databaseRequest = async (config: any, request: Tedious.Request) => {
+    const connection = new Connection(config);
+    await sqlOpen(connection);
+    let data;
+    try {
+        data = await sqlRequest(connection, request);
+    }
+    finally {
+        await sqlClose(connection);
+    }
+    return data;
+}
+
 export const databasePayload = async (config: any, tableName: string, keys: any, extention: string) => {
     if (extention === '')
         extention = 'html';

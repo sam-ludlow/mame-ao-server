@@ -83,8 +83,8 @@ export class ApplicationCore implements Application {
                 this.DatabaseConfigs = [ tools.sqlConfig(databaseServer, `${databaseNamePrefix}-${this.Key}`)];
                 break;
 
+            case 'search':
             case 'snap':
-                // Not a real core
                 this.Info = '';
                 break;
 
@@ -185,6 +185,11 @@ const rootMenu: any[] =
                 href: '/tosec/tosec-pix',
             },
         ],
+    },
+    {
+        text: 'SEARCH',
+        title: 'Search',
+        href: '/search',
     },
     {
         text: 'SNAP',
@@ -299,7 +304,7 @@ export class ResponeInfo {
     public Extention: string = '';
 }
 
-const coreKeys = ['mame', 'hbmame', 'fbneo', 'tosec', 'snap'];
+const coreKeys = ['mame', 'hbmame', 'fbneo', 'tosec', 'search', 'snap'];
 
 let mameAoDataDirectory: string = 'C:\\ao-data';
 if (fs.existsSync(mameAoDataDirectory) === false)
@@ -673,6 +678,29 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
                             const fbneo_data = await tools.databasePayload(application.DatabaseConfigs[0], 'root_payload', { key_1: '1' }, responseInfo.Extention);
                             responseInfo.Title = fbneo_data[0].value;
                             responseInfo.Body = fbneo_data[1].value;
+                            break;
+
+                        case 'search':
+                            const search = requestInfo.Paramters['search'];
+                            let html = `<div>HELLO SEARCH ${search}</div>`;
+
+                            if (search) {
+                                const results = await searchSHA1(search);
+
+                                html += '<table><tr><th>type</th><th>machine_name</th><th>machine_description</th><th>softwarelist_name</th><th>softwarelist_description</th><th>software_name</th><th>software_description</th><th>item_name</th></tr>';
+
+                                html += results.map(result => {
+
+                                    return `<tr><td>${result.type}</td><td>${result.machine_name}</td><td>${result.machine_description}</td><td>${result.softwarelist_name}</td><td>${result.softwarelist_description}</td><td>${result.software_name}</td><td>${result.software_description}</td><td>${result.item_name}</td></tr>`;
+
+                                }).join(os.EOL);
+
+                                html += '</table>';
+                            }
+
+                            responseInfo.Title = 'Spludlow Data Search';
+                            responseInfo.Heading = responseInfo.Title;
+                            responseInfo.Body = assets['search.html'].replace('@DATA@', html);
                             break;
 
                         case 'snap':
@@ -1373,6 +1401,117 @@ export const getSoftwares = async (config: any,  softwarelist_name: string, sear
     return data;
 }
 
+export const searchSHA1 = async (sha1: string) => {
+
+    const databaseSearch = async (type: string, core: string, connectionIndex: number, commandText: string, value: string) => {
+
+        const application: Application = applicationServers[core];
+        const request: Tedious.Request = new Request(commandText, () => {});
+        request.addParameter('VALUE', TYPES.VarChar, value);
+
+        let data = await tools.databaseRequest(application.DatabaseConfigs[connectionIndex], request);
+
+        return data.map((row) => {
+            const result: any = {
+                type,
+            };
+            row.forEach((item: any) => result[item.metadata.colName] = item.value);
+            return result;
+        });
+    };
+
+    const tasks: Promise<any>[] = [
+
+        //
+        //  MAME
+        //
+        databaseSearch('mame-machine-rom', 'mame', 0, `
+            SELECT
+                [machine].[name] AS machine_name,
+                [machine].[description] AS machine_description,
+                [rom].[name] AS item_name
+            FROM
+                [machine]
+                INNER JOIN [rom] ON [machine].machine_id = [rom].machine_id
+            WHERE [rom].[sha1] = @VALUE;
+        `, sha1),
+        databaseSearch('mame-machine-disk', 'mame', 0, `
+            SELECT
+                [machine].[name] AS machine_name,
+                [machine].[description] AS machine_description,
+                [disk].[name] AS item_name
+            FROM
+                [machine]
+                INNER JOIN DISK ON [machine].machine_id = [disk].machine_id
+            WHERE [disk].[sha1] = @VALUE;
+        `, sha1),
+        databaseSearch('mame-software-rom', 'mame', 1, `
+            SELECT
+                softwarelist.[name] AS softwarelist_name,
+                softwarelist.[description] AS softwarelist_description,
+                software.[name] AS software_name,
+                software.[description] AS software_description,
+                [rom].[name] AS item_name
+            FROM
+                softwarelist
+                INNER JOIN software ON softwarelist.softwarelist_id = software.softwarelist_id
+                INNER JOIN part ON software.software_id = part.software_id
+                INNER JOIN dataarea ON part.part_id = dataarea.part_id
+                INNER JOIN rom ON dataarea.dataarea_id = rom.dataarea_id
+            WHERE
+                [rom].[sha1] = @VALUE;
+        `, sha1),
+        databaseSearch('mame-software-disk', 'mame', 1, `
+            SELECT
+                softwarelist.[name] AS softwarelist_name,
+                softwarelist.[description] AS softwarelist_description,
+                software.[name] AS software_name,
+                software.[description] AS software_description,
+                disk.name AS item_name
+            FROM
+                softwarelist
+                INNER JOIN software ON softwarelist.softwarelist_id = software.softwarelist_id
+                INNER JOIN part ON software.software_id = part.software_id
+                INNER JOIN diskarea ON part.part_id = diskarea.part_id
+                INNER JOIN [disk] ON diskarea.diskarea_id = [disk].diskarea_id
+            WHERE [disk].[sha1] = @VALUE;
+        `, sha1),
+
+        //
+        //  HBMAME
+        //
+        databaseSearch('hbmame-machine-rom', 'hbmame', 0, `
+            SELECT
+                [machine].[name] AS machine_name,
+                [machine].[description] AS machine_description,
+                [rom].[name] AS item_name
+            FROM
+                [machine]
+                INNER JOIN [rom] ON [machine].machine_id = [rom].machine_id
+            WHERE [rom].[sha1] = @VALUE;
+        `, sha1),
+        databaseSearch('hbmame-software-rom', 'hbmame', 1, `
+            SELECT
+                softwarelist.[name] AS softwarelist_name,
+                softwarelist.[description] AS softwarelist_description,
+                software.[name] AS software_name,
+                software.[description] AS software_description,
+                [rom].[name] AS item_name
+            FROM
+                softwarelist
+                INNER JOIN software ON softwarelist.softwarelist_id = software.softwarelist_id
+                INNER JOIN part ON software.software_id = part.software_id
+                INNER JOIN dataarea ON part.part_id = dataarea.part_id
+                INNER JOIN rom ON dataarea.dataarea_id = rom.dataarea_id
+            WHERE
+                [rom].[sha1] = @VALUE;
+        `, sha1),
+
+    ];
+
+    return (await Promise.all(tasks)).flat();
+}
+
 const magnetKey = 'RRt08v+YWc2+910RGOhZO7DrNVnHKae8MDJyJNOd950=';
 
 const magnets: any = {};
@@ -1411,7 +1550,7 @@ const runCluster = async () => {
 
         console.log(`Master ${process.pid} running`);
 
-        await loadMagnets();
+        //await loadMagnets();
         
         process.stdin.on('data', (chunk: Buffer) => {
             const command: string = chunk.toString().trim();

@@ -1,0 +1,71 @@
+<script type="text/javascript">
+
+    const _path = document.location.pathname;
+
+    const _defaultParamters = {
+        search: '',
+    };
+
+    const _parameters = JSON.parse(JSON.stringify(_defaultParamters));
+
+    const load = () => {
+
+        if (window.location.href.includes('?')) {
+            const parts = window.location.href.split('?')[1].split('&');
+            parts.forEach((part) => {
+                const pair = part.split('=');
+                const key = pair[0];
+                const value = decodeURIComponent(pair[1]);
+
+                _parameters[key] = value;
+            });
+        }
+
+        const inputSHA1 = document.getElementById('inputSHA1');
+        inputSHA1.value = _parameters.search;
+        inputSHA1.focus();
+    }
+
+    const gotoLocation = () => {
+        const partKeys = Object.keys(_parameters).filter((key) => {
+            if (Array.isArray(_parameters[key]))
+                return _parameters[key].length > 0;
+            else 
+                return _parameters[key] !== _defaultParamters[key];
+        });
+
+        const parts = [];
+
+        partKeys.forEach(key => {
+            const value = _parameters[key];
+            if (Array.isArray(value))
+                value.forEach(itemValue => parts.push(`${key}=${encodeURIComponent(itemValue)}`));
+            else
+                parts.push(`${key}=${encodeURIComponent(value)}`);
+        });
+
+        if (parts.length === 0)
+            document.location = _path;
+        else
+            document.location = _path + '?' + parts.join('&');
+    }
+
+    const searchSHA1 = () => {
+        _parameters['search'] = document.getElementById('inputSHA1').value;
+        gotoLocation();
+    }
+
+    window.onload = load;
+
+</script>
+
+<h2>Hash Search</h2>
+<div class="toolbar-input">
+    <input id="inputSHA1" type="text" placeholder="SHA1" />
+    <button type="submit" onclick="searchSHA1(); return false;">Search</button>
+</div>
+
+<hr />
+    @DATA@
+<hr />
+
