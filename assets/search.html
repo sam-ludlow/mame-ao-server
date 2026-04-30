@@ -21,9 +21,9 @@
             });
         }
 
-        const inputSHA1 = document.getElementById('inputSHA1');
-        inputSHA1.value = _parameters.search;
-        inputSHA1.focus();
+        const input = document.getElementById('input');
+        input.value = _parameters.search;
+        input.focus();
     }
 
     const gotoLocation = () => {
@@ -50,8 +50,8 @@
             document.location = _path + '?' + parts.join('&');
     }
 
-    const searchSHA1 = () => {
-        _parameters['search'] = document.getElementById('inputSHA1').value;
+    const search = () => {
+        _parameters['search'] = document.getElementById('input').value;
         gotoLocation();
     }
 
@@ -59,13 +59,10 @@
 
 </script>
 
-<h2>Hash Search</h2>
+<h2>ROM/Disk Search</h2>
 <div class="toolbar-input">
-    <input id="inputSHA1" type="text" placeholder="SHA1" />
-    <button type="submit" onclick="searchSHA1(); return false;">Search</button>
+    <input id="input" type="text" placeholder="SHA1, CRC32, rom/disk name" />
+    <button type="submit" onclick="search(); return false;">Search</button>
 </div>
 
-<hr />
-    @DATA@
-<hr />
-
+@DATA@

@@ -2,6 +2,11 @@ import fs from 'fs';
 import Tedious from 'tedious';
 import { Connection, Request, TYPES } from 'tedious';
 
+export var validNameRegEx = /^[a-zA-Z0-9-_]+$/;
+export var validUUIDRegEx = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+export var validSHA1RegEx = /^[0-9a-f]{40}$/;
+export var validCRC32RegEx = /^[0-9a-f]{8}$/;
+
 export const directoryFiles = async (directory: string): Promise<string[]> => {
     return fs.readdirSync(directory);
 }
