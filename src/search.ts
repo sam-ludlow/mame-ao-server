@@ -38,7 +38,9 @@ export const searchRomDisk = async (value: string) => {
         
         html += `<table><tr>${columnNames.map(name => `<th>${name}</th>`).join('')}</tr>`;
         html += results.map((result: any) => {
-            return `<tr>${columnNames.map(name => `<td>${result[name]}</td>`).join('')}</tr>`;
+            return `<tr>${columnNames.map(name => {
+                let value = result[name];
+                return `<td>${value}</td>`}).join('')}</tr>`;
         }).join(os.EOL);
         html += '</table>';
 
@@ -104,6 +106,37 @@ export const searchRomDisk = async (value: string) => {
                     INNER JOIN [disk] ON diskarea.diskarea_id = [disk].diskarea_id
                 WHERE [disk].[@NAME] = @VALUE;
             `));
+
+        if (name === 'name')
+            tasks.push(databaseSearch('mame-machine', application, 0, `
+                SELECT
+                    machine_search_payload.[name],
+                    machine_search_payload.[description]
+                FROM FREETEXTTABLE(
+                        machine_search_payload,
+                        ([name], [description]),
+                        @VALUE
+                    ) AS seacrh_result
+                JOIN machine_search_payload AS machine_search_payload
+                    ON machine_search_payload.[name] = seacrh_result.[KEY]
+            `));
+
+
+        if (name === 'name')
+            tasks.push(databaseSearch('mame-software', application, 1, `
+                SELECT
+                    software_search_payload.[softwarelist_name],
+                    software_search_payload.[software_name],
+                    software_search_payload.[description]
+                FROM FREETEXTTABLE(
+                        software_search_payload,
+                        ([software_name], [description]),
+                        @VALUE
+                    ) AS seacrh_result
+                JOIN software_search_payload AS software_search_payload
+                    ON software_search_payload.[key] = seacrh_result.[KEY]
+            `));
+
     }
 
     if (application = applicationServers['hbmame']) {
@@ -134,6 +167,36 @@ export const searchRomDisk = async (value: string) => {
             WHERE
                 [rom].[@NAME] = @VALUE;
         `));
+
+        if (name === 'name')
+            tasks.push(databaseSearch('hbmame-machine', application, 0, `
+                SELECT
+                    machine_search_payload.[name],
+                    machine_search_payload.[description]
+                FROM FREETEXTTABLE(
+                        machine_search_payload,
+                        ([name], [description]),
+                        @VALUE
+                    ) AS seacrh_result
+                JOIN machine_search_payload AS machine_search_payload
+                    ON machine_search_payload.[name] = seacrh_result.[KEY]
+            `));
+
+
+        if (name === 'name')
+            tasks.push(databaseSearch('hbmame-software', application, 1, `
+                SELECT
+                    software_search_payload.[softwarelist_name],
+                    software_search_payload.[software_name],
+                    software_search_payload.[description]
+                FROM FREETEXTTABLE(
+                        software_search_payload,
+                        ([software_name], [description]),
+                        @VALUE
+                    ) AS seacrh_result
+                JOIN software_search_payload AS software_search_payload
+                    ON software_search_payload.[key] = seacrh_result.[KEY]
+            `));
     }
 
     if (application = applicationServers['fbneo']) {

@@ -188,12 +188,12 @@ const rootMenu: any[] =
         ],
     },
     {
-        text: 'SEARCH',
+        text: 'search',
         title: 'Search',
         href: '/search',
     },
     {
-        text: 'SNAP',
+        text: 'snap',
         title: 'Snap Home',
         href: '/snap',
     },
