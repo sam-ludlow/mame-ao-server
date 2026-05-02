@@ -217,6 +217,20 @@ export const searchRomDisk = async (value: string) => {
                 WHERE
                     [rom].[@NAME] = @VALUE;
             `));
+
+        if (name === 'name')
+            tasks.push(databaseSearch('fbneo-game', application, 0, `
+                SELECT
+                    game.[name],
+                    game.[description]
+                FROM FREETEXTTABLE(
+                        game,
+                        ([name], [description]),
+                        @VALUE
+                    ) AS seacrh_result
+                JOIN game AS game
+                    ON game.[game_id] = seacrh_result.[KEY]
+            `));
     }
 
     if (application = applicationServers['tosec']) {
@@ -236,6 +250,20 @@ export const searchRomDisk = async (value: string) => {
             WHERE
                 [rom].[@NAME] = @VALUE;
         `));
+
+        if (name === 'name')
+            tasks.push(databaseSearch('tosec-game', application, 0, `
+                SELECT
+                    game.[name],
+                    game.[description]
+                FROM FREETEXTTABLE(
+                        game,
+                        ([name], [description]),
+                        @VALUE
+                    ) AS seacrh_result
+                JOIN game AS game
+                    ON game.[game_id] = seacrh_result.[KEY]
+            `));
     }
 
     return (await Promise.all(tasks)).join(os.EOL);

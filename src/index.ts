@@ -687,6 +687,8 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
                             let html = '';
                             if (search)
                                 html += await searchRomDisk(search);
+                            else
+                                html += '<p>Seacrh names & description of all machines and software or exact match on SHA1, CRC32, rom/disk name.</p>';
 
                             responseInfo.Title = 'Spludlow Data Search';
                             responseInfo.Heading = responseInfo.Title;
