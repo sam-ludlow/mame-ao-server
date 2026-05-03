@@ -23,10 +23,7 @@ export const searchRomDisk = async (value: string) => {
         if (data.length === 0)
             return '';
 
-        const results = data.map((row) => ({
-            type,
-            ...Object.fromEntries(row.map((item: any) => [item.metadata.colName, item.value])),
-        }));
+        const results = data.map((row) => Object.fromEntries(row.map((item: any) => [item.metadata.colName, item.value])));
 
         const columnNameSet = new Set<string>();
         for (const result of results)
@@ -40,6 +37,42 @@ export const searchRomDisk = async (value: string) => {
         html += results.map((result: any) => {
             return `<tr>${columnNames.map(name => {
                 let value = result[name];
+                switch (name) {
+                    case 'machine_name':
+                        value = `<a href="/${application.Key}/machine/${value}">${value}</a>`;
+                        break;
+
+                    case 'softwarelist_name':
+                        value = `<a href="/${application.Key}/software/${value}">${value}</a>`;
+                        break;
+
+                    case 'software_name':
+                        value = `<a href="/${application.Key}/software/${result['softwarelist_name']}/${value}">${value}</a>`;
+                        break;
+
+                    case 'datafile_name':
+                        value = `<a href="/${application.Key}/${value}">${value}</a>`;
+                        break;
+
+                    case 'game_name':
+                        value = `<a href="/${application.Key}/${result['datafile_name']}/${value}">${value}</a>`;
+                        break;
+
+                    case 'tosec_category':
+                        value = `<a href="/${application.Key}/${value}">${value}</a>`;
+                        break;
+
+                    case 'tosec_datafile_name':
+                        value = `<a href="/${application.Key}/${result['tosec_category']}/${encodeURIComponent(value)}">${tools.encodeHTML(value)}</a>`;
+                        break;
+
+                    case 'tosec_game_name':
+                        value = `<a href="/${application.Key}/${result['tosec_category']}/${encodeURIComponent(result['tosec_datafile_name'])}/${encodeURIComponent(value)}">${tools.encodeHTML(value)}</a>`;
+                        break;
+
+                    default:
+                        value = tools.encodeHTML(value);
+                }
                 return `<td>${value}</td>`}).join('')}</tr>`;
         }).join(os.EOL);
         html += '</table>';
@@ -53,7 +86,7 @@ export const searchRomDisk = async (value: string) => {
 
     if (application = applicationServers['mame']) {
 
-        tasks.push(databaseSearch('mame-machine-rom', application, 0, `
+        tasks.push(databaseSearch('MAME Machine ROM', application, 0, `
             SELECT
                 [machine].[name] AS machine_name,
                 [machine].[description] AS machine_description,
@@ -64,7 +97,7 @@ export const searchRomDisk = async (value: string) => {
             WHERE [rom].[@NAME] = @VALUE;
         `));
         if (name !== 'crc')
-            tasks.push(databaseSearch('mame-machine-disk', application, 0, `
+            tasks.push(databaseSearch('MAME Machine DISK', application, 0, `
                 SELECT
                     [machine].[name] AS machine_name,
                     [machine].[description] AS machine_description,
@@ -74,7 +107,7 @@ export const searchRomDisk = async (value: string) => {
                     INNER JOIN [disk] ON [machine].machine_id = [disk].machine_id
                 WHERE [disk].[@NAME] = @VALUE;
             `));
-        tasks.push(databaseSearch('mame-software-rom', application, 1, `
+        tasks.push(databaseSearch('MAME Software ROM', application, 1, `
             SELECT
                 softwarelist.[name] AS softwarelist_name,
                 softwarelist.[description] AS softwarelist_description,
@@ -91,7 +124,7 @@ export const searchRomDisk = async (value: string) => {
                 [rom].[@NAME] = @VALUE;
         `));
         if (name !== 'crc')
-            tasks.push(databaseSearch('mame-software-disk', application, 1, `
+            tasks.push(databaseSearch('MAME Software DISK', application, 1, `
                 SELECT
                     softwarelist.[name] AS softwarelist_name,
                     softwarelist.[description] AS softwarelist_description,
@@ -108,10 +141,10 @@ export const searchRomDisk = async (value: string) => {
             `));
 
         if (name === 'name')
-            tasks.push(databaseSearch('mame-machine', application, 0, `
+            tasks.push(databaseSearch('MAME Machine', application, 0, `
                 SELECT
-                    machine_search_payload.[name],
-                    machine_search_payload.[description]
+                    machine_search_payload.[name] AS [machine_name],
+                    machine_search_payload.[description] AS [machine_description]
                 FROM FREETEXTTABLE(
                         machine_search_payload,
                         ([name], [description]),
@@ -121,13 +154,12 @@ export const searchRomDisk = async (value: string) => {
                     ON machine_search_payload.[name] = seacrh_result.[KEY]
             `));
 
-
         if (name === 'name')
-            tasks.push(databaseSearch('mame-software', application, 1, `
+            tasks.push(databaseSearch('MAME Software', application, 1, `
                 SELECT
                     software_search_payload.[softwarelist_name],
                     software_search_payload.[software_name],
-                    software_search_payload.[description]
+                    software_search_payload.[description] AS [software_description]
                 FROM FREETEXTTABLE(
                         software_search_payload,
                         ([software_name], [description]),
@@ -136,12 +168,11 @@ export const searchRomDisk = async (value: string) => {
                 JOIN software_search_payload AS software_search_payload
                     ON software_search_payload.[key] = seacrh_result.[KEY]
             `));
-
     }
 
     if (application = applicationServers['hbmame']) {
 
-        tasks.push(databaseSearch('hbmame-machine-rom', application, 0, `
+        tasks.push(databaseSearch('HBMAME Machine ROM', application, 0, `
             SELECT
                 [machine].[name] AS machine_name,
                 [machine].[description] AS machine_description,
@@ -151,7 +182,7 @@ export const searchRomDisk = async (value: string) => {
                 INNER JOIN [rom] ON [machine].machine_id = [rom].machine_id
             WHERE [rom].[@NAME] = @VALUE;
         `));
-        tasks.push(databaseSearch('hbmame-software-rom', application, 1, `
+        tasks.push(databaseSearch('HBMAME Software ROM', application, 1, `
             SELECT
                 softwarelist.[name] AS softwarelist_name,
                 softwarelist.[description] AS softwarelist_description,
@@ -169,10 +200,10 @@ export const searchRomDisk = async (value: string) => {
         `));
 
         if (name === 'name')
-            tasks.push(databaseSearch('hbmame-machine', application, 0, `
+            tasks.push(databaseSearch('HBMAME Machine', application, 0, `
                 SELECT
-                    machine_search_payload.[name],
-                    machine_search_payload.[description]
+                    machine_search_payload.[name] AS [machine_name],
+                    machine_search_payload.[description] AS [machine_description]
                 FROM FREETEXTTABLE(
                         machine_search_payload,
                         ([name], [description]),
@@ -184,11 +215,11 @@ export const searchRomDisk = async (value: string) => {
 
 
         if (name === 'name')
-            tasks.push(databaseSearch('hbmame-software', application, 1, `
+            tasks.push(databaseSearch('HBMAME Software', application, 1, `
                 SELECT
                     software_search_payload.[softwarelist_name],
                     software_search_payload.[software_name],
-                    software_search_payload.[description]
+                    software_search_payload.[description] AS [software_description]
                 FROM FREETEXTTABLE(
                         software_search_payload,
                         ([software_name], [description]),
@@ -202,11 +233,9 @@ export const searchRomDisk = async (value: string) => {
     if (application = applicationServers['fbneo']) {
 
         if (name !== 'sha1')
-            tasks.push(databaseSearch('fbneo', application, 0, `
+            tasks.push(databaseSearch('FBNeo Game ROM', application, 0, `
                 SELECT
-                    datafile.category,
-                    datafile.name AS datafile_name,
-                    datafile.description AS datafile_description,
+                    datafile.[key] AS datafile_name,
                     game.name AS game_name,
                     game.description AS game_description,
                     [rom].[name], [rom].[size], '' AS [sha1], [rom].[crc]
@@ -219,28 +248,30 @@ export const searchRomDisk = async (value: string) => {
             `));
 
         if (name === 'name')
-            tasks.push(databaseSearch('fbneo-game', application, 0, `
+            tasks.push(databaseSearch('FBNeo Game', application, 0, `
                 SELECT
-                    game.[name],
-                    game.[description]
+                    datafile.[key] AS datafile_name,
+                    game.[name] AS [game_name],
+                    game.[description] AS [game_description]
                 FROM FREETEXTTABLE(
                         game,
                         ([name], [description]),
                         @VALUE
                     ) AS seacrh_result
-                JOIN game AS game
+                JOIN game
                     ON game.[game_id] = seacrh_result.[KEY]
+                JOIN datafile
+                    ON datafile.datafile_id = game.datafile_id;
             `));
     }
 
     if (application = applicationServers['tosec']) {
         
-        tasks.push(databaseSearch('tosec', application, 0, `
+        tasks.push(databaseSearch('TOSEC Game ROM/DISK', application, 0, `
             SELECT
-                datafile.category,
-                datafile.name AS datafile_name,
-                datafile.description AS datafile_description,
-                game.name AS game_name,
+                LOWER(datafile.category) AS tosec_category,
+                datafile.name AS tosec_datafile_name,
+                game.name AS tosec_game_name,
                 game.description AS game_description,
                 [rom].[name], [rom].[size], [rom].[sha1], [rom].[crc]
             FROM
@@ -252,10 +283,12 @@ export const searchRomDisk = async (value: string) => {
         `));
 
         if (name === 'name')
-            tasks.push(databaseSearch('tosec-game', application, 0, `
+            tasks.push(databaseSearch('TOSEC Game', application, 0, `
                 SELECT
-                    game.[name],
-                    game.[description]
+                    LOWER(datafile.category) AS tosec_category,
+                    datafile.name AS tosec_datafile_name,
+                    game.[name] AS tosec_game_name,
+                    game.[description] AS game_description
                 FROM FREETEXTTABLE(
                         game,
                         ([name], [description]),
@@ -263,6 +296,8 @@ export const searchRomDisk = async (value: string) => {
                     ) AS seacrh_result
                 JOIN game AS game
                     ON game.[game_id] = seacrh_result.[KEY]
+                JOIN datafile
+                    ON datafile.datafile_id = game.datafile_id;
             `));
     }
 

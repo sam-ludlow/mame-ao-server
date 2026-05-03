@@ -147,7 +147,7 @@ export const databasePayload = async (config: any, tableName: string, keys: any,
     return data;
 }
 
-const encodeHTML = (html: string) : string => {
+export const encodeHTML = (html: string) : string => {
     const lookup: any = {
       '&': '&amp;',
       '<': '&lt;',
