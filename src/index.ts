@@ -13,10 +13,6 @@ import { searchRomDisk } from './search.js';
 
 import Tedious from 'tedious';
 import { Connection, Request, TYPES } from 'tedious';
-import { serialize } from 'v8';
-
-
-
 
 export interface Application {
     Key: string;
@@ -454,6 +450,12 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
         case '/api/magnets/hbmame':
             res.setHeader('Content-Type', 'application/json; charset=utf-8');
             res.write(await (await fetch(`http://localhost:32104/api/magnets?core=${requestInfo.UrlParts[2]}`)).text());
+            res.end();
+            return;
+
+        case '/api/torrents':
+            res.setHeader('Content-Type', 'application/json; charset=utf-8');
+            res.write(await (await fetch('http://localhost:32104/api/torrents')).text());
             res.end();
             return;
 
@@ -1423,6 +1425,40 @@ const loadMagnets = async () => {
     }
 }
 
+let torrents: string;
+
+const loadTorrents = async () => {
+
+    const directory = path.join(mameAoDataDirectory, 'torrents');
+
+    const zipFilenames = fs.readdirSync(directory).filter(f => f.toLowerCase().endsWith('.torrent.zip'));
+
+    const json: any = {
+        torrents: []
+    };
+
+    for (let zipFilename of zipFilenames)
+    {
+        const zipBuffer = fs.readFileSync(path.join(directory, zipFilename));
+
+        zipFilename = path.basename(zipFilename, '.torrent.zip');
+
+        const index = zipFilename.indexOf('_');
+        const hash = zipFilename.substring(0, index);
+        const name = zipFilename.substring(index + 1);
+
+        json.torrents.push({
+            name,
+            hash,
+            data: zipBuffer.toString('base64'),
+        });
+
+        console.log(`Torrent Loaded:\t${name}\t${hash}`);
+    }
+
+    torrents = JSON.stringify(json);
+}
+
 //
 // Cluster
 //
@@ -1431,7 +1467,9 @@ const runCluster = async () => {
 
         console.log(`Master ${process.pid} running`);
 
-        await loadMagnets();
+        //await loadMagnets();
+
+        await loadTorrents();
         
         process.stdin.on('data', (chunk: Buffer) => {
             const command: string = chunk.toString().trim();
@@ -1472,6 +1510,10 @@ const runCluster = async () => {
 
                         case '/api/magnets':
                             res.write(JSON.stringify(magnets[requestInfo.Paramters.core]));
+                            break;
+
+                        case '/api/torrents':
+                            res.write(torrents);
                             break;
 
                         case '/api/magnets_refresh':
