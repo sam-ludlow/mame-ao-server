@@ -453,9 +453,17 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
             res.end();
             return;
 
-        case '/api/torrents':
+        case '/api/torrents/mame':
+        case '/api/torrents/hbmame':
             res.setHeader('Content-Type', 'application/json; charset=utf-8');
-            res.write(await (await fetch('http://localhost:32104/api/torrents')).text());
+            res.write(await (await fetch(`http://localhost:32104/api/torrents?core=${requestInfo.UrlParts[2]}`)).text());
+            res.end();
+            return;
+
+        case '/api/magnets/mame':
+        case '/api/magnets/hbmame':
+            res.setHeader('Content-Type', 'application/json; charset=utf-8');
+            res.write(await (await fetch(`http://localhost:32104/api/magnets?core=${requestInfo.UrlParts[2]}`)).text());
             res.end();
             return;
 
@@ -1415,48 +1423,38 @@ const loadMagnets = async () => {
         const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(magnetKey, 'base64'), iv);
         const encrypted = Buffer.concat([cipher.update(html, 'utf8'), cipher.final()]);
 
-        magnets[core] = {
+        magnets[core] = JSON.stringify({
             body: encrypted.toString('base64'),
             iv: iv.toString('base64'),
             sha1,
-        };
+        });
 
-        console.log(`Magnet Loaded:\t${core}\t${sha1}`);
+        console.log(`Magnets Loaded:\t${core}\t${sha1}`);
     }
 }
 
-let torrents: string;
+let torrents: any = {};
 
 const loadTorrents = async () => {
+    for (let core of ['mame', 'hbmame']) {
+        const filename = path.join(mameAoDataDirectory, 'torrents', core + '.json');
 
-    const directory = path.join(mameAoDataDirectory, 'torrents');
+        const json = await readFile(filename, 'utf-8');
 
-    const zipFilenames = fs.readdirSync(directory).filter(f => f.toLowerCase().endsWith('.torrent.zip'));
+        const sha1 = crypto.createHash('sha1').update(json).digest('hex');
 
-    const json: any = {
-        torrents: []
-    };
+        const iv = crypto.randomBytes(16);
+        const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(magnetKey, 'base64'), iv);
+        const encrypted = Buffer.concat([cipher.update(json, 'utf8'), cipher.final()]);
 
-    for (let zipFilename of zipFilenames)
-    {
-        const zipBuffer = fs.readFileSync(path.join(directory, zipFilename));
-
-        zipFilename = path.basename(zipFilename, '.torrent.zip');
-
-        const index = zipFilename.indexOf('_');
-        const hash = zipFilename.substring(0, index);
-        const name = zipFilename.substring(index + 1);
-
-        json.torrents.push({
-            name,
-            hash,
-            data: zipBuffer.toString('base64'),
+        torrents[core] = JSON.stringify({
+            body: encrypted.toString('base64'),
+            iv: iv.toString('base64'),
+            sha1,
         });
 
-        console.log(`Torrent Loaded:\t${name}\t${hash}`);
+        console.log(`Torrents Loaded:\t${core}\t${sha1}`);
     }
-
-    torrents = JSON.stringify(json);
 }
 
 //
@@ -1467,8 +1465,7 @@ const runCluster = async () => {
 
         console.log(`Master ${process.pid} running`);
 
-        //await loadMagnets();
-
+        await loadMagnets();
         await loadTorrents();
         
         process.stdin.on('data', (chunk: Buffer) => {
@@ -1509,11 +1506,11 @@ const runCluster = async () => {
                             break;
 
                         case '/api/magnets':
-                            res.write(JSON.stringify(magnets[requestInfo.Paramters.core]));
+                            res.write(magnets[requestInfo.Paramters.core]);
                             break;
 
                         case '/api/torrents':
-                            res.write(torrents);
+                            res.write(torrents[requestInfo.Paramters.core]);
                             break;
 
                         case '/api/magnets_refresh':
