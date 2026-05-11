@@ -446,24 +446,14 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
             res.end();
             return;
 
-        case '/api/magnets/mame':
-        case '/api/magnets/hbmame':
-            res.setHeader('Content-Type', 'application/json; charset=utf-8');
-            res.write(await (await fetch(`http://localhost:32104/api/magnets?core=${requestInfo.UrlParts[2]}`)).text());
-            res.end();
-            return;
-
         case '/api/torrents/mame':
+        case '/api/torrents/mame.peek':
         case '/api/torrents/hbmame':
+        case '/api/torrents/hbmame.peek':
             res.setHeader('Content-Type', 'application/json; charset=utf-8');
-            res.write(await (await fetch(`http://localhost:32104/api/torrents?core=${requestInfo.UrlParts[2]}`)).text());
-            res.end();
-            return;
-
-        case '/api/magnets/mame':
-        case '/api/magnets/hbmame':
-            res.setHeader('Content-Type', 'application/json; charset=utf-8');
-            res.write(await (await fetch(`http://localhost:32104/api/magnets?core=${requestInfo.UrlParts[2]}`)).text());
+            const response = await fetch(`http://localhost:32104/api/torrents?core=${requestInfo.UrlParts[2]}`);
+            for await (const chunk of response.body as any)
+                res.write(chunk);
             res.end();
             return;
 
@@ -1403,35 +1393,7 @@ export const getSoftwares = async (config: any,  softwarelist_name: string, sear
     return data;
 }
 
-const magnetKey = 'RRt08v+YWc2+910RGOhZO7DrNVnHKae8MDJyJNOd950=';
-
-const magnets: any = {};
-
-const loadMagnets = async () => {
-    const content = await readFile(path.join(mameAoDataDirectory, 'magnets.txt'), 'utf-8');
-    for (let line of content.split(/\r?\n/)) {
-        line = line.trim();
-        if (line.length === 0)
-            continue;
-        const parts = line.split('\t');
-
-        const core = parts[0];
-        const html = await (await fetch(parts[1])).text();
-        const sha1 = crypto.createHash('sha1').update(html).digest('hex');
-
-        const iv = crypto.randomBytes(16);
-        const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(magnetKey, 'base64'), iv);
-        const encrypted = Buffer.concat([cipher.update(html, 'utf8'), cipher.final()]);
-
-        magnets[core] = JSON.stringify({
-            body: encrypted.toString('base64'),
-            iv: iv.toString('base64'),
-            sha1,
-        });
-
-        console.log(`Magnets Loaded:\t${core}\t${sha1}`);
-    }
-}
+const payloadKey = 'RRt08v+YWc2+910RGOhZO7DrNVnHKae8MDJyJNOd950=';
 
 let torrents: any = {};
 
@@ -1440,21 +1402,28 @@ const loadTorrents = async () => {
         const filename = path.join(mameAoDataDirectory, 'torrents', core + '.json');
 
         const json = await readFile(filename, 'utf-8');
+        const cry = encryptPayload(json);
+        torrents[core] = JSON.stringify(cry);
+        console.log(`Torrents Loaded:\t${core}\t${cry.sha1}`);
 
-        const sha1 = crypto.createHash('sha1').update(json).digest('hex');
-
-        const iv = crypto.randomBytes(16);
-        const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(magnetKey, 'base64'), iv);
-        const encrypted = Buffer.concat([cipher.update(json, 'utf8'), cipher.final()]);
-
-        torrents[core] = JSON.stringify({
-            body: encrypted.toString('base64'),
-            iv: iv.toString('base64'),
-            sha1,
-        });
-
-        console.log(`Torrents Loaded:\t${core}\t${sha1}`);
+        const peek = JSON.parse(json);
+        peek.forEach((item: any) => delete item.torrent);
+        torrents[core + '.peek'] = JSON.stringify(encryptPayload(JSON.stringify(peek)));
     }
+}
+
+const encryptPayload = (input: string) : any => {
+    const sha1 = crypto.createHash('sha1').update(input, 'utf8').digest('hex');
+
+    const iv = crypto.randomBytes(16);
+    const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(payloadKey, 'base64'), iv);
+    const encrypted = Buffer.concat([cipher.update(input, 'utf8'), cipher.final()]);
+
+    return {
+        body: encrypted.toString('base64'),
+        iv: iv.toString('base64'),
+        sha1,
+    };
 }
 
 //
@@ -1465,7 +1434,6 @@ const runCluster = async () => {
 
         console.log(`Master ${process.pid} running`);
 
-        await loadMagnets();
         await loadTorrents();
         
         process.stdin.on('data', (chunk: Buffer) => {
@@ -1505,16 +1473,12 @@ const runCluster = async () => {
                             res.write(JSON.stringify({ message: 'OK' }));
                             break;
 
-                        case '/api/magnets':
-                            res.write(magnets[requestInfo.Paramters.core]);
-                            break;
-
                         case '/api/torrents':
                             res.write(torrents[requestInfo.Paramters.core]);
                             break;
 
-                        case '/api/magnets_refresh':
-                            await loadMagnets();
+                        case '/api/torrents_refresh':
+                            await loadTorrents();
                             res.write(JSON.stringify({ message: 'OK' }));
                             break;
 
