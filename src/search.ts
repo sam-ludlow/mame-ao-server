@@ -70,6 +70,10 @@ export const searchRomDisk = async (value: string) => {
                         value = `<a href="/${application.Key}/${result['tosec_category']}/${encodeURIComponent(result['tosec_datafile_name'])}/${encodeURIComponent(value)}">${tools.encodeHTML(value)}</a>`;
                         break;
 
+                    case 'rank':
+                        value = `${value}`;
+                        break;
+
                     default:
                         value = tools.encodeHTML(value);
                 }
@@ -144,14 +148,17 @@ export const searchRomDisk = async (value: string) => {
             tasks.push(databaseSearch('MAME Machine', application, 0, `
                 SELECT
                     machine_search_payload.[name] AS [machine_name],
-                    machine_search_payload.[description] AS [machine_description]
+                    machine_search_payload.[description] AS [machine_description],
+                    search_result.[RANK] AS [rank]
                 FROM FREETEXTTABLE(
                         machine_search_payload,
                         ([name], [description]),
                         @VALUE
-                    ) AS seacrh_result
+                    ) AS search_result
                 JOIN machine_search_payload AS machine_search_payload
-                    ON machine_search_payload.[name] = seacrh_result.[KEY]
+                    ON machine_search_payload.[name] = search_result.[KEY]
+                WHERE search_result.[RANK] > 100
+                ORDER BY search_result.[RANK] DESC;
             `));
 
         if (name === 'name')
@@ -159,14 +166,17 @@ export const searchRomDisk = async (value: string) => {
                 SELECT
                     software_search_payload.[softwarelist_name],
                     software_search_payload.[software_name],
-                    software_search_payload.[description] AS [software_description]
+                    software_search_payload.[description] AS [software_description],
+                    search_result.[RANK] AS [rank]
                 FROM FREETEXTTABLE(
                         software_search_payload,
                         ([software_name], [description]),
                         @VALUE
-                    ) AS seacrh_result
+                    ) AS search_result
                 JOIN software_search_payload AS software_search_payload
-                    ON software_search_payload.[key] = seacrh_result.[KEY]
+                    ON software_search_payload.[key] = search_result.[KEY]
+                WHERE search_result.[RANK] > 100
+                ORDER BY search_result.[RANK] DESC;
             `));
     }
 
@@ -203,14 +213,17 @@ export const searchRomDisk = async (value: string) => {
             tasks.push(databaseSearch('HBMAME Machine', application, 0, `
                 SELECT
                     machine_search_payload.[name] AS [machine_name],
-                    machine_search_payload.[description] AS [machine_description]
+                    machine_search_payload.[description] AS [machine_description],
+                    search_result.[RANK] AS [rank]
                 FROM FREETEXTTABLE(
                         machine_search_payload,
                         ([name], [description]),
                         @VALUE
-                    ) AS seacrh_result
+                    ) AS search_result
                 JOIN machine_search_payload AS machine_search_payload
-                    ON machine_search_payload.[name] = seacrh_result.[KEY]
+                    ON machine_search_payload.[name] = search_result.[KEY]
+                WHERE search_result.[RANK] > 100
+                ORDER BY search_result.[RANK] DESC;
             `));
 
 
@@ -219,14 +232,17 @@ export const searchRomDisk = async (value: string) => {
                 SELECT
                     software_search_payload.[softwarelist_name],
                     software_search_payload.[software_name],
-                    software_search_payload.[description] AS [software_description]
+                    software_search_payload.[description] AS [software_description],
+                    search_result.[RANK] AS [rank]
                 FROM FREETEXTTABLE(
                         software_search_payload,
                         ([software_name], [description]),
                         @VALUE
-                    ) AS seacrh_result
+                    ) AS search_result
                 JOIN software_search_payload AS software_search_payload
-                    ON software_search_payload.[key] = seacrh_result.[KEY]
+                    ON software_search_payload.[key] = search_result.[KEY]
+                WHERE search_result.[RANK] > 100
+                ORDER BY search_result.[RANK] DESC;
             `));
     }
 
@@ -252,16 +268,19 @@ export const searchRomDisk = async (value: string) => {
                 SELECT
                     datafile.[key] AS datafile_name,
                     game.[name] AS [game_name],
-                    game.[description] AS [game_description]
+                    game.[description] AS [game_description],
+                    search_result.[RANK] AS [rank]
                 FROM FREETEXTTABLE(
                         game,
                         ([name], [description]),
                         @VALUE
-                    ) AS seacrh_result
+                    ) AS search_result
                 JOIN game
-                    ON game.[game_id] = seacrh_result.[KEY]
+                    ON game.[game_id] = search_result.[KEY]
                 JOIN datafile
-                    ON datafile.datafile_id = game.datafile_id;
+                    ON datafile.datafile_id = game.datafile_id
+                WHERE search_result.[RANK] > 100
+                ORDER BY search_result.[RANK] DESC;
             `));
     }
 
@@ -272,7 +291,6 @@ export const searchRomDisk = async (value: string) => {
                 LOWER(datafile.category) AS tosec_category,
                 datafile.name AS tosec_datafile_name,
                 game.name AS tosec_game_name,
-                game.description AS game_description,
                 [rom].[name], [rom].[size], [rom].[sha1], [rom].[crc]
             FROM
                 datafile
@@ -288,16 +306,18 @@ export const searchRomDisk = async (value: string) => {
                     LOWER(datafile.category) AS tosec_category,
                     datafile.name AS tosec_datafile_name,
                     game.[name] AS tosec_game_name,
-                    game.[description] AS game_description
+                    search_result.[RANK] AS [rank]
                 FROM FREETEXTTABLE(
                         game,
-                        ([name], [description]),
+                        ([name]),
                         @VALUE
-                    ) AS seacrh_result
+                    ) AS search_result
                 JOIN game AS game
-                    ON game.[game_id] = seacrh_result.[KEY]
+                    ON game.[game_id] = search_result.[KEY]
                 JOIN datafile
-                    ON datafile.datafile_id = game.datafile_id;
+                    ON datafile.datafile_id = game.datafile_id
+                WHERE search_result.[RANK] > 100
+                ORDER BY search_result.[RANK] DESC;
             `));
     }
 
