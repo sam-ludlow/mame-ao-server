@@ -15,7 +15,7 @@
             parts.forEach((part) => {
                 const pair = part.split('=');
                 const key = pair[0];
-                const value = decodeURIComponent(pair[1]);
+                const value = decodeURIComponent(pair[1].trim());
 
                 _parameters[key] = value;
             });
@@ -51,7 +51,7 @@
     }
 
     const search = () => {
-        _parameters['search'] = document.getElementById('input').value;
+        _parameters['search'] = document.getElementById('input').value.trim();
         gotoLocation();
     }
 

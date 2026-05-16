@@ -15,7 +15,14 @@ export const searchRomDisk = async (value: string) => {
 
     const databaseSearch = async (type: string, application: Application, connectionIndex: number, commandText: string) => {
 
-        const request: Tedious.Request = new Request(commandText.replace('@NAME', name), () => {});
+        const top_limit = 1000;
+        const min_rank = 55;
+
+        commandText = commandText.replace('@top_limit', top_limit.toString());
+        commandText = commandText.replace('@min_rank', min_rank.toString());
+        commandText = commandText.replace('@NAME', name);
+
+        const request: Tedious.Request = new Request(commandText, () => {});
         request.addParameter('VALUE', TYPES.VarChar, value);
         
         const data = await tools.databaseRequest(application.DatabaseConfigs[connectionIndex], request);
@@ -146,7 +153,7 @@ export const searchRomDisk = async (value: string) => {
 
         if (name === 'name')
             tasks.push(databaseSearch('MAME Machine', application, 0, `
-                SELECT
+                SELECT TOP @top_limit
                     machine_search_payload.[name] AS [machine_name],
                     machine_search_payload.[description] AS [machine_description],
                     search_result.[RANK] AS [rank]
@@ -157,13 +164,13 @@ export const searchRomDisk = async (value: string) => {
                     ) AS search_result
                 JOIN machine_search_payload AS machine_search_payload
                     ON machine_search_payload.[name] = search_result.[KEY]
-                WHERE search_result.[RANK] > 100
+                WHERE search_result.[RANK] >= @min_rank
                 ORDER BY search_result.[RANK] DESC;
             `));
 
         if (name === 'name')
             tasks.push(databaseSearch('MAME Software', application, 1, `
-                SELECT
+                SELECT TOP @top_limit
                     software_search_payload.[softwarelist_name],
                     software_search_payload.[software_name],
                     software_search_payload.[description] AS [software_description],
@@ -175,7 +182,7 @@ export const searchRomDisk = async (value: string) => {
                     ) AS search_result
                 JOIN software_search_payload AS software_search_payload
                     ON software_search_payload.[key] = search_result.[KEY]
-                WHERE search_result.[RANK] > 100
+                WHERE search_result.[RANK] >= @min_rank
                 ORDER BY search_result.[RANK] DESC;
             `));
     }
@@ -211,7 +218,7 @@ export const searchRomDisk = async (value: string) => {
 
         if (name === 'name')
             tasks.push(databaseSearch('HBMAME Machine', application, 0, `
-                SELECT
+                SELECT TOP @top_limit
                     machine_search_payload.[name] AS [machine_name],
                     machine_search_payload.[description] AS [machine_description],
                     search_result.[RANK] AS [rank]
@@ -222,14 +229,14 @@ export const searchRomDisk = async (value: string) => {
                     ) AS search_result
                 JOIN machine_search_payload AS machine_search_payload
                     ON machine_search_payload.[name] = search_result.[KEY]
-                WHERE search_result.[RANK] > 100
+                WHERE search_result.[RANK] >= @min_rank
                 ORDER BY search_result.[RANK] DESC;
             `));
 
 
         if (name === 'name')
             tasks.push(databaseSearch('HBMAME Software', application, 1, `
-                SELECT
+                SELECT TOP @top_limit
                     software_search_payload.[softwarelist_name],
                     software_search_payload.[software_name],
                     software_search_payload.[description] AS [software_description],
@@ -241,7 +248,7 @@ export const searchRomDisk = async (value: string) => {
                     ) AS search_result
                 JOIN software_search_payload AS software_search_payload
                     ON software_search_payload.[key] = search_result.[KEY]
-                WHERE search_result.[RANK] > 100
+                WHERE search_result.[RANK] >= @min_rank
                 ORDER BY search_result.[RANK] DESC;
             `));
     }
@@ -265,7 +272,7 @@ export const searchRomDisk = async (value: string) => {
 
         if (name === 'name')
             tasks.push(databaseSearch('FBNeo Game', application, 0, `
-                SELECT
+                SELECT TOP @top_limit
                     datafile.[key] AS datafile_name,
                     game.[name] AS [game_name],
                     game.[description] AS [game_description],
@@ -279,7 +286,7 @@ export const searchRomDisk = async (value: string) => {
                     ON game.[game_id] = search_result.[KEY]
                 JOIN datafile
                     ON datafile.datafile_id = game.datafile_id
-                WHERE search_result.[RANK] > 100
+                WHERE search_result.[RANK] >= @min_rank
                 ORDER BY search_result.[RANK] DESC;
             `));
     }
@@ -302,7 +309,7 @@ export const searchRomDisk = async (value: string) => {
 
         if (name === 'name')
             tasks.push(databaseSearch('TOSEC Game', application, 0, `
-                SELECT
+                SELECT TOP @top_limit
                     LOWER(datafile.category) AS tosec_category,
                     datafile.name AS tosec_datafile_name,
                     game.[name] AS tosec_game_name,
@@ -316,7 +323,7 @@ export const searchRomDisk = async (value: string) => {
                     ON game.[game_id] = search_result.[KEY]
                 JOIN datafile
                     ON datafile.datafile_id = game.datafile_id
-                WHERE search_result.[RANK] > 100
+                WHERE search_result.[RANK] >= @min_rank
                 ORDER BY search_result.[RANK] DESC;
             `));
     }
