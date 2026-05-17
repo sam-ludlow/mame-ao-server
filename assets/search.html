@@ -1,3 +1,5 @@
+<script src="https://cdn.jsdelivr.net/npm/crc-32/crc32.min.js"></script>
+
 <script type="text/javascript">
 
     const _path = document.location.pathname;
@@ -9,7 +11,6 @@
     const _parameters = JSON.parse(JSON.stringify(_defaultParamters));
 
     const load = () => {
-
         if (window.location.href.includes('?')) {
             const parts = window.location.href.split('?')[1].split('&');
             parts.forEach((part) => {
@@ -24,6 +25,26 @@
         const input = document.getElementById('input');
         input.value = _parameters.search;
         input.focus();
+
+        const fileInput = document.getElementById("fileInput");
+
+        fileInput.addEventListener("change", async (event) => {
+            const file = event.target.files[0];
+
+            if (!file)
+                return;
+
+            try {
+                const buffer = await file.arrayBuffer();
+                const data = new Uint8Array(buffer);
+                const crc = CRC32.buf(data) >>> 0;
+
+                input.value = crc.toString(16).padStart(8, '0');
+                search();
+            } catch (err) {
+                console.error(err);
+            }
+        });
     }
 
     const gotoLocation = () => {
@@ -63,6 +84,7 @@
 <div class="toolbar-input">
     <input id="input" type="text" placeholder="machine, software, SHA1, CRC32, exact rom/disk name" />
     <button type="submit" onclick="search(); return false;">Search</button>
+    or CRC32 in Browser<input type="file" id="fileInput" />
 </div>
 
 @DATA@
