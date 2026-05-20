@@ -82,7 +82,8 @@ export const searchRomDisk = async (value: string) => {
                         break;
 
                     default:
-                        value = tools.encodeHTML(value);
+                        value = (value !== undefined && value !== null) ? tools.encodeHTML(value) : '';
+                        break;
                 }
                 return `<td>${value}</td>`}).join('')}</tr>`;
         }).join(os.EOL);
