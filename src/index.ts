@@ -80,6 +80,11 @@ export class ApplicationCore implements Application {
                 this.DatabaseConfigs = [ tools.sqlConfig(databaseServer, `${databaseNamePrefix}-${this.Key}`)];
                 break;
 
+            case 'no-intro':
+                this.SubKeys = ['no-intro', 'non-redump', 'source-code', 'unofficial'];
+                this.DatabaseConfigs = [ tools.sqlConfig(databaseServer, `${databaseNamePrefix}-${this.Key}`)];
+                break;
+
             case 'search':
             case 'snap':
                 this.Info = '';
@@ -180,6 +185,33 @@ const rootMenu: any[] =
                 text: 'TOSEC-PIX',
                 title: 'Scans of software and hardware manuals, magazine scans, computing catalogs, and videos',
                 href: '/tosec/tosec-pix',
+            },
+        ],
+    },
+    {
+        text: 'No-Intro',
+        title: 'No-Intro Data',
+        href: '/no-intro',
+        menu: [
+            {
+                text: 'No-Intro',
+                title: 'verified retail dumps',
+                href: '/no-intro/no-intro',
+            },
+            {
+                text: 'Non Redump',
+                title: 'Optical media',
+                href: '/no-intro/non-redump',
+            },
+            {
+                text: 'Source Code',
+                title: 'Source code releases',
+                href: '/no-intro/source-code',
+            },
+            {
+                text: 'Unofficial',
+                title: 'Non-commercial or non-original releases',
+                href: '/no-intro/unofficial',
             },
         ],
     },
@@ -301,7 +333,7 @@ export class ResponeInfo {
     public Extention: string = '';
 }
 
-const coreKeys = ['mame', 'hbmame', 'fbneo', 'tosec', 'search', 'snap'];
+const coreKeys = ['mame', 'hbmame', 'fbneo', 'tosec', 'no-intro', 'search', 'snap'];
 
 let mameAoDataDirectory: string = 'C:\\ao-data';
 if (fs.existsSync(mameAoDataDirectory) === false)
@@ -852,6 +884,16 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
                             responseInfo.Body = tosec_data[1].value;
                             break;
 
+                        case 'no-intro':
+                            // Subset
+                            const noIntroSubset = requestInfo.UrlParts[1];
+
+                            const noIntroData = [ { value: `${noIntroSubset}` }, { value: 'TODO' } ];
+
+                            responseInfo.Title = noIntroData[0].value;
+                            responseInfo.Heading = responseInfo.Title;
+                            responseInfo.Body = noIntroData[1].value;
+                            break;
                     }
                     break;
 
