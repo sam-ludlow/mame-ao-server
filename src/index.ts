@@ -80,6 +80,11 @@ export class ApplicationCore implements Application {
                 this.DatabaseConfigs = [ tools.sqlConfig(databaseServer, `${databaseNamePrefix}-${this.Key}`)];
                 break;
 
+            case 'redump':
+                this.SubKeys = ['redump'];
+                this.DatabaseConfigs = [ tools.sqlConfig(databaseServer, `${databaseNamePrefix}-${this.Key}`)];
+                break;
+
             case 'no-intro':
                 this.SubKeys = ['no-intro', 'non-redump', 'source-code', 'unofficial'];
                 this.DatabaseConfigs = [ tools.sqlConfig(databaseServer, `${databaseNamePrefix}-${this.Key}`)];
@@ -185,6 +190,18 @@ const rootMenu: any[] =
                 text: 'TOSEC-PIX',
                 title: 'Scans of software and hardware manuals, magazine scans, computing catalogs, and videos',
                 href: '/tosec/tosec-pix',
+            },
+        ],
+    },
+    {
+        text: 'Redump',
+        title: 'Redump Data',
+        href: '/redump',
+        menu: [
+            {
+                text: 'Redump',
+                title: 'Optical media',
+                href: '/redump/redump',
             },
         ],
     },
@@ -333,7 +350,7 @@ export class ResponeInfo {
     public Extention: string = '';
 }
 
-const coreKeys = ['mame', 'hbmame', 'fbneo', 'tosec', 'no-intro', 'search', 'snap'];
+const coreKeys = ['mame', 'hbmame', 'fbneo', 'tosec', 'redump', 'no-intro', 'search', 'snap'];  //  TODO top level menu actually
 
 let mameAoDataDirectory: string = 'C:\\ao-data';
 if (fs.existsSync(mameAoDataDirectory) === false)
@@ -884,11 +901,20 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
                             responseInfo.Body = tosec_data[1].value;
                             break;
 
+                        case 'redump':
+                            // Subset   requestInfo.UrlParts[1];
+                            const redump_data = await tools.databasePayload(application.DatabaseConfigs[0], 'subset_payload', { subset: 'redump' }, responseInfo.Extention);
+
+                            responseInfo.Title = redump_data[0].value;
+                            responseInfo.Heading = responseInfo.Title;
+                            responseInfo.Body = redump_data[1].value;
+                            break;
+
                         case 'no-intro':
                             // Subset
                             const noIntroSubset = requestInfo.UrlParts[1];
 
-                            const noIntroData = [ { value: `${noIntroSubset}` }, { value: 'TODO' } ];
+                            const noIntroData = await tools.databasePayload(application.DatabaseConfigs[0], 'subset_payload', { subset: noIntroSubset }, responseInfo.Extention);
 
                             responseInfo.Title = noIntroData[0].value;
                             responseInfo.Heading = responseInfo.Title;
