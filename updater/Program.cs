@@ -90,7 +90,7 @@ namespace updater
 
 					string directory = Path.Combine(rootDirectory, core);
 
-					if (Run(mameAoPath, $"{core}-get directory=\"{directory}\"") == 0)
+					if (Run(mameAoPath, $"{core}_get directory=\"{directory}\"") == 0)
 					{
 						Console.WriteLine($"{core} nothing to do.");
 					}
@@ -100,23 +100,23 @@ namespace updater
 
 						Console.WriteLine($"{core} processing.");
 
-						Run(mameAoPath, $"{core}-xml directory=\"{directory}\"");
-						Run(mameAoPath, $"{core}-json directory=\"{directory}\"");
-						Run(mameAoPath, $"{core}-sqlite directory=\"{directory}\"");
-						//Run(mameAoPath, $"{core}-msaccess directory=\"{directory}\"");	error on server - no catching full error
-						Run(mameAoPath, $"{core}-zips directory=\"{directory}\"");
+						Run(mameAoPath, $"{core}_xml directory=\"{directory}\"");
+						Run(mameAoPath, $"{core}_json directory=\"{directory}\"");
+						Run(mameAoPath, $"{core}_sqlite directory=\"{directory}\"");
+						//Run(mameAoPath, $"{core}_msaccess directory=\"{directory}\"");	error on server - no catching full error
+						Run(mameAoPath, $"{core}_zips directory=\"{directory}\"");
 
 						foreach (string databaseName in coresDatabases[core])
 							Run(accessLinkerPath, $"mssql-delete mssql=\"{databaseServer}\" name=\"{databaseName}-temp\"");
 
 						string databaseNames = String.Join(", ", coresDatabases[core].Select(name => $"{name}-temp"));
 
-						Run(mameAoPath, $"{core}-mssql directory=\"{directory}\" server=\"{databaseServer}\" names=\"{databaseNames}\"");
+						Run(mameAoPath, $"{core}_mssql directory=\"{directory}\" server=\"{databaseServer}\" names=\"{databaseNames}\"");
 
 						foreach (string databaseName in coresDatabases[core])
 							Sql($"{databaseServer}Database={databaseName}-temp;", databasePrepare);
 
-						Run(mameAoPath, $"{core}-mssql-payload directory=\"{directory}\" server=\"{databaseServer}\" names=\"{databaseNames}\"");
+						Run(mameAoPath, $"{core}_mssql-payload directory=\"{directory}\" server=\"{databaseServer}\" names=\"{databaseNames}\"");
 
 						foreach (string databaseName in coresDatabases[core])
 						{
