@@ -77,6 +77,26 @@ export const searchRomDisk = async (value: string) => {
                         value = `<a href="/${application.Key}/${result['tosec_category']}/${encodeURIComponent(result['tosec_datafile_name'])}/${encodeURIComponent(value)}">${tools.encodeHTML(value)}</a>`;
                         break;
 
+                    case 'redump_datafile_name':
+                        value = `<a href="/${application.Key}/redump/${encodeURIComponent(value)}">${tools.encodeHTML(value)}</a>`;
+                        break;
+
+                    case 'redump_game_name':
+                        value = `<a href="/${application.Key}/redump/${encodeURIComponent(result['redump_datafile_name'])}/${encodeURIComponent(value)}">${tools.encodeHTML(value)}</a>`;
+                        break;
+                        
+                    case 'no_intro_subset':
+                        value = `<a href="/${application.Key}/${value}">${value}</a>`;
+                        break;
+
+                    case 'no_intro_datafile_name':
+                        value = `<a href="/${application.Key}/${result['no_intro_subset']}/${encodeURIComponent(value)}">${tools.encodeHTML(value)}</a>`;
+                        break;
+
+                    case 'no_intro_game_name':
+                        value = `<a href="/${application.Key}/${result['no_intro_subset']}/${encodeURIComponent(result['no_intro_datafile_name'])}/${encodeURIComponent(value)}">${tools.encodeHTML(value)}</a>`;
+                        break;
+
                     case 'rank':
                         value = `${value}`;
                         break;
@@ -314,6 +334,78 @@ export const searchRomDisk = async (value: string) => {
                     LOWER(datafile.category) AS tosec_category,
                     datafile.name AS tosec_datafile_name,
                     game.[name] AS tosec_game_name,
+                    search_result.[RANK] AS [rank]
+                FROM FREETEXTTABLE(
+                        game,
+                        ([name]),
+                        @VALUE
+                    ) AS search_result
+                JOIN game AS game
+                    ON game.[game_id] = search_result.[KEY]
+                JOIN datafile
+                    ON datafile.datafile_id = game.datafile_id
+                WHERE search_result.[RANK] >= @min_rank
+                ORDER BY search_result.[RANK] DESC;
+            `));
+    }
+
+    if (application = applicationServers['redump']) {
+        
+        tasks.push(databaseSearch('Redump Game DISK', application, 0, `
+            SELECT
+                datafile.name AS redump_datafile_name,
+                game.name AS redump_game_name,
+                [rom].[name], [rom].[size], [rom].[sha1], [rom].[crc]
+            FROM
+                datafile
+                INNER JOIN game ON datafile.datafile_id = game.datafile_id
+                INNER JOIN rom ON game.game_id = rom.game_id
+            WHERE
+                [rom].[@NAME] = @VALUE;
+        `));
+
+        if (name === 'name')
+            tasks.push(databaseSearch('Redump Game', application, 0, `
+                SELECT TOP @top_limit
+                    datafile.name AS redump_datafile_name,
+                    game.[name] AS redump_game_name,
+                    search_result.[RANK] AS [rank]
+                FROM FREETEXTTABLE(
+                        game,
+                        ([name]),
+                        @VALUE
+                    ) AS search_result
+                JOIN game AS game
+                    ON game.[game_id] = search_result.[KEY]
+                JOIN datafile
+                    ON datafile.datafile_id = game.datafile_id
+                WHERE search_result.[RANK] >= @min_rank
+                ORDER BY search_result.[RANK] DESC;
+            `));
+    }
+
+    if (application = applicationServers['no-intro']) {
+        
+        tasks.push(databaseSearch('No-Intro Game DISK', application, 0, `
+            SELECT
+                datafile.subset AS no_intro_subset,
+                datafile.name AS no_intro_datafile_name,
+                game.name AS no_intro_game_name,
+                [rom].[name], [rom].[size], [rom].[sha1], [rom].[crc]
+            FROM
+                datafile
+                INNER JOIN game ON datafile.datafile_id = game.datafile_id
+                INNER JOIN rom ON game.game_id = rom.game_id
+            WHERE
+                [rom].[@NAME] = @VALUE;
+        `));
+
+        if (name === 'name')
+            tasks.push(databaseSearch('No-Intro Game', application, 0, `
+                SELECT TOP @top_limit
+                    datafile.subset AS no_intro_subset,
+                    datafile.name AS no_intro_datafile_name,
+                    game.[name] AS no_intro_game_name,
                     search_result.[RANK] AS [rank]
                 FROM FREETEXTTABLE(
                         game,
