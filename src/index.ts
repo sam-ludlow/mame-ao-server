@@ -725,9 +725,11 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
                     // Core
                     switch (application.Key) {
                         case 'fbneo':
-                            const fbneo_data = await tools.databasePayload(application.DatabaseConfigs[0], 'root_payload', { key_1: '1' }, responseInfo.Extention);
-                            responseInfo.Title = fbneo_data[0].value;
-                            responseInfo.Body = fbneo_data[1].value;
+                        case 'redump':
+                        case 'no-intro':
+                            const root_data = await tools.databasePayload(application.DatabaseConfigs[0], 'root_payload', { key_1: '1' }, responseInfo.Extention);
+                            responseInfo.Title = root_data[0].value;
+                            responseInfo.Body = root_data[1].value;
                             break;
 
                         case 'search':
@@ -902,23 +904,11 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
                             break;
 
                         case 'redump':
-                            // Subset   requestInfo.UrlParts[1];
-                            const redump_data = await tools.databasePayload(application.DatabaseConfigs[0], 'subset_payload', { subset: 'redump' }, responseInfo.Extention);
-
-                            responseInfo.Title = redump_data[0].value;
-                            responseInfo.Heading = responseInfo.Title;
-                            responseInfo.Body = redump_data[1].value;
-                            break;
-
                         case 'no-intro':
-                            // Subset
-                            const noIntroSubset = requestInfo.UrlParts[1];
-
-                            const noIntroData = await tools.databasePayload(application.DatabaseConfigs[0], 'subset_payload', { subset: noIntroSubset }, responseInfo.Extention);
-
-                            responseInfo.Title = noIntroData[0].value;
+                            const datish_data = await tools.databasePayload(application.DatabaseConfigs[0], 'subset_payload', { subset_name: requestInfo.UrlParts[1] }, responseInfo.Extention);
+                            responseInfo.Title = datish_data[0].value;
                             responseInfo.Heading = responseInfo.Title;
-                            responseInfo.Body = noIntroData[1].value;
+                            responseInfo.Body = datish_data[1].value;
                             break;
                     }
                     break;
@@ -1087,40 +1077,20 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
                             break;
 
                         case 'redump':
-                            // Datafile
-                            let redump_name = decodeURIComponent(requestInfo.UrlParts[2]);
-
-                            validExtentions.forEach(validExtention => {
-                                if (validExtention != '' && redump_name.endsWith('.' + validExtention) == true) {
-                                    responseInfo.Extention = validExtention;
-                                    redump_name = redump_name.slice(0, -(responseInfo.Extention.length + 1));
-                                }
-                            });
-
-                            const redump_data = await tools.databasePayload(application.DatabaseConfigs[0], 'datafile_payload', { subset: 'redump', datafile_name: redump_name }, responseInfo.Extention);
-
-                            responseInfo.Title = redump_data[0].value;
-                            responseInfo.Heading = responseInfo.Title;
-                            responseInfo.Body = redump_data[1].value;
-                            break;
-
                         case 'no-intro':
-                            // Datafile
-                            const nointro_subset = requestInfo.UrlParts[1];
-                            let nointro_name = decodeURIComponent(requestInfo.UrlParts[2]);
+                            let datish_name = decodeURIComponent(requestInfo.UrlParts[2]);
 
                             validExtentions.forEach(validExtention => {
-                                if (validExtention != '' && nointro_name.endsWith('.' + validExtention) == true) {
+                                if (validExtention != '' && datish_name.endsWith('.' + validExtention) == true) {
                                     responseInfo.Extention = validExtention;
-                                    nointro_name = nointro_name.slice(0, -(responseInfo.Extention.length + 1));
+                                    datish_name = datish_name.slice(0, -(responseInfo.Extention.length + 1));
                                 }
                             });
 
-                            const nointro_data = await tools.databasePayload(application.DatabaseConfigs[0], 'datafile_payload', { subset: nointro_subset, datafile_name: nointro_name }, responseInfo.Extention);
-
-                            responseInfo.Title = nointro_data[0].value;
+                            const datish_data = await tools.databasePayload(application.DatabaseConfigs[0], 'datafile_payload', { subset_name: requestInfo.UrlParts[1], datafile_name: datish_name }, responseInfo.Extention);
+                            responseInfo.Title = datish_data[0].value;
                             responseInfo.Heading = responseInfo.Title;
-                            responseInfo.Body = nointro_data[1].value;
+                            responseInfo.Body = datish_data[1].value;
                             break;
 
                     }
@@ -1180,42 +1150,21 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
                             break;
 
                         case 'redump':
-                            // Game
-                            const redump_datafile_name = decodeURIComponent(requestInfo.UrlParts[2]);
-                            let redump_game_name = decodeURIComponent(requestInfo.UrlParts[3]);
-
-                            validExtentions.forEach(validExtention => {
-                                if (validExtention != '' && redump_game_name.endsWith('.' + validExtention) == true) {
-                                    responseInfo.Extention = validExtention;
-                                    redump_game_name = redump_game_name.slice(0, -(responseInfo.Extention.length + 1));
-                                }
-                            });
-
-                            const redump_data = await tools.databasePayload(application.DatabaseConfigs[0], 'game_payload', { subset: 'redump', datafile_name: redump_datafile_name, game_name: redump_game_name }, responseInfo.Extention);
-
-                            responseInfo.Title = redump_data[0].value;
-                            responseInfo.Heading = responseInfo.Title;
-                            responseInfo.Body = redump_data[1].value;
-                            break;
-
                         case 'no-intro':
-                            // Game
-                            const nointro_subset = requestInfo.UrlParts[1];
-                            const nointro_datafile_name = decodeURIComponent(requestInfo.UrlParts[2]);
-                            let nointro_game_name = decodeURIComponent(requestInfo.UrlParts[3]);
+                            const datish_datafile_name = decodeURIComponent(requestInfo.UrlParts[2]);
+                            let datish_game_name = decodeURIComponent(requestInfo.UrlParts[3]);
 
                             validExtentions.forEach(validExtention => {
-                                if (validExtention != '' && nointro_game_name.endsWith('.' + validExtention) == true) {
+                                if (validExtention != '' && datish_game_name.endsWith('.' + validExtention) == true) {
                                     responseInfo.Extention = validExtention;
-                                    nointro_game_name = nointro_game_name.slice(0, -(responseInfo.Extention.length + 1));
+                                    datish_game_name = datish_game_name.slice(0, -(responseInfo.Extention.length + 1));
                                 }
                             });
 
-                            const nointro_data = await tools.databasePayload(application.DatabaseConfigs[0], 'game_payload', { subset: nointro_subset, datafile_name: nointro_datafile_name, game_name: nointro_game_name }, responseInfo.Extention);
-
-                            responseInfo.Title = nointro_data[0].value;
+                            const datish_data = await tools.databasePayload(application.DatabaseConfigs[0], 'game_payload', { subset_name: requestInfo.UrlParts[1], datafile_name: datish_datafile_name, game_name: datish_game_name }, responseInfo.Extention);
+                            responseInfo.Title = datish_data[0].value;
                             responseInfo.Heading = responseInfo.Title;
-                            responseInfo.Body = nointro_data[1].value;
+                            responseInfo.Body = datish_data[1].value;
                             break;
                     }
                     break;
