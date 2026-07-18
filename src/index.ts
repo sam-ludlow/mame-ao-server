@@ -14,103 +14,6 @@ import { searchRomDisk } from './search.js';
 import Tedious from 'tedious';
 import { Connection, Request, TYPES } from 'tedious';
 
-export interface Application {
-    Key: string;
-    Version: string;
-    Title: string;
-    Info: string;
-
-    SubKeys: string[];
-    DatabaseConfigs: any[];
-}
-
-export interface ApplicationServerConstructable {
-    new(key: string): Application;
-}
-
-export class ApplicationCore implements Application {
-    
-    public Key: string;
-    public Version: string;
-    public Title: string;
-    public Info: string;
-
-    public SubKeys: string[];
-    public DatabaseConfigs: any[];
-    public Cache: any;
-
-    constructor(key: string) {
-
-        this.Key = key;
-        this.Version = '';
-        this.Title = '';
-        this.Info = '';
-
-        this.SubKeys = [];
-        this.DatabaseConfigs = [];
-
-        this.Cache = {};
-    }
-
-    public initialize = async (): Promise<any> => {
-
-        const databaseServer = 'my-mssql-server';
-        const databaseNamePrefix = 'ao';
-
-        switch (this.Key) {
-            case 'mame':
-            case 'hbmame':
-                this.SubKeys = ['machine', 'software'];
-                this.DatabaseConfigs = [ tools.sqlConfig(databaseServer, `${databaseNamePrefix}-${this.Key}-machine`), tools.sqlConfig(databaseServer, `${databaseNamePrefix}-${this.Key}-software`)];
-
-                const softwareListData = await tools.databaseQuery(this.DatabaseConfigs[1], 'SELECT [name], [description] FROM [softwarelist] ORDER BY [description]');
-                this.Cache["softwarelist"] = {};
-                softwareListData.forEach((item) => {
-                    this.Cache["softwarelist"][item[0].value] = item[1].value;
-                });
-                break;
-
-            case 'fbneo':   //  TODO: Load from DB - build menu
-                this.SubKeys = ['arcade', 'channelf', 'coleco', 'fds', 'gamegear', 'megadrive', 'msx', 'neogeo', 'nes', 'ngp', 'pce', 'sg1000', 'sgx', 'sms', 'snes', 'spectrum', 'tg16', ];
-                this.DatabaseConfigs = [ tools.sqlConfig(databaseServer, `${databaseNamePrefix}-${this.Key}`)];
-                break;
-
-            case 'tosec':
-                this.SubKeys = ['tosec', 'tosec-iso', 'tosec-pix'];
-                this.DatabaseConfigs = [ tools.sqlConfig(databaseServer, `${databaseNamePrefix}-${this.Key}`)];
-                break;
-
-            case 'redump':
-                this.SubKeys = ['redump'];
-                this.DatabaseConfigs = [ tools.sqlConfig(databaseServer, `${databaseNamePrefix}-${this.Key}`)];
-                break;
-
-            case 'no-intro':
-                this.SubKeys = ['no-intro', 'non-redump', 'source-code', 'unofficial'];
-                this.DatabaseConfigs = [ tools.sqlConfig(databaseServer, `${databaseNamePrefix}-${this.Key}`)];
-                break;
-
-            case 'search':
-            case 'snap':
-                this.Info = '';
-                break;
-
-            default:
-                throw new Error(`Unknown core key: ${this.Key}`);
-        }
-
-        if (this.DatabaseConfigs.length > 0) {
-            const metadata = await tools.databaseQuery(this.DatabaseConfigs[0], 'SELECT [version], [info] FROM [_metadata]');
-            if (metadata.length === 0)
-                throw new Error('_metadata not found');
-
-            this.Version = metadata[0][0].value;
-            this.Info = metadata[0][1].value;
-        }
-
-    }
-}
-
 const rootMenu: any[] =
 [
     {
@@ -197,40 +100,13 @@ const rootMenu: any[] =
         text: 'Redump',
         title: 'Redump Data',
         href: '/redump',
-        menu: [
-            {
-                text: 'Redump',
-                title: 'Optical media',
-                href: '/redump/redump',
-            },
-        ],
+        menu: [],
     },
     {
         text: 'No-Intro',
         title: 'No-Intro Data',
         href: '/no-intro',
-        menu: [
-            {
-                text: 'No-Intro',
-                title: 'verified retail dumps',
-                href: '/no-intro/no-intro',
-            },
-            {
-                text: 'Non Redump',
-                title: 'Optical media',
-                href: '/no-intro/non-redump',
-            },
-            {
-                text: 'Source Code',
-                title: 'Source code releases',
-                href: '/no-intro/source-code',
-            },
-            {
-                text: 'Unofficial',
-                title: 'Non-commercial or non-original releases',
-                href: '/no-intro/unofficial',
-            },
-        ],
+        menu: [],
     },
     {
         text: 'search',
@@ -243,6 +119,112 @@ const rootMenu: any[] =
         href: '/snap',
     },
 ];
+
+const validExtentions = [ '', 'xml', 'json', 'html', 'png', 'jpg' ];
+
+const extentionContentTypes: { [key: string]: any } = {
+    '': 'text/html; charset=utf-8',
+    'html': 'text/html; charset=utf-8',
+    'json': 'application/json; charset=utf-8',
+    'xml': 'text/xml; charset=utf-8',
+    'png': 'image/png',
+    'jpg': 'image/jpeg',
+};
+
+export interface Application {
+    Key: string;
+    Version: string;
+    Title: string;
+    Info: string;
+
+    SubKeys: string[];
+    DatabaseConfigs: any[];
+}
+
+export interface ApplicationServerConstructable {
+    new(key: string): Application;
+}
+
+export class ApplicationCore implements Application {
+    
+    public Key: string;
+    public Version: string;
+    public Title: string;
+    public Info: string;
+
+    public SubKeys: string[];
+    public DatabaseConfigs: any[];
+    public Cache: any;
+
+    constructor(key: string) {
+
+        this.Key = key;
+        this.Version = '';
+        this.Title = '';
+        this.Info = '';
+
+        this.SubKeys = [];
+        this.DatabaseConfigs = [];
+
+        this.Cache = {};
+    }
+
+    public initialize = async (): Promise<any> => {
+
+        const databaseServer = 'my-mssql-server';
+        const databaseNamePrefix = 'ao';
+
+        switch (this.Key) {
+            case 'mame':
+            case 'hbmame':
+                this.SubKeys = ['machine', 'software'];
+                this.DatabaseConfigs = [ tools.sqlConfig(databaseServer, `${databaseNamePrefix}-${this.Key}-machine`), tools.sqlConfig(databaseServer, `${databaseNamePrefix}-${this.Key}-software`)];
+                break;
+
+            case 'fbneo':   //  TODO: Load from DB - build menu
+                this.SubKeys = ['arcade', 'channelf', 'coleco', 'fds', 'gamegear', 'megadrive', 'msx', 'neogeo', 'nes', 'ngp', 'pce', 'sg1000', 'sgx', 'sms', 'snes', 'spectrum', 'tg16', ];
+                this.DatabaseConfigs = [ tools.sqlConfig(databaseServer, `${databaseNamePrefix}-${this.Key}`)];
+                break;
+
+            case 'tosec':
+                this.SubKeys = ['tosec', 'tosec-iso', 'tosec-pix'];
+                this.DatabaseConfigs = [ tools.sqlConfig(databaseServer, `${databaseNamePrefix}-${this.Key}`)];
+                break;
+
+            case 'redump':
+            case 'no-intro':
+                this.DatabaseConfigs = [ tools.sqlConfig(databaseServer, `${databaseNamePrefix}-${this.Key}`)];
+                const subs = await tools.databaseQuery(this.DatabaseConfigs[0], 'SELECT [name], [description] FROM [subset] ORDER BY [name]');
+
+                rootMenu.filter(x => x.href === `/${this.Key}`)[0].menu = subs.map(sub => ({
+                    text: sub[1].value,
+                    title: sub[1].value,
+                    href: `/${this.Key}/${sub[0].value}`,
+                }));
+
+                this.SubKeys = subs.map(sub => sub[0].value);
+                break;
+
+            case 'search':
+            case 'snap':
+                this.Info = '';
+                break;
+
+            default:
+                throw new Error(`Unknown core key: ${this.Key}`);
+        }
+
+        if (this.DatabaseConfigs.length > 0) {
+            const metadata = await tools.databaseQuery(this.DatabaseConfigs[0], 'SELECT [version], [info] FROM [_metadata]');
+            if (metadata.length === 0)
+                throw new Error('_metadata not found');
+
+            this.Version = metadata[0][0].value;
+            this.Info = metadata[0][1].value;
+        }
+
+    }
+}
 
 const defaultParamters: any = {
     offset: 0,
@@ -615,7 +597,7 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
                             }
 
                             res.writeHead(200, {
-                                'Content-Type': 'image/png',
+                                'Content-Type': extentionContentTypes[snapExtention.slice(1)],
                                 'Cache-Control': 'public, max-age=86400',
                             });
                             
@@ -672,16 +654,6 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
     //
     // Routing
     //
-    const validExtentions = [ '', 'xml', 'json', 'html', 'png', 'jpg' ];
-
-    const extentionContentTypes: { [key: string]: any } = {
-        '': 'text/html; charset=utf-8',
-        'html': 'text/html; charset=utf-8',
-        'json': 'application/json; charset=utf-8',
-        'xml': 'text/xml; charset=utf-8',
-        'png': 'image/png',
-        'jpg': 'image/jpeg',
-    };
 
     concurrentRequests++;
 
