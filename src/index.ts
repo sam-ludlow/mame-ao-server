@@ -179,6 +179,9 @@ export class ApplicationCore implements Application {
             case 'hbmame':
                 this.SubKeys = ['machine', 'software'];
                 this.DatabaseConfigs = [ tools.sqlConfig(databaseServer, `${databaseNamePrefix}-${this.Key}-machine`), tools.sqlConfig(databaseServer, `${databaseNamePrefix}-${this.Key}-software`)];
+
+                const softwareListData = await tools.databaseQuery(this.DatabaseConfigs[1], 'SELECT [name], [description] FROM [softwarelist] ORDER BY [description]');
+                this.Cache["softwarelist"] = Object.fromEntries(softwareListData.map(item => [item[0].value, item[1].value]));
                 break;
 
             case 'fbneo':   //  TODO: Load from DB - build menu
