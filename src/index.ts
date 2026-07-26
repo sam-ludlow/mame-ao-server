@@ -78,23 +78,7 @@ const rootMenu: any[] =
         text: 'TOSEC',
         title: 'TOSEC Data',
         href: '/tosec',
-        menu: [
-            {
-                text: 'TOSEC',
-                title: 'Non-optical disc based systems',
-                href: '/tosec/tosec',
-            },
-            {
-                text: 'TOSEC-ISO',
-                title: 'Optical disc based systems',
-                href: '/tosec/tosec-iso',
-            },
-            {
-                text: 'TOSEC-PIX',
-                title: 'Scans of software and hardware manuals, magazine scans, computing catalogs, and videos',
-                href: '/tosec/tosec-pix',
-            },
-        ],
+        menu: [],
     },
     {
         text: 'Redump',
@@ -190,10 +174,6 @@ export class ApplicationCore implements Application {
                 break;
 
             case 'tosec':
-                this.SubKeys = ['tosec', 'tosec-iso', 'tosec-pix'];
-                this.DatabaseConfigs = [ tools.sqlConfig(databaseServer, `${databaseNamePrefix}-${this.Key}`)];
-                break;
-
             case 'redump':
             case 'no-intro':
                 this.DatabaseConfigs = [ tools.sqlConfig(databaseServer, `${databaseNamePrefix}-${this.Key}`)];
@@ -697,9 +677,10 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
             switch (requestInfo.UrlParts.length) {
                 
                 case 1:
-                    // Core
                     switch (application.Key) {
+                        //  Root
                         case 'fbneo':
+                        case 'tosec':
                         case 'redump':
                         case 'no-intro':
                             const root_data = await tools.databasePayload(application.DatabaseConfigs[0], 'root_payload', { key_1: '1' }, responseInfo.Extention);
@@ -782,10 +763,10 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
                         case 'mame':
                         case 'hbmame':
                             switch (requestInfo.UrlParts[1]) {
+                                // Machines Search
                                 case 'machine':
                                     const displayMode: string = requestInfo.Paramters.view === 'grid' ? 'html_card' : 'html';
 
-                                    // Machine Search
                                     const pageData = await getMachines(application.DatabaseConfigs[0], requestInfo.Paramters, displayMode);
                                     
                                     let viewCount = pageData.length;
@@ -839,8 +820,8 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
                                     responseInfo.Body = machineHtml;
                                     break;
 
+                                // Software Lists (Full list)
                                 case 'software':
-                                    // Software List
                                     const data = await tools.databaseQuery(application.DatabaseConfigs[1], 'SELECT [title], [html] FROM [softwarelists_payload]');
 
                                     responseInfo.Title = data[0][0].value;
@@ -850,8 +831,8 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
                             }
                             break;
 
+                        // Datafile
                         case 'fbneo':
-                            // Datafile
                             let datafile_key = requestInfo.UrlParts[1];
 
                             if (datafile_key.includes('.') === true)
@@ -867,17 +848,8 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
                             responseInfo.Body = fbneo_data[1].value;
                             break;
 
+                        // Subset
                         case 'tosec':
-                            // Category
-                            const tosec_category = requestInfo.UrlParts[1];
-
-                            const tosec_data = await tools.databasePayload(application.DatabaseConfigs[0], 'category_payload', { category: tosec_category }, responseInfo.Extention);
-
-                            responseInfo.Title = tosec_data[0].value;
-                            responseInfo.Heading = responseInfo.Title;
-                            responseInfo.Body = tosec_data[1].value;
-                            break;
-
                         case 'redump':
                         case 'no-intro':
                             const datish_data = await tools.databasePayload(application.DatabaseConfigs[0], 'subset_payload', { subset_name: requestInfo.UrlParts[1] }, responseInfo.Extention);
@@ -893,8 +865,8 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
                         case 'mame':
                         case 'hbmame':
                             switch (requestInfo.UrlParts[1]) {
+                                // Machine
                                 case 'machine':
-                                    // Machine
                                     let machine_name = requestInfo.UrlParts[2];
 
                                     if (machine_name.includes('.') === true)
@@ -919,8 +891,8 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
                                     }
                                     break;
 
+                                // Software List (Software search)
                                 case 'software':
-                                    // Software List
                                     let softwarelist_name = requestInfo.UrlParts[2];
 
                                     if (softwarelist_name.includes('.') === true)
@@ -1007,8 +979,8 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
                             }
                             break;
 
+                        // Game
                         case 'fbneo':
-                            // Game
                             const datafile_key = requestInfo.UrlParts[1];
                             let game_name = requestInfo.UrlParts[2];
 
@@ -1031,26 +1003,8 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
                             responseInfo.Body = fbneo_data[1].value;
                             break;
 
+                        //  Datafile
                         case 'tosec':
-                            // Datafile
-                            const tosec_category = requestInfo.UrlParts[1];
-
-                            let name = decodeURIComponent(requestInfo.UrlParts[2]);
-
-                            validExtentions.forEach(validExtention => {
-                                if (validExtention != '' && name.endsWith('.' + validExtention) == true) {
-                                    responseInfo.Extention = validExtention;
-                                    name = name.slice(0, -(responseInfo.Extention.length + 1));
-                                }
-                            });
-
-                            const tosec_data = await tools.databasePayload(application.DatabaseConfigs[0], 'datafile_payload', { category: tosec_category, name }, responseInfo.Extention);
-
-                            responseInfo.Title = tosec_data[0].value;
-                            responseInfo.Heading = responseInfo.Title;
-                            responseInfo.Body = tosec_data[1].value;
-                            break;
-
                         case 'redump':
                         case 'no-intro':
                             let datish_name = decodeURIComponent(requestInfo.UrlParts[2]);
@@ -1073,9 +1027,9 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
 
                 case 4:
                     switch (requestInfo.UrlParts[0]) {
+                        // Software
                         case 'mame':
                         case 'hbmame':
-                            // Software
                             const softwarelist_name = requestInfo.UrlParts[2];
                             if (tools.validNameRegEx.test(softwarelist_name) !== true)
                                 throw new Error(`bad softwarelist_name`);
@@ -1104,26 +1058,8 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
                             }
                             break;
 
-                        case 'tosec':
-                            // Game
-                            const tosec_category = requestInfo.UrlParts[1];
-                            const datafile_name = decodeURIComponent(requestInfo.UrlParts[2]);
-                            let game_name = decodeURIComponent(requestInfo.UrlParts[3]);
-
-                            validExtentions.forEach(validExtention => {
-                                if (validExtention != '' && game_name.endsWith('.' + validExtention) == true) {
-                                    responseInfo.Extention = validExtention;
-                                    game_name = game_name.slice(0, -(responseInfo.Extention.length + 1));
-                                }
-                            });
-
-                            const tosecData = await tools.databasePayload(application.DatabaseConfigs[0], 'game_payload', { category: tosec_category, datafile_name, game_name }, responseInfo.Extention);
-
-                            responseInfo.Title = tosecData[0].value;
-                            responseInfo.Heading = responseInfo.Title;
-                            responseInfo.Body = tosecData[1].value;
-                            break;
-
+                        //  Game
+                        case 'tosec':  
                         case 'redump':
                         case 'no-intro':
                             const datish_datafile_name = decodeURIComponent(requestInfo.UrlParts[2]);
