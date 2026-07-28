@@ -54,25 +54,7 @@ const rootMenu: any[] =
         text: 'FBNeo',
         title: 'FBNeo Data',
         href: '/fbneo',
-        menu: [
-            { text: 'arcade', title: 'Arcade Games', href: '/fbneo/arcade'},
-            { text: 'channelf', title: 'Fairchild Channel F Games', href: '/fbneo/channelf'},
-            { text: 'coleco', title: 'ColecoVision Games', href: '/fbneo/coleco'},
-            { text: 'fds', title: 'FDS (Famicom Disk System) Games', href: '/fbneo/fds'},
-            { text: 'gamegear', title: 'Game Gear Games', href: '/fbneo/gamegear'},
-            { text: 'megadrive', title: 'Megadrive Games', href: '/fbneo/megadrive'},
-            { text: 'msx', title: 'MSX 1 Games', href: '/fbneo/msx'},
-            { text: 'neogeo', title: 'Neo Geo Games', href: '/fbneo/neogeo'},
-            { text: 'nes', title: 'NES Games', href: '/fbneo/nes'},
-            { text: 'ngp', title: 'Neo Geo Pocket Games', href: '/fbneo/ngp'},
-            { text: 'pce', title: 'PC-Engine Games', href: '/fbneo/pce'},
-            { text: 'sg1000', title: 'Sega SG-1000 Games', href: '/fbneo/sg1000'},
-            { text: 'sgx', title: 'SuprGrafx Games', href: '/fbneo/sgx'},
-            { text: 'sms', title: 'Master System Games', href: '/fbneo/sms'},
-            { text: 'snes', title: 'SNES Games', href: '/fbneo/snes'},
-            { text: 'spectrum', title: 'ZX Spectrum Games', href: '/fbneo/spectrum'},
-            { text: 'tg16', title: 'TurboGrafx 16 Games', href: '/fbneo/tg16'},
-        ],
+        menu: [],
     },
     {
         text: 'TOSEC',
@@ -168,9 +150,17 @@ export class ApplicationCore implements Application {
                 this.Cache["softwarelist"] = Object.fromEntries(softwareListData.map(item => [item[0].value, item[1].value]));
                 break;
 
-            case 'fbneo':   //  TODO: Load from DB - build menu
-                this.SubKeys = ['arcade', 'channelf', 'coleco', 'fds', 'gamegear', 'megadrive', 'msx', 'neogeo', 'nes', 'ngp', 'pce', 'sg1000', 'sgx', 'sms', 'snes', 'spectrum', 'tg16', ];
+            case 'fbneo':
                 this.DatabaseConfigs = [ tools.sqlConfig(databaseServer, `${databaseNamePrefix}-${this.Key}`)];
+                const datafiles = await tools.databaseQuery(this.DatabaseConfigs[0], 'SELECT [name], [description] FROM [datafile] ORDER BY [name]');
+
+                rootMenu.filter(x => x.href === `/${this.Key}`)[0].menu = datafiles.map(sub => ({
+                    text: sub[0].value,
+                    title: sub[1].value,
+                    href: `/${this.Key}/${sub[0].value}`,
+                }));
+
+                this.SubKeys = datafiles.map(sub => sub[0].value);
                 break;
 
             case 'tosec':
@@ -680,6 +670,11 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
                     switch (application.Key) {
                         //  Root
                         case 'fbneo':
+                            const subset_data = await tools.databasePayload(application.DatabaseConfigs[0], 'subset_payload', { subset_name: 'fbneo' }, responseInfo.Extention);
+                            responseInfo.Title = subset_data[0].value;
+                            responseInfo.Body = subset_data[1].value;
+                            break;
+
                         case 'tosec':
                         case 'redump':
                         case 'no-intro':
@@ -833,16 +828,15 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
 
                         // Datafile
                         case 'fbneo':
-                            let datafile_key = requestInfo.UrlParts[1];
+                            let datafile_name = requestInfo.UrlParts[1];
 
-                            if (datafile_key.includes('.') === true)
-                                [ datafile_key, responseInfo.Extention ] = datafile_key.split('.');
+                            if (datafile_name.includes('.') === true)
+                                [ datafile_name, responseInfo.Extention ] = datafile_name.split('.');
 
                             if (validExtentions.includes(responseInfo.Extention) === false)
                                 throw new Error('Bad extention');
 
-                            const fbneo_data = await tools.databasePayload(application.DatabaseConfigs[0], 'datafile_payload', { key: datafile_key }, responseInfo.Extention);
-
+                            const fbneo_data = await tools.databasePayload(application.DatabaseConfigs[0], 'datafile_payload', { datafile_name }, responseInfo.Extention);
                             responseInfo.Title = fbneo_data[0].value;
                             responseInfo.Heading = responseInfo.Title;
                             responseInfo.Body = fbneo_data[1].value;
@@ -981,7 +975,7 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
 
                         // Game
                         case 'fbneo':
-                            const datafile_key = requestInfo.UrlParts[1];
+                            const datafile_name = requestInfo.UrlParts[1];
                             let game_name = requestInfo.UrlParts[2];
 
                             if (game_name.includes('.') === true)
@@ -990,13 +984,13 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
                             if (validExtentions.includes(responseInfo.Extention) === false)
                                 throw new Error('Bad extention');
 
-                            if (tools.validNameRegEx.test(datafile_key) !== true)
-                                throw new Error(`bad datafile_key`);
+                            if (tools.validNameRegEx.test(datafile_name) !== true)
+                                throw new Error(`bad datafile_name`);
                         
                             if (tools.validNameRegEx.test(game_name) !== true)
                                 throw new Error(`bad game_name`);
 
-                            const fbneo_data = await tools.databasePayload(application.DatabaseConfigs[0], 'game_payload', { datafile_key, game_name }, responseInfo.Extention);
+                            const fbneo_data = await tools.databasePayload(application.DatabaseConfigs[0], 'game_payload', { datafile_name, game_name }, responseInfo.Extention);
 
                             responseInfo.Title = fbneo_data[0].value;
                             responseInfo.Heading = responseInfo.Title;

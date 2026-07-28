@@ -1,5 +1,8 @@
 # Used for fishing out archive.org links for Spludlow Data Web
 
+fbneo	fbneo		s
+fbneo_1003_bestset
+
 tosec	tosec		d
 tosec-main
 
