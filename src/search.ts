@@ -279,7 +279,7 @@ export const searchRomDisk = async (value: string) => {
         if (name !== 'sha1')
             tasks.push(databaseSearch('FBNeo Game ROM', application, 0, `
                 SELECT
-                    datafile.[key] AS datafile_name,
+                    datafile.[name] AS datafile_name,
                     game.name AS game_name,
                     game.description AS game_description,
                     [rom].[name], [rom].[size], '' AS [sha1], [rom].[crc]
@@ -294,7 +294,7 @@ export const searchRomDisk = async (value: string) => {
         if (name === 'name')
             tasks.push(databaseSearch('FBNeo Game', application, 0, `
                 SELECT TOP @top_limit
-                    datafile.[key] AS datafile_name,
+                    datafile.[name] AS datafile_name,
                     game.[name] AS [game_name],
                     game.[description] AS [game_description],
                     search_result.[RANK] AS [rank]
