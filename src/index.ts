@@ -817,11 +817,10 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
 
                                 // Software Lists (Full list)
                                 case 'software':
-                                    const data = await tools.databaseQuery(application.DatabaseConfigs[1], 'SELECT [title], [html] FROM [softwarelists_payload]');
-
-                                    responseInfo.Title = data[0][0].value;
+                                    const root_data = await tools.databasePayload(application.DatabaseConfigs[1], 'root_payload', { key_1: '1' }, responseInfo.Extention);
+                                    responseInfo.Title = root_data[0].value;
                                     responseInfo.Heading = responseInfo.Title;
-                                    responseInfo.Body = data[0][1].value;
+                                    responseInfo.Body = root_data[1].value;
                                     break;
                             }
                             break;
