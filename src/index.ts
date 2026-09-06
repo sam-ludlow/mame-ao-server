@@ -358,7 +358,10 @@ const loadAssets = async () => {
     directory = './assets/images';
     filenames = await tools.directoryFiles(directory);
     await Promise.all(filenames.map(async filename => {
-        assets['images/' + filename] = await tools.fileReadBuffer(`${directory}/${filename}`);
+        if (filename.endsWith('.svg') === true)
+            assets['images/' + filename] = await tools.fileRead(`${directory}/${filename}`);
+        else
+            assets['images/' + filename] = await tools.fileReadBuffer(`${directory}/${filename}`);
     }));
 }
 
@@ -421,16 +424,16 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
             return;
 
         case '/spludlow.svg':
-        case '/mame-ao.svg':
+        case '/images/back.svg':
+        case '/images/next.svg':
             res.setHeader('Content-Type', 'image/svg+xml; charset=utf-8');
             res.setHeader('Cache-Control', 'public, max-age=86400');
             res.write(assets[req.url.substring(1)]);
             res.end();
             return;
 
-        case '/images/back.png':
-        case '/images/next.png':
-            res.setHeader('Content-Type', 'image/png');
+        case '/images/device.jpg':
+            res.setHeader('Content-Type', 'image/jpeg');
             res.setHeader('Cache-Control', 'public, max-age=86400');
             res.write(assets[req.url.substring(1)]);
             res.end();
@@ -1183,13 +1186,13 @@ const makePageNav = (requestInfo: RequestInfo, viewCount: number, totalCount: nu
 
     let prevOffset = requestInfo.Paramters.offset - requestInfo.Paramters.limit;
     nav += prevOffset >= 0 ?
-        `<a href="${goLocationUrl(requestInfo, prevOffset)}"><img src="/images/back.png" alt="Navigate back a page" /></a> &bull;` :
-        '<div><img src="/images/back.png" alt="On first page" /></div> &bull;';
+        `<a href="${goLocationUrl(requestInfo, prevOffset)}"><img src="/images/back.svg" alt="Navigate back a page" /></a> &bull;` :
+        '<div><img src="/images/back.svg" alt="On first page" /></div> &bull;';
 
     let nextOffset = requestInfo.Paramters.offset + requestInfo.Paramters.limit;
     nav += nextOffset < totalCount ?
-        `<a href="${goLocationUrl(requestInfo, nextOffset)}"><img src="/images/next.png" alt="Navigate to next page" /></a> &bull;` :
-        '<div><img src="/images/next.png" alt="On last page" /></div> &bull;';
+        `<a href="${goLocationUrl(requestInfo, nextOffset)}"><img src="/images/next.svg" alt="Navigate to next page" /></a> &bull;` :
+        '<div><img src="/images/next.svg" alt="On last page" /></div> &bull;';
     
     let lastOffset = Math.floor(totalCount / requestInfo.Paramters.limit) * requestInfo.Paramters.limit;
     if (totalCount > 0 && totalCount % requestInfo.Paramters.limit === 0)
