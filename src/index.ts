@@ -14,6 +14,8 @@ import { searchRomDisk } from './search.js';
 import Tedious from 'tedious';
 import { Connection, Request, TYPES } from 'tedious';
 
+const IMAGE_CACHE_CONTROL = 'public, max-age=2419200';   // 28 Days
+
 const rootMenu: any[] =
 [
     {
@@ -411,14 +413,14 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
 
         case '/favicon.ico':
             res.setHeader('Content-Type', 'image/x-icon');
-            res.setHeader('Cache-Control', 'public, max-age=86400');
+            res.setHeader('Cache-Control', IMAGE_CACHE_CONTROL);
             res.write(assets['favicon.ico']);
             res.end();
             return;
 
         case '/stylesheet.css':
             res.setHeader('Content-Type', 'text/css; charset=utf-8');
-            res.setHeader('Cache-Control', 'public, max-age=86400');
+            res.setHeader('Cache-Control', IMAGE_CACHE_CONTROL);
             res.write(assets['stylesheet.css']);
             res.end();
             return;
@@ -427,29 +429,22 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
         case '/images/back.svg':
         case '/images/next.svg':
             res.setHeader('Content-Type', 'image/svg+xml; charset=utf-8');
-            res.setHeader('Cache-Control', 'public, max-age=86400');
+            res.setHeader('Cache-Control', IMAGE_CACHE_CONTROL);
             res.write(assets[req.url.substring(1)]);
             res.end();
             return;
 
         case '/images/device.jpg':
             res.setHeader('Content-Type', 'image/jpeg');
-            res.setHeader('Cache-Control', 'public, max-age=86400');
+            res.setHeader('Cache-Control', IMAGE_CACHE_CONTROL);
             res.write(assets[req.url.substring(1)]);
             res.end();
             return;
         
         case '/robots.txt':
             res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-            res.setHeader('Cache-Control', 'public, max-age=86400');
+            res.setHeader('Cache-Control', IMAGE_CACHE_CONTROL);
             res.write(assets['robots.txt']);
-            res.end();
-            return;
-
-        case '/.well-known/appspecific/com.chrome.devtools.json':
-            res.setHeader('Content-Type', 'application/json; charset=utf-8');
-            res.setHeader('Cache-Control', 'public, max-age=86400');
-            res.write('{}');
             res.end();
             return;
 
@@ -578,7 +573,7 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
 
                             res.writeHead(200, {
                                 'Content-Type': extentionContentTypes[snapExtention.slice(1)],
-                                'Cache-Control': 'public, max-age=86400',
+                                'Cache-Control': IMAGE_CACHE_CONTROL,
                             });
                             
                             const readStream = fs.createReadStream(snapFilename);
@@ -1097,7 +1092,7 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
 
                 res.writeHead(200, {
                     'Content-Type': extentionContentTypes[responseInfo.Extention],
-                    'Cache-Control': 'public, max-age=86400',
+                    'Cache-Control': IMAGE_CACHE_CONTROL,
                 });
                 
                 const readStream = fs.createReadStream(responseInfo.Body);
