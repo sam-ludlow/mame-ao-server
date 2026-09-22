@@ -452,6 +452,8 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
         case '/api/torrents/mame.peek':
         case '/api/torrents/hbmame':
         case '/api/torrents/hbmame.peek':
+        case '/api/torrents/fbneo':
+        case '/api/torrents/fbneo.peek':
         case '/api/torrents/pinmame':
         case '/api/torrents/pinmame.peek':
         case '/api/torrents/pinball':
@@ -1398,7 +1400,7 @@ const payloadKey = 'RRt08v+YWc2+910RGOhZO7DrNVnHKae8MDJyJNOd950=';
 let torrents: any = {};
 
 const loadTorrents = async () => {
-    for (let core of ['mame', 'hbmame', 'pinmame', 'pinball']) {
+    for (let core of ['mame', 'hbmame', 'fbneo', 'pinmame', 'pinball']) {
         const filename = path.join(mameAoDataDirectory, 'torrents', core + '.json');
 
         const json = await readFile(filename, 'utf-8');
