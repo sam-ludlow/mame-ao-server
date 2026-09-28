@@ -22,7 +22,7 @@
     "tedious": "^20.0.0"
   },
   "devDependencies": {
-    "@types/node": "^26.6.3",
+    "@types/node": "^24.19.0",
     "typescript": "^7.0.2"
   }
 }
