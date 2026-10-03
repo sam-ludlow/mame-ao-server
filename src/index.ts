@@ -582,6 +582,23 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
                             await pipeline(readStream, res);
                             break;
 
+                        case 'fbneo-sha1-lookup':
+                            if (requestInfo.UrlParts[2] === 'latest.txt') {
+                                res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8'});
+                                res.write(await readFile(path.join(mameAoDataDirectory, 'fbneo-sha1-lookup', 'latest.txt'), 'utf8'));
+                            } else {
+                                const zipFilename = path.join(mameAoDataDirectory, 'fbneo-sha1-lookup', requestInfo.UrlParts[2]);
+                                try {
+                                    await fs.promises.access(zipFilename, fs.constants.R_OK);
+                                } catch (e: any) {
+                                    throw new Error(`snap home available ${e.message}`);
+                                }
+                                res.writeHead(200, { 'Content-Type': 'application/zip'});
+                                const readStream = fs.createReadStream(zipFilename);
+                                await pipeline(readStream, res);
+                            }
+                            break;
+
                         default:
                             throw new Error('Bad API (3) Endpoint.');
                     }
