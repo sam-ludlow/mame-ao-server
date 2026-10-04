@@ -1010,11 +1010,16 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
                             if (tools.validNameRegEx.test(game_name) !== true)
                                 throw new Error(`bad game_name`);
 
-                            const fbneo_data = await tools.databasePayload(application.DatabaseConfigs[0], 'game_payload', { datafile_name, game_name }, responseInfo.Extention);
+                            if (responseInfo.Extention === 'png' || responseInfo.Extention === 'jpg') {
+                                responseInfo.Title = '@stream';
+                                responseInfo.Body = path.join(mameAoDataDirectory, 'snap', requestInfo.UrlParts[0], responseInfo.Extention, datafile_name, `${game_name}.${responseInfo.Extention}`);
 
-                            responseInfo.Title = fbneo_data[0].value;
-                            responseInfo.Heading = responseInfo.Title;
-                            responseInfo.Body = fbneo_data[1].value;
+                            } else {
+                                const data = await tools.databasePayload(application.DatabaseConfigs[0], 'game_payload', { subset_name: 'fbneo', datafile_name, game_name }, responseInfo.Extention);
+                                responseInfo.Title = data[0].value;
+                                responseInfo.Heading = responseInfo.Title;
+                                responseInfo.Body = data[1].value;
+                            }
                             break;
 
                         //  Datafile
