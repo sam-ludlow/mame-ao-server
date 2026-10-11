@@ -29512,32 +29512,32 @@ arcade	kingofb	vb15_col.bin	256	5ab06f25	f5e0aabf40ce6d11771e0678fea248abd5b95b3
 arcade	kingofb	vb16_col.bin	256	1171743f	ddfce0ff213381a2fc94337681e599cb28db840c
 arcade	kingofbj	1.b1	16384	7b6f390e	8338d6af1c1825ce0b1fc118f33f49a4f7222b9c
 arcade	kingofbj	13.d14	8192	988a77bf	c047c076d47479448ce2454c10010b672a1b457d
-arcade	kinst	ki-l15d.u98	524288	7b65ca3d	
-arcade	kinst	u10-l1	524288	b6cc155f	
-arcade	kinst	u11-l1	524288	0b5e05df	
-arcade	kinst	u12-l1	524288	d05ce6ad	
-arcade	kinst	u13-l1	524288	7d0954ea	
-arcade	kinst	u33-l1	524288	8bbe4f0c	
-arcade	kinst	u34-l1	524288	b2e73603	
-arcade	kinst	u35-l1	524288	0aaef4fc	
-arcade	kinst	u36-l1	524288	0577bb60	
-arcade	kinst13	ki-l13.u98	524288	65f7ea31	
-arcade	kinst14	ki-l14.u98	524288	afedb75f	
-arcade	kinst15ai	ki_l15di.u98	524288	230f55fb	
-arcade	kinst2	ki2-l14.u98	524288	27d0285e	
-arcade	kinst2	ki2_l1.u10	524288	fdf6ed51	
-arcade	kinst2	ki2_l1.u11	524288	f9e70024	
-arcade	kinst2	ki2_l1.u12	524288	2994c199	
-arcade	kinst2	ki2_l1.u13	524288	3fe6327b	
-arcade	kinst2	ki2_l1.u33	524288	6f4dcdcf	
-arcade	kinst2	ki2_l1.u34	524288	5db48206	
-arcade	kinst2	ki2_l1.u35	524288	7245ce69	
-arcade	kinst2	ki2_l1.u36	524288	8920acbb	
-arcade	kinst210	ki2-l10.u98	524288	b17b4b3d	
-arcade	kinst211	ki2-l11.u98	524288	0cb8de1e	
-arcade	kinst213	ki2-l13.u98	524288	25ebde3b	
-arcade	kinst214ai	ki2_l14p.u98	524288	d80c937a	
-arcade	kinstp47	ki-p47.u98	524288	05e67bcb	
+arcade	kinst	ki-l15d.u98	524288	7b65ca3d	607394d4ba1713f38c2cb5159303cace9cde991e
+arcade	kinst	u10-l1	524288	b6cc155f	810d455df8f385d76143e9d7d048f2b555ff8bf0
+arcade	kinst	u11-l1	524288	0b5e05df	0595909cb667c38ac7c8c7bd0646b28899e27777
+arcade	kinst	u12-l1	524288	d05ce6ad	7a8ee405c118fd176b66353fa7bfab888cc63cd2
+arcade	kinst	u13-l1	524288	7d0954ea	ea4d1f153eb284f1bcfc5295fbce316bba6083f4
+arcade	kinst	u33-l1	524288	8bbe4f0c	b22e365bc8d58a80eaac226be14b4bb8d9a04844
+arcade	kinst	u34-l1	524288	b2e73603	ee439f5162a2b3379d3f802328017bb3c68547d2
+arcade	kinst	u35-l1	524288	0aaef4fc	48c4c954ac9db648f28ad64f9845e19ec432eec3
+arcade	kinst	u36-l1	524288	0577bb60	cc78070cc41701e9a91fde5cfbdc7e1e83354854
+arcade	kinst13	ki-l13.u98	524288	65f7ea31	7f21620a512549db6821a0b4fa53681a767b7974
+arcade	kinst14	ki-l14.u98	524288	afedb75f	07254f20707377f7195e64675eb6458e663c1a9a
+arcade	kinst15ai	ki_l15di.u98	524288	230f55fb	f5f12311aae922d12f98d72ac8fdd77b7b084af2
+arcade	kinst2	ki2-l14.u98	524288	27d0285e	aa7a2a9d72a47dd0ea2ee7b2776b79288060b179
+arcade	kinst2	ki2_l1.u10	524288	fdf6ed51	acfc9460cd5df01403b7f00b2f68c2a8734ad6d3
+arcade	kinst2	ki2_l1.u11	524288	f9e70024	fe7fc78f1c60b15f2bbdc4c455f55cdf30f48ed4
+arcade	kinst2	ki2_l1.u12	524288	2994c199	9997a83432cb720f65b40a8af46f31a5d0d16d8e
+arcade	kinst2	ki2_l1.u13	524288	3fe6327b	7ff164fc2f079d039921594be92208973d43aa03
+arcade	kinst2	ki2_l1.u33	524288	6f4dcdcf	0ab6dbfb76e9fa2db072e287864ad1f9d514dd9b
+arcade	kinst2	ki2_l1.u34	524288	5db48206	48456a7b6592c40bc9c664dcd2ee2cfd91942811
+arcade	kinst2	ki2_l1.u35	524288	7245ce69	24a3ff009c8a7f5a0bfcb198b8dcb5df365770d3
+arcade	kinst2	ki2_l1.u36	524288	8920acbb	0fca72c40067034939b984b4bf32972a5a6c26af
+arcade	kinst210	ki2-l10.u98	524288	b17b4b3d	756629cd1b51ae50f2b9818765dd3d277c3019b3
+arcade	kinst211	ki2-l11.u98	524288	0cb8de1e	fe447f4b1d29b524f57c5ba1890652ef6afff88a
+arcade	kinst213	ki2-l13.u98	524288	25ebde3b	771d150fb4de0a2ceb279954b9545458e93e2405
+arcade	kinst214ai	ki2_l14p.u98	524288	d80c937a	85a009638f2eada4c63240fc30a9e7be59afab7f
+arcade	kinstp47	ki-p47.u98	524288	05e67bcb	501e69b3026394f69229a6e9866c1037502b86bb
 arcade	kirameki	d77-20.37	279	6bfbec07	5dce4f2e9fc13273cd50b67f1d9a0d90128e7397
 arcade	kirameki	e44-01.3	2097152	c4bdf727	793a22a30ef44db818cfac96ff8e9d2f99cb672f
 arcade	kirameki	e44-02.4	4194304	5481efde	560a1b8acf672781e912dca51599b5aa4d69520a
@@ -54438,14 +54438,14 @@ arcade	sfiii3r1	sfiii3-simm1.1	2097152	186e8c5f	a63040201a660b56217a8cbab32f5c2c
 arcade	sfiii3r1	sfiii3-simm1.2	2097152	bce18cab	a5c28063d98c22403756fc926a20631456fb7dcc
 arcade	sfiii3r1	sfiii3-simm1.3	2097152	129dc2c9	c1e634d94b1c8f7f02a47703622de5cab3d0da3f
 arcade	sfiii3tag	sfiii3_japan_nocd.29f400.u2	524288	1edc6366	60b4b9adeb030a33059d74fdf03873029e465b52
-arcade	sfiii3tag	sfiii3tag-simm1.0	2097152	06095f64	
-arcade	sfiii3tag	sfiii3tag-simm1.1	2097152	c62aeb15	
-arcade	sfiii3tag	sfiii3tag-simm1.2	2097152	665af926	
-arcade	sfiii3tag	sfiii3tag-simm1.3	2097152	45ba277e	
-arcade	sfiii3tag	sfiii3tag-simm2.0	2097152	ed89b9f3	
-arcade	sfiii3tag	sfiii3tag-simm2.1	2097152	1e7c8853	
-arcade	sfiii3tag	sfiii3tag-simm2.2	2097152	e5d0719e	
-arcade	sfiii3tag	sfiii3tag-simm2.3	2097152	6843f894	
+arcade	sfiii3tag	sfiii3tag-simm1.0	2097152	06095f64	b27ae2285ff1b7d4b39b9aff4aee7e2343d0fc11
+arcade	sfiii3tag	sfiii3tag-simm1.1	2097152	c62aeb15	de861e40204fa6fea9f44adc56363861101e75bd
+arcade	sfiii3tag	sfiii3tag-simm1.2	2097152	665af926	864a86d9130d5c99ba79f4881b0ffb60fff96c16
+arcade	sfiii3tag	sfiii3tag-simm1.3	2097152	45ba277e	330ac258efcf10555516a3c04dbcee2381fbb6f2
+arcade	sfiii3tag	sfiii3tag-simm2.0	2097152	ed89b9f3	1bf872db035ce8202fa99f6e5f10cc4f7f92728d
+arcade	sfiii3tag	sfiii3tag-simm2.1	2097152	1e7c8853	c80efa4bead7b33930165de462d2db84a2ca3e22
+arcade	sfiii3tag	sfiii3tag-simm2.2	2097152	e5d0719e	e0a48b7b83da9e66d283756decfe0c2f62347619
+arcade	sfiii3tag	sfiii3tag-simm2.3	2097152	6843f894	11dfce96e36e4a1ab6c4d7cd66d43678c42eea6f
 arcade	sfiii3th	3rd-simm5.6	2097152	7fffb6d4	5212d7d3e5228be8354bade969c5612d1c7a62cc
 arcade	sfiii3th	3rd-simm5.7	2097152	2dfcd4a6	62a8bfc619ed6e1c4e50f7206188d7b5c54d763b
 arcade	sfiii3th	sfiii3_japan_nocd.29f400.u2	524288	1edc6366	60b4b9adeb030a33059d74fdf03873029e465b52
@@ -61410,6 +61410,12 @@ arcade	sws97	ss71ob0u.bin	2097152	4df4a722	07eb94628ceeb7cbce2d39d479f33c37583a3
 arcade	sws97	ss71sha0.bin	524288	be8c2758	0a1b6c03cdaec6103ae8483b67faf3840234f825
 arcade	sws97	ss71spr0.bin	524288	71cb12f5	6e13bd16a5ba14d6e47a21875db3663ada3c06a5
 arcade	sws97	ss71voi0.bin	2097152	2740ec72	9694a7378ea72771d2b1d43db6d74ed347ba27d3
+arcade	swsodan	swsodan-c1.c1	2097152	1255788c	387702fef4a8de948b25ca2c607a9b266057f12d
+arcade	swsodan	swsodan-c2.c2	2097152	497b17e1	4c9939e0013fde7a0cbe7033ca786b15061235c1
+arcade	swsodan	swsodan-m1.m1	131072	bf95a6a1	0feb60965c8eab84b7123235cacfc2a85b6a1fe4
+arcade	swsodan	swsodan-p1.p1	1048576	d515bf3d	117059eb8b7f52168f4e04a9c29f8e64e31781f7
+arcade	swsodan	swsodan-s1.s1	131072	8c2cfe44	bfb8e3cf54d316e815c9da46dc56f64169859fcb
+arcade	swsodan	swsodan-v1.v1	4194304	f1962c04	640b60789f15eb11a15a0aa63d0b9893558b9d07
 arcade	sxevious	cpu_3m.rom	4096	fd04e615	7169e7f3bd1e9cfae9671b89f2a45f56b968e1ff
 arcade	sxevious	cpu_3p.rom	4096	1c8d27d5	2c41303d8c74acb5840295a4b460a39a9a8e21bb
 arcade	sxevious	xv3_3.2m	4096	294d5404	ecc39fb2c0065a36f20541747089b4e30dfb99b1
@@ -63672,6 +63678,10 @@ arcade	tinstara	ts.7	4096	894f6332	9b4a0e35ec08f2d6c5340435c69a05ad0333627c
 arcade	tinstara	ts.70	4096	4771838d	f84f1367f8a86e6c070da29419c8de5c302d1469
 arcade	tinstara	ts.71	4096	03c91332	3903e876ae02e9aea7ee6854bb4c6407dd7108d6
 arcade	tinstara	ts.8	4096	519aed19	8618a794bdd091ed7c2300a2dabf99455c9e2ebd
+arcade	tinyvaders	tv9316b-0854_m739e.e1	2048	387e15f9	2925b6149370e7cc4bdb651c50f1e8894d5ea0b2
+arcade	tinyvaders	tv9316b-0855_m739f.f1	2048	4d5cbcf8	ff0eb2e01577c1ea18234dfcc9a3ea69fe32bd75
+arcade	tinyvaders	tv9316b-0856_m739g.g1	2048	ac58c700	976a4981eb861614ba1f7a857bb387fc499f5f29
+arcade	tinyvaders	tv9316b-0869_m739h.h1	2048	bf3121f7	dd57aa57f05397d7b610df55847666156886f2c9
 arcade	tiptop	mr018.u68	512	56b9f1ba	32ae743087f7c2dfba6818df8e9d665d8d9a3ee7
 arcade	tiptop	tiptop1.u35	8192	e19dc77b	d3782dd55701e0f5cd426ad2771c1bd0264c366a
 arcade	tiptop	tiptop2.u34	8192	3fcd3b6e	2898807ee36fca7fbc06616c9a070604beb782b9
@@ -67810,9 +67820,9 @@ arcade	vsraidbbay	vs. raid on bungling bay (1985)(broderbund).nes	49168	84ad422e
 arcade	vsrbibbal	vs. atari rbi baseball (1987)(atari games).nes	98320	ac95e2c9	2ad893bf22af08448515e9a78605fe32d9b10e0f
 arcade	vsslalom	vs. slalom (1986)(nintendo).nes	40976	f7953678	e0d557ec9e42a078f8e65c62fb7945ea435140ad
 arcade	vssmb	vs. super mario bros (1986)(nintendo).nes	49168	7b8c1d89	f61fc960bb55aef92545005c8164e5f996980173
-arcade	vssmbneo	vssmbneo-c1.c1	2097152	bfa287fa	
-arcade	vssmbneo	vssmbneo-p1.p1	1048576	492d9a45	
-arcade	vssmbneo	vssmbneo-s1.s1	131072	f9b8db1e	
+arcade	vssmbneo	vssmbneo-c1.c1	2097152	bfa287fa	ae85fde5636e49607aae509b89cd9786a068c749
+arcade	vssmbneo	vssmbneo-p1.p1	1048576	492d9a45	b41aab9bfcecbbc5fd4ae3c4e34ad0a34b39b037
+arcade	vssmbneo	vssmbneo-s1.s1	131072	f9b8db1e	f050d0171d85845d39e2443c38c67754c59d9ae2
 arcade	vssmgolf	vs. stroke & match golf (1984)(nintendo).nes	49168	aca28dce	d91425c8af77064ac34bdc5258f2d749b372ae7f
 arcade	vssmgolfla	vs. stroke & match golf ladies (1984)(nintendo).nes	49168	50c5c8a4	2c1a6c3051cd6a6f3745cb2d7f02c80006ffe3e8
 arcade	vssoccer	vs. soccer (1985)(nintendo).nes	49168	b2fc5aaa	bb1d906354cbf541fb05d6cc1aec276c7ef8019b
@@ -77867,7 +77877,7 @@ megadrive	mk5	mk 5 - mortal combat - subzero (unl)(1998).bin	2097152	11e367a1	8f
 megadrive	mk5a	mk 5 - mortal combat - subzero (unl, alt)(1998).bin	2097152	41203006	a558ad8de61c4d21c35d4dbaaede85d771e84f33
 megadrive	mka	mortal kombat (world)(1993)(arena entertainment).bin	2097152	1aa3a207	c098bf38ddd755ab7caa4612d025be2039009eb2
 megadrive	mkae	mortal kombat arcade edition v1.0d (2026)(master linkuei).bin	4194304	8688c9b2	fb7d47faafc23ea42264f7ef38d0cdcbf47b1f50
-megadrive	mkaee	mortal kombat arcade edition enhanced v2.8 (2026)(rael g.c.).bin	4194304	ebc90098	
+megadrive	mkaee	mortal kombat arcade edition enhanced v2.9 (2026)(rael g.c.).bin	4194304	bc3378bf	
 megadrive	mkr	mortal kombat revelations (2012)(smoke).bin	9992816	318b81f2	7689da0dad721aa5df7b24efd5adcdfcc4991678
 megadrive	mks	mortal kombat t-spa (2013)(pepodmc).bin	2097152	75046fcf	6a00fa9bc93cb1978c6a51756d86b55f3b4ee011
 megadrive	mlbpa	mlbpa baseball (usa)(1992)(electronic arts).bin	2097152	14a8064d	5a85c659db9dd7485ed1463a252f0941346aba24
@@ -88723,7 +88733,7 @@ spectrum	aliengirl48es	alien girl 48k es (2020)(javier fopiani).tap	44505	1f883d
 spectrum	aliengirl48es	spectrum.rom	16384	ddee531f	5ea7c2b824672e914525d1d5c419d71b84a426a2
 spectrum	alienhw	alien highway 48k (1986)(vortex software).tap	48086	f5a22737	dc40ef5ade213fb26318c1a1e223eb616ce8066e
 spectrum	alienit	alien it 48k (1988)(djs).tzx	37645	a78f4cb6	6ed5c332ca90eef6994506a5e81b4fcc97c89ce7
-spectrum	aliensh	alien slaphead v2 128k (2022)(joesoft).tap	45449	3194ad0d	9449d2ae348bf9fa6a0b8221b2a55ccadd6f11b7
+spectrum	aliensh	alien slaphead v2 48k-128k (2022)(joesoft).tap	45449	3194ad0d	
 spectrum	aliensneo	aliens-neoplasma en 128k (2019)(sanchez).tap	64233	6cf1a406	59d719af6bd4ae46b8f22db76119260f515057c7
 spectrum	aliensneo2en	aliens neoplasma ii v1.6 en 128k (2024)(sinc lair).tap	157127	cbf57237	b6641337b02616be7ae12ade1c069edb3939a03f
 spectrum	aliensneo2es	aliens neoplasma ii v1.6 es 128k (2024)(sinc lair).tap	157750	e7acbc67	7bc571252bb6f71cb2b63f2937bdce93430ca2ad
@@ -88770,7 +88780,8 @@ spectrum	antiriad	sacred armour of antiriad, the 48k (1986)(palace).z80	41012	1a
 spectrum	antyjones	antiquity jones 48k (2012)(paul jenkinson).tap	37612	74f2526d	45408a78596fe7f785c972d4bc281a7da349f630
 spectrum	apb	apb - all points bulletin 128k (1989)(domark).tap	75630	1d6e4ca9	c4c25fa20f7dc1d4ee857ae76b9ac503672b8699
 spectrum	apulija13	apulija-13 v2.01 48k-128k (2013)(alessandro grussu).tap	28214	356db043	ae114a896c1e82fe7155e3b7a31531b135cfaeae
-spectrum	aquanoids	aquanoids 48k (2015)(neil parsons).tap	38587	6ead57d1	fbe5b6470b24e8dedc81e2d4578c52332f3e78c7
+spectrum	aquanoidsen	aquanoids v1.2 en 48k (2015)(neil parsons).tzx	38632	5df90a63	
+spectrum	aquanoidses	aquanoids v1.2 es 48k (2015)(neil parsons).tzx	38618	ef8964e7	
 spectrum	aquaplane	aqua plane 48k (1983)(quicksilva).tap	13553	3ef11315	68cc1aba83c8bca86c76ace411578d4493c2994d
 spectrum	aquarius	aquarius 48k (1983)(bug-byte).tzx	15643	b9005d23	be2b8b0073905e5a27377bd6a0e3a94dc34993c3
 spectrum	aquasquad	aquasquad 48k (1988)(atlantis software).tzx	55285	04e5713e	1d1a4c5da0f073f1c60cd47a37d1ef779e890996
@@ -88812,9 +88823,9 @@ spectrum	astroblast	astro blaster 16k (1983)(quicksilva).tap	7664	2db0e6e9	d9c70
 spectrum	astroclone	astroclone 48k (1985)(hewson consultants).tap	47815	105bdd98	e44b021cfc15cfec438e38a23b760a29d63d36fa
 spectrum	astrocop	astrocop 48k (2020)(mk1).tap	41005	2c1e9ca5	acecb0cffff34cb1813a2ed52bee63a8dc07b7e5
 spectrum	astrodrone	astrodrone v1.48 128k (2025)(steve tyson).tap	43482	cb1fb46f	457f5a10a06cbf5ec2bb820030d80d69a6191b2a
-spectrum	astrolaby	astronaut labyrinth 128k (2018)(jaime grilo).tap	44602	984c2c8a	311f0fc48c0d8aecf56d3098f151ea4f45a8bf87
+spectrum	astrolaby	astronaut labyrinth 48k-128k (2018)(jaime grilo).tap	44602	984c2c8a	
 spectrum	astronut	astronut 48k (1984)(software projects).z80	25056	876f4184	e958e88257a938916f1b557b9f9f376dd75b1821
-spectrum	astrophobos	astro phobos v1.3 128k (2021)(goliat).tap	38473	fb2ff0e9	299df857400ad70a97a0664a582149848bdc5fa0
+spectrum	astrophobos	astro phobos v1.3 48k-128k (2021)(goliat).tap	38473	fb2ff0e9	
 spectrum	astrosmash	astrosmash! zx 48k (2018)(amcgames).tap	23087	b3fc0c89	078523166b6bab6fb52d77f1526a6e86f058ac61
 spectrum	asymmetry	asymmetry 48k-128k v1.1 (2025)(manu & kit).tap	68794	6a6c0c99	700af1fe288f3873e2dc24e3afc071024341df86
 spectrum	ateamp1	a-team, the - el equipo a - part 1 es 48k-128k (1988)(zafiro software).tap	48242	9acf83a6	c73cd4c2c61ec842b610efa8ddb9ab4b6b330dcc
@@ -88876,6 +88887,8 @@ spectrum	barbpt1	barbarian - 2 players 48k (1987)(palace software).tap	56407	18d
 spectrum	barbpt2	barbarian - 1 player 48k (1987)(palace software).tap	56407	a99a7baf	d14c92fce85d2d3c197dc81a897519dae42dd6da
 spectrum	bark	bark, the 48k (2023)(zosya entertainment).tap	35166	075f4b7b	566641f78e4110df1ffb989150be66fb5f532ff2
 spectrum	barmyburg	barmy burgers 48k (1983)(blaby computer games).z80	28248	138faacd	51d931fcb54dc1d93f21a29cdb573838f549439b
+spectrum	bartoloen	bartolo's quest en 48k (2026)(molisoft).tap	18224	27cb1564	
+spectrum	bartoloes	bartolo's quest es 48k (2026)(molisoft).tap	18209	da420719	
 spectrum	basictoweren	basic tower v6.4 en 48k (2025)(ignacobo).tap	85611	ea4d8c42	b95757a5d5214de876df47c076f98427d07c59ec
 spectrum	basictoweres	basic tower v6.4 es 48k (2025)(ignacobo).tap	85622	e38001fb	7d77d28370e8243d04301b9ed5533523455e7490
 spectrum	basictowerpt	basic tower v6.4 pt 48k (2025)(ignacobo).tap	85622	a234c14d	9cef7e84ce9145b789a82b48a79486e0bd9faf1e
@@ -89201,12 +89214,13 @@ spectrum	changeit	change it!! 48k (1995)(zoo soft).tap	49227	fc8cb52e	14f9d90551
 spectrum	chaos	chaos - the battle of wizards 48k (1985)(games workshop).tap	41640	a696e01a	1516869a73be1ac56f134e65dd7b7ede9a08e4be
 spectrum	chaotrouble	chao trouble 48k (2023)(bunk3r).tap	43216	499492e9	222d91090ffd9f083cf51fee9ba5a57b096d14fd
 spectrum	charliequest	charlie far's vimpto quest! v1.4 48k (2025)(steve tyson).tap	24372	5d2fe12b	547c88392e0b0f57fcfe1b130c40e3f3d2659a6d
-spectrum	charm	the charm 128k (2014)(retroworks).tzx	81573	a6317752	32d90e2a52935da679f05d024bc4e4f31c1ea8f9
+spectrum	charm	charm, the 128k (2014)(retroworks).tzx	81573	a6317752	
 spectrum	chasehq128	chase h.q. 48k-128k (1989)(ocean).tap	118340	236a9884	468079daca2b0df298805fcb6f5b8333c223c12e
 spectrum	chasehq2	chase h.q. ii - special criminal investigations 128k (1990)(ocean).tap	122661	fd47cf79	7a75685d84ed4d7c4b3dc97b3b570140293ee8a4
 spectrum	chasehq48	spectrum.rom	16384	ddee531f	5ea7c2b824672e914525d1d5c419d71b84a426a2
+spectrum	chateau	chateau, le 48k (2026)(someoneat).tap	32654	164cdf62	
 spectrum	cheman	che-man 48k (2019)(the mojon twins).tap	21346	ab6e3d27	af95397854c4fc9dd81001dfc21f6b350b9a4cac
-spectrum	chemichaos	chemi chaos 128k (2023)(g0blinish).tap	9393	8905d3a7	a91dd7da8d7d018aa9a2997c70e61cac24aedac6
+spectrum	chemichaos	chemi chaos 48k-128k (2023)(g0blinish).tap	9393	8905d3a7	
 spectrum	cheqflag	chequered flag 48k (1983)(sinclair research).tzx	48707	c9368910	573f9fc30a0285a11bd2adcfe6427cb898f8e0bf
 spectrum	cherilgod	cheril the goddess v2.0 48k (2012)(the mojon twins).tzx	43579	86e67582	9d4ccc4194096d45a5e06431cd7f7ba893cecd34
 spectrum	cherils	cherils perils 48k (2010)(the mojon twins).tzx	43031	dc7c8339	6bdaef31c0a86ad329f33c96e94d274575fe64bb
@@ -89767,7 +89781,7 @@ spectrum	fido2	fido 2 - puppy power 48k (1985)(firebird software).tzx	35372	1605
 spectrum	fiendfreddy	fiendish freddy's big top o'fun 128k (1990)(mindscape international).tap	464247	2214888c	1a81357743899333c77791000fe0a72208c50344
 spectrum	fightbomb	fighter bomber 48k (1990)(activision).tap	163083	a32a5d92	d413825a6d7077c6b3a20b394ee46e552da688cb
 spectrum	fightwarrior	fighting warrior 48k (1985)(melbourne house).tap	39049	f41211b1	55a86a939bcf3839ee73d50fd966d6e51ede4143
-spectrum	fillomania	fillomania 128k (2018)(g0blinish).tap	23139	1aee9684	bf5c818540cd47dd4cc6370fc00b93249e7f808d
+spectrum	fillomania	fillomania 48k-ay (2018)(g0blinish).tap	23139	1aee9684	
 spectrum	finalassault	final assault 128k (1988)(u.s. gold).z80	82875	bd8bec7a	70e93b244cda6a137ee105bd9f317bf7d20f71d0
 spectrum	finalfight	final fight 128k (1991)(u.s. gold).tap	199327	8993d2c6	232391487711f244bc74b60a7adaae9d5b046e45
 spectrum	finalmatrix	final matrix, the 48k (1987)(gremlin graphics).tap	67727	db92a506	f7e6b89f974fc00d987b786545ca69872e6093fe
@@ -89884,6 +89898,7 @@ spectrum	gameswintered	games, the - winter edition 48k (1988)(u.s. gold).tap	146
 spectrum	gamex	gamex 48k (2006)(cronosoft).tap	46680	d996c4fc	2b2dd6264addb2adc080a575379364b34bf4699a
 spectrum	gandalf	gandalf deluxe 128k (2018)(speccy nights).tap	95019	1f7f26c8	08ce2e361974e8967ffaeeed59cb2efeeb999b08
 spectrum	ganimedes	ganimedes v1.01 128k (2023)(nextric).tap	59199	c58082f3	b67109ea6cb2d4fa32617533fc702a2dc3fe0041
+spectrum	garagerush	garage rush 48k (2026)(hermski).tap	30897	0d6f2201	
 spectrum	garfield	garfield - big, fat, hairy deal 48k (1988)(the edge).tzx	52697	ec92d5f7	8f563e1c61869655f35ba0fb6b042c2e1efb5999
 spectrum	garfield2	garfield - winter's tail 48k (1990)(the edge).tzx	58679	a44a1dab	f4cd867d0e062a5cd6fd97e82ac931a8b8de8d3d
 spectrum	gatecrash	gatecrasher 48k (1984)(quicksilva).tap	30466	980c9911	4122dc1fc57fc19ce509a08df39815213c4982c0
@@ -89947,12 +89962,13 @@ spectrum	glugglug	glug glug 48k (1984)(crl group).tzx	18959	6f5f4ad0	6335862cb34
 spectrum	gnasher	gnasher 16k (1984)(mastertronic).tap	17027	7c38b4ea	f223af0962a82b7a2f3b786b1af3ead6eb9c92ec
 spectrum	gng	ghouls 'n' ghosts 128k (1989)(u.s. gold).tzx	135024	22d3d440	144d66a5357f7591bc79aab8c96ec5813492115c
 spectrum	gng48	ghosts 'n' goblins 48k (1986)(elite systems).tzx	49599	8224f1de	cc177afb89209012df17d833e978102afcd62bcd
-spectrum	gnkanga	good night kanga 128k (2016)(gabriele amore - factor 6).tap	27329	3e2bacae	3438ea85698bdfd9bbfaefeaa9f66d753300f379
+spectrum	gnkanga	good night kanga 48k-128k (2016)(gabriele amore - factor 6).tap	27329	3e2bacae	
 spectrum	gnoni	gnoni v1.2 es 48k (2020)(azimov).tap	26212	beb0553a	da86ab7515fceef343f15ba677d3b873cc8d0365
 spectrum	gnonimh	gnoni es 48k (1988)(microhobby).tap	17473	14adb16f	759cbd4d193490e16227d52ad3aae71f149e6ff9
+spectrum	go9x9	go 9x9 v2.0.1 128k (2026)(lawlord).tap	96306	c9785e8e	
 spectrum	goblinarama	goblinarama v2 128k (2025)(zero budget).tap	72354	b21d9b4c	7fdc9f60d870c918534abcd86c9ea168a177e819
-spectrum	goblinen	goblin, the en 128k (2022)(hicks).tap	46960	aaddbdc4	f3a5ed46acad9225ca8bd75f1b89ed58a4bc130d
-spectrum	goblines	goblin, the es 128k (2022)(hicks).tap	46999	80e04163	af7a195317f9958f343dcf6c32532e0f06b8122b
+spectrum	goblinen	goblin, the en 48k-128k (2022)(hicks).tap	46960	aaddbdc4	
+spectrum	goblines	goblin, the es 48k-128k (2022)(hicks).tap	46999	80e04163	
 spectrum	godkiller	godkiller v2 128k (2019)(apsis).tap	57216	ba14a5b9	7e822481203daf3c69ba6dd02fe80a3c4d7ae771
 spectrum	godkiller2	godkiller 2 exile v2 128k (2020)(apsis).tap	59462	b5002734	4eb0703dded7a3c390ce4dcf60293823dcc061c7
 spectrum	godkiller2intro	godkiller 2 exile intro v2 128k (2020)(apsis).tap	42380	0fde1ae6	e2cda286e993e129a2298393d127e9a68dbb25d8
@@ -90089,7 +90105,7 @@ spectrum	hknight	hallowed knight v1.4 48k (2021)(ejvg).tap	46199	489c76cc	b94304
 spectrum	hkphooey	hong kong phooey 48k (1990)(hi-tec).z80	37410	444a5064	0e8e8c916b7b002a3d4624ad04f0cfd3d1659feb
 spectrum	hlipacs	hlipa cs 48k (2026)(kasuha software).tap	35521	93ec9bcb	b727efd218e5702bd97c2691ff62b7ca1c26ee60
 spectrum	hlipaen	hlipa en 48k (2026)(kasuha software).tap	35506	a2fd8780	4d1ca1a8e204d9aa9716495d35cf1c9d92b5c2fe
-spectrum	hlwpumpkin	all hallows rise of pumpkin 128k (2018)(rucksack games).tap	46999	76ecb3a0	9b96489cb27ece23ba7a1d0b560a20f42c435841
+spectrum	hlwpumpkin	all hallows rise of pumpkin 48k-128k (2018)(rucksack games).tap	46999	76ecb3a0	
 spectrum	hoardere	hoarder, the en 48k (2020)(iadvd).tap	41367	30a0539a	d3f1b2938e18fc33086f958f0f19e470c4ea809a
 spectrum	hoarders	hoarder, the es 48k (2020)(iadvd).tap	41374	1c7cee3d	11648fc50bcd8774426f02099299291981be7340
 spectrum	hobbit	hobbit, the v1.2 48k (1982)(melbourne house).z80	45550	10231c84	f455ffff2f01f0d6051bd85f71fc1acdcbf83997
@@ -90299,7 +90315,7 @@ spectrum	jswilly3	jet set willy iii 48k (1985)(mb - apg software).z80	32865	bde7
 spectrum	jubbles	jubbles 128k (2017)(jonathan cauldwell).tap	33886	75b86b88	82d227938f812a60db34932eb1c5ec0920037019
 spectrum	judgedredd	judge dredd 48k (1987)(melbourne house).tzx	47929	835fc84e	9763d8fd220236c0975c71a9543e91d4493ed1f7
 spectrum	jumpjupiter	jumpin' jupiter 48k (2020)(quantum sheep).tap	40858	34a1f400	2598c80cacd999a1ba3d0c141054db630cc05246
-spectrum	junglequeen	jungle queen 128k (2020)(gabriele amore).tap	38168	46eaa69d	14118526dfa9b8f1bb6caeb44566463d8660ddc7
+spectrum	junglequeen	jungle queen 48k-128k (2020)(gabriele amore).tap	38168	46eaa69d	
 spectrum	jungletrouble	jungle trouble 16k (1983)(durell).tzx	16246	cc906385	492c3a2dd0ab6ea8d5130959ef911dbacef036a4
 spectrum	junglewarfare	jungle warfare 48k (1989)(virgin mastertronic).tzx	43659	7d93472a	c03aaa5a298ba4f9ddc6607ad0635c94dd1dae32
 spectrum	jurl	jurl 48k (2025)(tonsomo entertainment).tap	34433	ea757683	819e97848776cabaf9d4d4abe57f953c0c14a33d
@@ -90477,6 +90493,7 @@ spectrum	losttapes	lost tapes of albion, the 48k (2012)(stonechat productions).t
 spectrum	lostulumen	lost treasures of tulum, the en 128k (2020)(retroworks).tap	75999	c64c38ad	2980abc7b884df58363040abdf4a8849e1cda0d2
 spectrum	lostulumes	lost treasures of tulum, the es 128k (2020)(retroworks).tap	75999	c4087b0e	ee409b308318d520b04ce17af2c24a38c4474e10
 spectrum	lotustc	lotus esprit turbo challenge 128k (1990)(gremlin graphics).z80	88502	e2a3503d	d5049653463a56bedcc1205dfade8bbe5ebc9cc2
+spectrum	loukoumas	loukoumas 48k (2026)(revive8bit).tap	30461	1b08c862	
 spectrum	loxley	loxley v1.1 128k (2022)(world xxi soft).tap	144187	89ef517a	552e11cf94e190874c19560be308192646ed0941
 spectrum	lpatrol25	lunar patrol '25 128k (2025)(gabriele amore).tap	55375	dcf08fd6	e50010a28ace8539315c659e0ab324d3ce3ebbfb
 spectrum	lprintrun	lprint runaway 48k (2023)(ignacobo).tap	43514	a3785c33	da847698ff57ca31a3ad512bf9fd2658af7ad61f
@@ -90907,11 +90924,21 @@ spectrum	omelettes	omelettes for breakfast 48k-128k (2017)(gabriele amore).tap	3
 spectrum	oo48	--=o o=-- v1.1 48k-ay (2025-26)(briefer666).tap	39393	bcbf0d46	efd2fbd31d3d9679a99616594ee79a15e1f1b7f4
 spectrum	ooze	ooze 128k (2017)(bubblesoft).tap	49790	188d3e4e	d08da4a1646f4638bdae2b9ab5914b6b88b275bb
 spectrum	operationgunship	operation gunship 128k (1989)(codemasters).tap	52455	ee1f687d	25828cf29040525df653e19def41b4adedd3aa2e
+spectrum	opgreenup1en	operation greenup - part 1 en 128k (2026)(molisoft).tap	120944	2120674b	
+spectrum	opgreenup1es	operacion greenup - parte 1 es 128k (2026)(molisoft).tap	121201	2e79b60d	
+spectrum	opgreenup2en	operation greenup - part 2 en 128k (2026)(molisoft).tap	120826	e57631fd	
+spectrum	opgreenup2es	operacion greenup - parte 2 es 128k (2026)(molisoft).tap	120376	19a0eb68	
+spectrum	opgreenup3en	operation greenup - part 3 en 128k (2026)(molisoft).tap	80546	28d7c03f	
+spectrum	opgreenup3es	operacion greenup - parte 3 es 128k (2026)(molisoft).tap	81038	ade5760c	
 spectrum	ophanoi	operation hanoi 48k-128k (1990)(players premier).tap	74134	8f259898	4588a42dc1c35ce2f2709ced7a521617905b56a0
 spectrum	ophormuz	operation hormuz 48k-128k (1989)(again again).tzx	49106	1c657b1e	579561fd0a8c365476c229bc0bd7f6f562140059
 spectrum	oplabfall	operation - labyrinth fall 128k (2018)(bumfun software).tap	36787	22169ded	3dbd2b19bb569e2f78f39694f13bb9d9e43e4601
 spectrum	opmoo	operation moo 128k (2025)(juangm).tap	68142	04bb8296	e1c5ee917062103d4199f45964aaedf0a29cb798
 spectrum	opuzz	o-puzz attack 48k (2018)(oblo).tap	29543	ebadd8c9	7ebdd39787fb54e882da8168a38210bd78c2b2c8
+spectrum	opuzz	spectrum.rom	16384	ddee531f	
+spectrum	opuzzv1a	o-puzz attack v1.29 48k (2026)(oblo).tzx	45282	c1e7b5d8	
+spectrum	opuzzv1a	spectrum.rom	16384	ddee531f	
+spectrum	opuzzv2	o-puzz attack v2.08 48k-128k (2026)(oblo).tap	52496	03a7bd63	
 spectrum	opwolf	operation wolf 128k (1988)(ocean).z80	121476	a7cd683f	e732e7fb01f4b6dfe1382cf810d3443a3258a996
 spectrum	orcattack	orc attack 48k (1984)(creative sparks).tzx	31150	0cdb8978	72c3f47368143e2bd3b386402eccc3008a67a068
 spectrum	orderslpdrag	order of sleeping dragon, the 128k (2019)(evgeniya zapolnova).tap	125004	5652c985	bb6288b9775f1f19ddf6b0326136a41b19e34d04
@@ -90976,6 +91003,7 @@ spectrum	pcaptcreedes	pirate captain creed es 48k (2023)(furillo productions).ta
 spectrum	pcaptcreedjp	pirate captain creed jp 48k (2023)(furillo productions).tap	44553	736f88d8	ec35b53f62c59583b6fd8bbaaeccb0eff3de5ac8
 spectrum	pcquest	page's castle quest 48k-ay (2014)(t.d.f. micro-visions).tzx	36810	9aefb680	3e19f5dc95cc7fe3f5f2b870737d12c52c1520e7
 spectrum	pdrift	power drift 128k (1989)(activision).z80	90358	34a7f74a	d7cce70a536404d3ec244e9c8da55c1ef23ecdeb
+spectrum	pedrisco	pedrisco 48k-128k (2026)(vosges6128).tap	27819	45bbba00	
 spectrum	pedro	pedro 48k (1984)(imagine software).tap	27328	4c759deb	c4366a0f73668e2e58a45d0a5a65b7aba066b0ed
 spectrum	pedrocastle	pedro in the haunted castle t-eng 48k-128k (2011)(pavel pliva).tap	40342	dd90c539	0224f8c0c95028fd0bb35474af66e0c49f6eca47
 spectrum	pedroisland	pedro on the pirate island t-eng 48k-128k (2011)(pavel pliva).tap	36190	7eb92bba	2fc1dff13ed046c47c541de400623091e5b2416b
@@ -91024,7 +91052,7 @@ spectrum	pheenix	pheenix 16k (1983)(megadodo).tap	8551	3c9549da	eb77ad770609d679
 spectrum	phileasfogg	phileas fogg's balloon battles 48k (1991)(zeppelin).tap	48594	c311768c	f1d120fd82ff219e3aaa307bda14b14882c2495e
 spectrum	phoenix	phoenix 48k (1991)(zenobi).tap	37722	8cf4e0e2	1cab746874abf65c6b0ba6f9e3d2a884028fd375
 spectrum	phonmars	pac hic on mars 128k (2024)(daniel isoba).tap	51946	c2dafce8	2a593aca90321a65ac9c926d876dfedbf607a0aa
-spectrum	phrehab	pac - hic rehab 128k (2022)(daniel isoba).tap	30767	170729dc	308c16bee089be999c6791b7411cd27bc38836ba
+spectrum	phrehab	pac-hic rehab 48k-128k (2022)(daniel isoba).tap	30767	170729dc	
 spectrum	pidentity128	pi-dentity 128k (2020)(sebastian braunert).tap	70659	b6aed3dd	154f03a2f2a8ab0781a44ad4a13f768a6fe3d6ac
 spectrum	pidentity48	pi-dentity 48k (2020)(sebastian braunert).tap	43464	ecdc9c1c	9ad30d657469d6d3e3577e01099450f45985152e
 spectrum	pidentity48	spectrum.rom	16384	ddee531f	5ea7c2b824672e914525d1d5c419d71b84a426a2
@@ -91108,7 +91136,7 @@ spectrum	psychopigs	psycho pigs u.x.b. 48k-128k (1988)(u.s. gold).tap	50190	3632
 spectrum	psychosold	psycho soldier 48k (1987)(imagine software).tap	85352	4c6cacaa	eedbac8a844a8b7f3b557d8c22b7215fc787f36d
 spectrum	psyqosanta	psyqo santa 128k (2023)(iamai creation).tap	56501	2dc3a9d9	0a7a690714d3baef15d4aed07e2a635eaa666b64
 spectrum	psytraxx	psytraxx 48k (1984)(the edge).z80	44693	362277ef	6d0dc3f5db1c499130ed4519c29ed1c3d947360b
-spectrum	ptm	ptm 128k (2021)(ultranarwhal).tap	43484	5f02d900	8813dbe2a426775d35cdfad2590246316cdc9fd1
+spectrum	ptm	ptm 48k-128k (2021)(ultranarwhal).tap	43484	5f02d900	
 spectrum	pubtrivia	pub trivia 128k (1989)(codemasters).z80	100743	bafbf528	9819e0c994f6e3c7de205c5c84639d9ccada2702
 spectrum	puffysaga	puffy's saga 48k-128k (1989)(ubi soft).tap	112327	393670c2	77c2812124034367a7a2a9505e938b88adcba139
 spectrum	pulpzxen	pulplife zx en 128k (2025)(jhonnystorm).tap	72980	a8262629	af137b9c1e8c64254e032e77c56ac8d272f7e43b
@@ -92007,6 +92035,10 @@ spectrum	twister	twister 48k (1986)(system 3).tap	25904	3a54f2c8	78516a5f49f7176
 spectrum	typhoon	typhoon 128k (1988)(imagine software).tap	130475	1ab3aa4a	b79d27219b766e8fa15fd58a1cb536ccb9ad4b34
 spectrum	uchotos	uchotos 48k-ay (2026)(inufuto).tzx	16384	833ab2fa	943602814302f7dedaaedd2c1a431a81a161cab9
 spectrum	ufo	ufo 48k (2020)(f.j. urbaneja).tap	33701	44cb0dbb	a74bc7c4de224e56971317f356e59d1fcb9de301
+spectrum	umbra1en	umbra - part 1 en 48k (2025)(darkside29soft).tap	39127	0576c036	
+spectrum	umbra1es	umbra - parte 1 es 48k (2025)(darkside29soft).tap	39141	aee1c7fd	
+spectrum	umbra2en	umbra - part 2 en 48k (2025)(darkside29soft).tap	38639	b2822de3	
+spectrum	umbra2es	umbra - parte 2 es 48k (2025)(darkside29soft).tap	38648	15b81c4e	
 spectrum	un2azul	un 2 azul 48k (2014)(j.b.g.v.).tzx	33445	445fac18	235df39004cd16bdc19351c549f728a7236dac6a
 spectrum	underground	underground es 48k (1988)(system 4).tap	49575	0470e56c	8e2c84be21eb8b2ba5296475b5b61df92dcde4c9
 spectrum	underwur	underwurlde 48k (1984)(ultimate play the game).tap	46026	0a46e7cf	9f4e97c5e6fb39db07d1c9c549782100474034c6
@@ -92017,6 +92049,12 @@ spectrum	unsquadron	un squadron 48k-128k (1990)(u.s gold).tap	303274	12571e3a	7e
 spectrum	untouchb	untouchables, the 48k-128k (1989)(ocean).tap	182932	81349cbf	896a6054e34e6e332877d35307030c3fc76f8f87
 spectrum	uridium	uridium 48k (1986)(hewson consultants).tap	27747	28bdbbfc	def5f8ad270887be94759cae1ea322966011ba5d
 spectrum	uridiumplus	uridium plus 48k (1987)(hewson consultants).tzx	49837	09d9e37e	7d9db8097d2ca64e28f432f02eac0f69ec58bab3
+spectrum	urkiola1en	urkiola i - gaueko's awakening en 48k (2024)(darkside29soft).tap	39677	e71f8cdc	
+spectrum	urkiola1es	urkiola i - el despertar de gaueko es 48k (2024)(darkside29soft).tap	39667	cf6c56bf	
+spectrum	urkiola2en	urkiola ii - the origin of gaueko en 48k (2024)(darkside29soft).tap	38862	d23b45ef	
+spectrum	urkiola2es	urkiola ii - el origen de gaueko es 48k (2024)(darkside29soft).tap	38864	ac091e33	
+spectrum	urkiola3en	urkiola iii - seven streets en 48k (2024)(darkside29soft).tap	40161	15f9bf93	
+spectrum	urkiola3es	urkiola iii - siete calles es 48k (2024)(darkside29soft).tap	40169	75e174a7	
 spectrum	uroboros	uroboros 128k (2015)(rafal miazga).tap	20267	9d288091	a5edb8b03bedd4b195b976dd54bf8b46b78c2318
 spectrum	uroken	urok en 128k (2024)(tartessos games).tap	81964	17df69f5	095801b7a1a9c8f986cd50190cf183b12b2b5e1c
 spectrum	urokes	urok es 128k (2024)(tartessos games).tap	82115	f8349f90	513857d1c6b5aa04028422a4d49a5ae97ac290d5
