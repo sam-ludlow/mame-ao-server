@@ -744,7 +744,7 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
                                     if (softwarelist_name === '')
                                         existing_column = `<a href="/${core_name}/machine/${machine_name}.png"><img src="/${core_name}/machine/${machine_name}.jpg" loading="lazy" alt="${machine_name}"></a>`;
                                     else
-                                        existing_column = `<a href="/${core_name}/software/${softwarelist_name}/${software_name}.png"><img src="/${core_name}/software/${softwarelist_name}/${software_name}.jpg" loading="lazy" alt="${software_name}"></a>`;
+                                        existing_column = `<a href="/${core_name}/${core_name === 'fbneo' ? '' : 'software/'}${softwarelist_name}/${software_name}.png"><img src="/${core_name}/${core_name === 'fbneo' ? '' : 'software/'}/${softwarelist_name}/${software_name}.jpg" loading="lazy" alt="${software_name}"></a>`;
                                 }
 
                                 return `<tr><td>${submit_url}</td><td>${snap_uploaded}</td><td>${display_name}</td><td>${core_name}</td><td>${core_version}</td><td>${machine_name}</td><td>${softwarelist_name}</td><td>${software_name}</td><td>${existing_column}</td></tr>`;
