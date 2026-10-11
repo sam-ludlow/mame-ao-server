@@ -3,9 +3,9 @@ GO
 CREATE DATABASE [ao-master]
  CONTAINMENT = NONE
  ON  PRIMARY 
-( NAME = N'ao-master', FILENAME = N'J:\Microsoft SQL Server\MSSQL16.MSSQLSERVER\MSSQL\DATA\ao-master.mdf' , SIZE = 204800KB , MAXSIZE = UNLIMITED, FILEGROWTH = 65536KB )
+( NAME = N'ao-master', FILENAME = N'J:\Microsoft SQL Server\MSSQL16.MSSQLSERVER\MSSQL\DATA\ao-master.mdf' , SIZE = 532480KB , MAXSIZE = UNLIMITED, FILEGROWTH = 65536KB )
  LOG ON 
-( NAME = N'ao-master_log', FILENAME = N'J:\Microsoft SQL Server\MSSQL16.MSSQLSERVER\MSSQL\DATA\ao-master_log.ldf' , SIZE = 73728KB , MAXSIZE = 2048GB , FILEGROWTH = 65536KB )
+( NAME = N'ao-master_log', FILENAME = N'J:\Microsoft SQL Server\MSSQL16.MSSQLSERVER\MSSQL\DATA\ao-master_log.ldf' , SIZE = 139264KB , MAXSIZE = 2048GB , FILEGROWTH = 65536KB )
  WITH CATALOG_COLLATION = DATABASE_DEFAULT, LEDGER = OFF
 GO
 ALTER DATABASE [ao-master] SET COMPATIBILITY_LEVEL = 160
@@ -135,7 +135,7 @@ CREATE TABLE [dbo].[snap_submit](
 	[snap_uploaded] [datetime2](7) NOT NULL,
 	[display_name] [nvarchar](32) NULL,
 	[core_name] [varchar](8) NOT NULL,
-	[core_version] [varchar](16) NOT NULL,
+	[core_version] [varchar](32) NOT NULL,
 	[machine_name] [varchar](32) NOT NULL,
 	[softwarelist_name] [varchar](32) NULL,
 	[software_name] [varchar](32) NULL,
