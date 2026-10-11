@@ -76664,7 +76664,7 @@ megadrive	bnzabros1	bonanza bros. (euro, japan)(1991)(sega).bin	524288	adf6476c	
 megadrive	bnzabross	bonanza bros. t-spa (2017)(wave).bin	524288	96f3fba6	b3eefdfc3894f43f07a2a837b1c67a6d8d28ef53
 megadrive	bnzabrosu	bonanza bros. (usa, korea)(1991)(sega).bin	524288	20d1ad4c	31c589bc0d1605502cdd04069dc4877811e84e58
 megadrive	bob	b.o.b. (euro, usa)(1993)(electronic arts).bin	1048576	eaa2acb7	84d63c848d68d844dbcf360040a87a0c93d67f74
-megadrive	bobc	bomb on basic city (2016)(studio vetea).bin	1940068	0b924c20	
+megadrive	bobc	bomb on basic city (2016)(studio vetea).bin	1940068	0b924c20	121b558e4ac15a068235b9cd20e607aa63f244a2
 megadrive	bobcse	bomb on basic city se (2018)(studio vetea).bin	3231410	076232fd	e2ea204774bfcda55859e21b9ce1e420a9343ec1
 megadrive	bobp	b.o.b. (usa, proto)(1993)(electronic arts).bin	1048576	e3e8421e	eb5e4221b13372f2155ac80e88eb1114a6e2ccc7
 megadrive	bodyco	body count (euro)(1994)(sega).bin	1048576	3575a030	3098f3c7ea9e25bf86219d7ed0795bf363338714
@@ -76983,7 +76983,7 @@ megadrive	deathnlead	death & lead (2025)(kai magazine).bin	4194304	e1b3ee1f	3e47
 megadrive	deathret	death and return of superman, the (usa)(1995)(sunsoft).bin	2097152	982242d3	3534d17801bd5756b10a7f8d7d95f3a8d9b74844
 megadrive	deathrets	death and return of superman, the t-spa (2018)(wave).bin	2097152	82b94fc6	4975017775e8c1a025708656e6b69634943307ab
 megadrive	debtor	debtor (2020)(pscd games).bin	2228224	c16c2aa4	65cc172216a70ab584a4675cc47949189df65021
-megadrive	debtora	debtor (alt) (2020)(pscd games).bin	2228224	7bb67106	
+megadrive	debtora	debtor (alt) (2020)(pscd games).bin	2228224	7bb67106	febe9cc07eaf4fc9def4fddb4d6bb9ea0545457b
 megadrive	decapatt	decapattack (1991)(sega).bin	524288	73dc0dd8	9665f54a6149d71ea72db9c168755e62cb61649c
 megadrive	decapattpt	decapattack pt-br (2004)(odin games).bin	524288	fa192901	34c5c85c684e3babbf044cb60727c4520e5b22b2
 megadrive	decapatts	decapattack t-spa v2.0 (2022)(wave).bin	524288	29369a7d	6f7f006ef9687896ea76087143a116b74213f3e8
@@ -77290,7 +77290,7 @@ megadrive	gambler	gambler jikochuushinha - katayama masayuki no mahjong doujou (
 megadrive	gamenko	game no kanzume otokuyou (sega channel, japan)(1995)(sega).bin	3145728	cdad7e6b	31c66bd13abf4ae8271c09ec5286a0ee0289dbbc
 megadrive	gameto	game toshokan (japan, rev a)(1990)(sega).bin	131072	c185c819	9673b519c16883c146924c347ec6764281fa3a57
 megadrive	garfield	garfield - caught in the act (euro, usa)(1995)(sega).bin	2097152	f0ff078e	9fff7dea16c4d0e6c9d6dbaade20c7048bb485ec
-megadrive	garfieldc	garfield - caught in the act - complete v1.1 (2026)(billytime! games).bin	4194304	1cd79306	
+megadrive	garfieldc	garfield - caught in the act - complete v1.1 (2026)(billytime! games).bin	4194304	1cd79306	145a15f5abe184f13be2f45240ed8820096e5438
 megadrive	garfieldll	garfield - the lost levels (sega channel)(1995-96)(sega).bin	2097152	a9e35705	67498cc2a19b13b951b27b23547437b3ca4e6d4a
 megadrive	gargoyle	gargoyles (usa)(1995)(disney interactive).bin	3145728	2d965364	2b76764ca1e5a26e406e42c5f8dbd5b8df915522
 megadrive	gargoyles	gargoyles t-spa v2.0 (2022)(wave).bin	3145728	443d085e	4607c6f8ea056097069019d4ee9bb0a48e8191bf
@@ -77325,7 +77325,7 @@ megadrive	ghbaseball	ghost baseball v2.0 (2026)(infinite state games).bin	524288
 megadrive	ghostbst	ghostbusters (world, v1.1)(1990)(sega).bin	524288	792df93b	6fceffee406679c0c8221a8b6cfad447695e99fb
 megadrive	ghostbst1	ghostbusters (world)(1990)(sega).bin	524288	00419da3	2a1589781fc4aca2c1ba97ec9ecf1acf563b7bfb
 megadrive	ghostbsts	ghostbusters t-spa (2018)(wave).bin	524288	4ed2c651	aafae5e3e764dbe42c2f5fa64cc34976473b6ab4
-megadrive	ghostbstse	ghostbusters - special edition v3.1 (2024-26)(billytime! games).bin	3145728	3d238f58	
+megadrive	ghostbstse	ghostbusters - special edition v3.1 (2024-26)(billytime! games).bin	3145728	3d238f58	e11f019c4b66a8fabe45adf176f2ab30afbff173
 megadrive	ghouls	ghouls'n ghosts (usa, euro, rev 2)(1989)(sega).bin	655360	4f2561d5	aab6d20f01db51576b1d7cafab46e613dddf7f8a
 megadrive	ghouls1	ghouls'n ghosts (usa, euro, rev 1)(1989)(sega).bin	655360	d31bd910	3a3e9eb5caaf6cfb75e99ed2843d58b3dda7284f
 megadrive	ghoulss	ghouls'n ghosts t-spa v1.1 (2019)(wave).bin	655360	f71cd080	2d4f0a580a19f4d7760d47a5a6ab063d2cf555f0
@@ -77571,7 +77571,7 @@ megadrive	kfpanda2	kung fu panda 2 (russia)(unl)(201x).bin	4194304	a08c3b25	7248
 megadrive	kickbox	kick boxing, the (japan, korea)(1993)(micro world).bin	1048576	9bdc230c	c3f74c01e8124d5d08f817ff6e0c9416545b8302
 megadrive	kickoff3	kick off 3 - european challenge (euro)(1994)(vic tokai).bin	1048576	bc37401a	e449cfd4f9d59cf28b4842d465022a399964d0d6
 megadrive	kidcham	kid chameleon (euro, korea, usa)(1992)(sega).bin	1048576	ce36e6cc	28b904000b2863b6760531807760b571f1a5fc1d
-megadrive	kidcham3	kid chameleon 3 - the final marathon v1.7 (2019)(super1rios).bin	4194304	ce246114	
+megadrive	kidcham3	kid chameleon 3 - the final marathon v1.7 (2019)(super1rios).bin	4194304	ce246114	14229d9c7b2dd5e18c14222648db50102aedac75
 megadrive	kidchamj	chameleon kid (japan)(1992)(sega).bin	1048576	50217c80	237ff4041f3e8ce5047f06f695fb55dca51354b8
 megadrive	kidchampt	kid camaleao pt-br (2026)(solid one).bin	2097152	405d52bf	85590f4c422732a662c76df0f60e693cc7450701
 megadrive	kidchams	kid chameleon t-spa (2018)(wave).bin	1048576	4871962f	29197c61164dfba664e22699d9790f02a34aed61
@@ -78107,9 +78107,9 @@ megadrive	papirium	papirium demo (2021)(studio vetea).bin	786432	4b54976c	db5748
 megadrive	papirld	papi commando reload tectoy demo ! (2017)(studio vetea).bin	1572864	d73e6ad5	851d760cf48eb847bd2c0bdf39d9733facb7944e
 megadrive	papirmx	papi commando remix ! (2018)(studio vetea).bin	3698576	d15c6391	
 megadrive	papirmxdx	papi commando remix deluxe (2020)(studio vetea).bin	3830164	6c8ee0b0	de79298c118bc7fa38232871bfd549f4d5bacdcb
-megadrive	papitennis	papi commando tennis demo (2018)(studio vetea).bin	1799138	0a67b352	
+megadrive	papitennis	papi commando tennis demo (2018)(studio vetea).bin	1799138	0a67b352	481848d91bcafa3a07ea3407a0c5ca148b9e7dc3
 megadrive	paprium	paprium (world)(2020)(watermelon).bin	8388608	28f16e0b	4a19ede704070a99a07bc189864915c415cca222
-megadrive	papriumarc	paprium (arcade mode)(world)(2026)(adroxe).bin	8388608	755caf5e	
+megadrive	papriumarc	paprium (arcade mode)(world)(2026)(adroxe).bin	8388608	755caf5e	b026af60e5f2dc3cfd73ac16f037389eb12a69d2
 megadrive	papriumini	paprium minigame (2020)(watermelon).bin	524288	57b0ffa4	e5d62667397bb344cae8c86fcbfbd9c56234b541
 megadrive	papriumunlck	paprium (unlocked)(world)(2025)(knightofthewind89).bin	8388608	868dd234	e37b93b7675a51fd724a3f8e72176ba535f132c6
 megadrive	par	pro action replay (euro).bin	131072	17255224	b0bbfe0c201b2ab2fc17b37e5709785fedc07170
@@ -78163,7 +78163,7 @@ megadrive	piratesdrowned	pirates of the drowned hypertorus v0.0.13 (2026)(safety
 megadrive	piratesp	pirates! gold (usa, proto)(1993)(microprose).bin	1048576	0a525641	6449aea7af69e6b91c91b654c9ea952a72f0dd7c
 megadrive	piratesp1	pirates! gold (proto)(1993)(microprose).bin	1048576	f61e5417	83cb678b447ea277e78225fa20e239b74df62214
 megadrive	pitfall	pitfall - the mayan adventure (euro)(1994)(activision).bin	2097152	c9198e19	b7c5f6e5f422c7bb5ec3177328d963c9beace24f
-megadrive	pitfall2600	pitfall 2600 v0.0.1 (2026)(sirvh).bin	131072	4bc9756e	
+megadrive	pitfall2600	pitfall 2600 v0.0.1 (2026)(sirvh).bin	131072	4bc9756e	93b54b71510d143b9a555da8d82ced601870bb91
 megadrive	pitfall2600r	pitfall 2600 remastered v0.0.1 (2026)(sirvh).bin	131072	8d835c62	f1493d38100514f297c25233356161804ae2aecd
 megadrive	pitfallu	pitfall - the mayan adventure (usa)(1994)(activision).bin	2097152	f917e34f	f2067e7d974f03bf922286241119dac7c0ecabff
 megadrive	pitfight	pit-fighter (world, rev a)(1991)(tengen).bin	1048576	d48a8b02	8cd0ffaf3c29b3aa1f9068cd89cb64f492066d74
@@ -78259,7 +78259,7 @@ megadrive	pulseman	pulseman (japan)(1994)(sega).bin	2097152	138a104e	5fd76a5f80e
 megadrive	pulsemane	pulseman t-eng (2007)(jon najar).bin	2097152	a8e0de99	451cdab2543b229f00d554f3a4aa01ce5a0cc490
 megadrive	pulsemanpt	pulseman pt-br v0.9 (2011)(renix traducoes).bin	2097152	925f7be6	91c143a04032b87787b77a6ed89dcbfee9730435
 megadrive	punisher	punisher, the (euro)(1994)(capcom).bin	2097152	729edd17	d11ec72726498e4608eefc1ef2b8a3cadb025394
-megadrive	punishergv	punisher, the - gun version (2026)(everything is fun).bin	2097152	e4f97405	
+megadrive	punishergv	punisher, the - gun version (2026)(everything is fun).bin	2097152	e4f97405	ff25a666d6ae7bd421d7a57e48dfe75c3c127ae6
 megadrive	punisherpt	punisher, the pt-br (2010)(monkey's traducoes).bin	2097386	b9483d26	8f2e3978084f0ee875919dd275b56e839a674722
 megadrive	punishers	punisher, the (2018)(wave).bin	2097152	d1315970	fdcc1ceb3f0aba47f233a92897726a5a4a63b584
 megadrive	punisheru	punisher, the (usa)(1994)(capcom).bin	2097152	695cd8b8	4ef2675e728903925a7b865daa75ed66bbe24829
@@ -78398,7 +78398,7 @@ megadrive	rolos	rolo to the rescue t-spa (2019)(wave).bin	524288	0c4584a4	38ba8d
 megadrive	roman3k2	romance of the three kingdoms ii (usa)(1991)(koei).bin	1048576	3d842478	89fc2203b0369565124184690a5a5037ac9c54d7
 megadrive	roman3k3	romance of the three kingdoms iii - dragon of destiny (usa)(1993)(koei).bin	1310720	7e41c8fe	a47b0ac13ef8229fbfc89216c8ecb66d72f6f73a
 megadrive	romeow	romeow and julicat (2020)(mega cat studio).bin	2097152	46f895d5	25c1ae2a1a20f782ae86c5b8db5b28c16e4dd1b3
-megadrive	rookmann	rook mann - rockheaven (japan)(unl)(199x).bin	524288	274c2a1c	
+megadrive	rookmann	rook mann - rockheaven (japan)(unl)(199x).bin	524288	274c2a1c	1b7084982ea557938d096a0679869fbb03397640
 megadrive	royalbld	royal blood (japan)(1992)(koei).bin	1048576	0e0107f1	914f684f085927257020ffaa1ca536ec057e1603
 megadrive	rpunknown	rocket panda into the unknown v4 (2022)(space pants games).bin	2097152	70d33705	e22cb3daa1b7d03a0fa088e2d70d511a4e3db0d5
 megadrive	rrash2	road rash ii (euro, usa, v1.2)(1992)(electronic arts).bin	1048576	0876e992	9afea43ed627671b50dd4a2abdd043b235414b91
@@ -78890,7 +78890,7 @@ megadrive	supshin2p1	super shinobi ii, the (japan, proto)(1993)(sega).bin	104857
 megadrive	supshin2p2	super shinobi ii, the (japan, proto, earlier)(1993)(sega).bin	1048576	1ee5bce3	182f65e634b6eecdadff55f41cd9b2d0e9e283f6
 megadrive	surging	surging aura (japan)(1995)(sega).bin	2097152	65ac1d2b	9f14cd11cfa499cdd58248de81db30f9308326e5
 megadrive	surgingc	surging aura t-chi (199x)(ken_tse).bin	2359296	38a17fd0	f604118c4f751fc50822468ce05f41c7f9ef1707
-megadrive	surgingtek	surging aura t-eng,kor v0.90 (2026)(retrogamelog).bin	4194304	78b4ac90	
+megadrive	surgingtek	surging aura t-eng,kor v0.90 (2026)(retrogamelog).bin	4194304	78b4ac90	5774b0f305d2e5df22d8c70054f09971b32e4c4c
 megadrive	sv2furbos	street voter ii furbo - elecciones anticipadas edition v37 t-spa (2026)(ponferrada.ia).bin	4194304	eb4b73c7	
 megadrive	svolley	super volley ball (usa)(1991)(video system).bin	262144	a88fee44	4fbf379fc806453c763980a3e6ee7f858f32ee3e
 megadrive	svolley1	super volley ball (usa, alt)(1991)(video system).bin	262144	85102799	3f00e7f8de50e73346cba06dd44b6dd9461d5c9c
@@ -78977,7 +78977,7 @@ megadrive	tetris	tetris (japan)(1989)(sega).bin	262144	4ce90db0	2f2b559c5855e345
 megadrive	tetris1	tetris (unl)(199x).bin	524288	eb024ab2	44340cd021ab9cfb0536f78d6f0d59ea0f409a40
 megadrive	tetrisarc	tetris - atari games arcade port v1.02 (2026)(shinobiz).bin	2097152	4b5be3f5	ad954f4b05f5c70f841a14f2dda3db1142922aac
 megadrive	tetrispp	tetris (2023)(my arcade).bin	2097152	eea3028b	ea149969469643ac0a491ede54802e4b7e21be47
-megadrive	tetrisredux	tetris redux (2026)(billytime! games).bin	262144	b2d5bdb2	
+megadrive	tetrisredux	tetris redux (2026)(billytime! games).bin	262144	b2d5bdb2	9cf89ebd8dafa79b2485ee8d9d993ef784497fe6
 megadrive	tetriss	tetris t-spa (2019)(wave).bin	262144	6fe8f5c1	b2ac6018a41a6d3be719b3835464f0a17560e064
 megadrive	tf2	thunder force ii (euro, usa)(1989)(sega).bin	524288	9b1561b3	b81e7ebc4ceb6c1ae2975d27e0a78ba1e8546b5f
 megadrive	tf2j	thunder force ii md (japan)(1989)(technosoft).bin	524288	e75ec3e0	44b173b74225e5b562cdf3982926a051f05ed98e
@@ -79334,7 +79334,7 @@ megadrive	ys3	ys iii (usa).bin	1048576	ea27976e	b3331b41a9a5e2c3f4fb3b64c5b00503
 megadrive	ys3j	ys - wanderers from ys (jpn).bin	1048576	52da4e76	28dc01d5dde8d569bae3fafce2af55ee9b836454
 megadrive	ysonic2	yoshi in sonic the hedgehog 2 (beta)(2017)(xenowhirl).bin	1048576	5f19712a	45617c2d0127ae1c98ac857ba5a0c3b3c2f97cee
 megadrive	yuyug	yu yu hakusho gaiden (japan)(1994)(sega).bin	2097152	7dc98176	274b86709b509852ca004ceaa244f3ae1d455c50
-megadrive	yuyugte	yu yu hakusho gaiden t-eng v1.0 build 9 (2026)(patch clan).bin	4194304	fadb2b33	
+megadrive	yuyugte	yu yu hakusho gaiden t-eng v1.0 build 9 (2026)(patch clan).bin	4194304	fadb2b33	74c8896fef4e2858bab67535ec7d9b1ae0484344
 megadrive	yuyumt	yu yu hakusho - makyou toitsusen (japan)(1994)(sega).bin	3145728	71ceac6f	89a70d374a3f3e2dc5b430e6d444bea243193b74
 megadrive	yuyumte	yu yu hakusho - makyou toitsusen t-eng (2007)(jon najar).bin	3145728	0f041d2e	d881629af139edb6acf36498654401508501ff69
 megadrive	yuyusf	yu yu hakusho - sunset fighters (brazil)(1994)(tec toy).bin	3145728	fe3fb8ee	e307363837626d47060f5347d0fccfc568a12b18
@@ -89218,7 +89218,7 @@ spectrum	charm	charm, the 128k (2014)(retroworks).tzx	81573	a6317752
 spectrum	chasehq128	chase h.q. 48k-128k (1989)(ocean).tap	118340	236a9884	468079daca2b0df298805fcb6f5b8333c223c12e
 spectrum	chasehq2	chase h.q. ii - special criminal investigations 128k (1990)(ocean).tap	122661	fd47cf79	7a75685d84ed4d7c4b3dc97b3b570140293ee8a4
 spectrum	chasehq48	spectrum.rom	16384	ddee531f	5ea7c2b824672e914525d1d5c419d71b84a426a2
-spectrum	chateau	chateau, le 48k (2026)(someoneat).tap	32654	164cdf62	
+spectrum	chateau	chateau, le 48k (2026)(someoneat).tap	32654	164cdf62	c65abeb957977c3e8b960fb14ce86346375d551e
 spectrum	cheman	che-man 48k (2019)(the mojon twins).tap	21346	ab6e3d27	af95397854c4fc9dd81001dfc21f6b350b9a4cac
 spectrum	chemichaos	chemi chaos 48k-128k (2023)(g0blinish).tap	9393	8905d3a7	
 spectrum	cheqflag	chequered flag 48k (1983)(sinclair research).tzx	48707	c9368910	573f9fc30a0285a11bd2adcfe6427cb898f8e0bf
@@ -89898,7 +89898,7 @@ spectrum	gameswintered	games, the - winter edition 48k (1988)(u.s. gold).tap	146
 spectrum	gamex	gamex 48k (2006)(cronosoft).tap	46680	d996c4fc	2b2dd6264addb2adc080a575379364b34bf4699a
 spectrum	gandalf	gandalf deluxe 128k (2018)(speccy nights).tap	95019	1f7f26c8	08ce2e361974e8967ffaeeed59cb2efeeb999b08
 spectrum	ganimedes	ganimedes v1.01 128k (2023)(nextric).tap	59199	c58082f3	b67109ea6cb2d4fa32617533fc702a2dc3fe0041
-spectrum	garagerush	garage rush 48k (2026)(hermski).tap	30897	0d6f2201	
+spectrum	garagerush	garage rush 48k (2026)(hermski).tap	30897	0d6f2201	af936016f9a8a1d62eb91a83ccbca1f8a7969ac5
 spectrum	garfield	garfield - big, fat, hairy deal 48k (1988)(the edge).tzx	52697	ec92d5f7	8f563e1c61869655f35ba0fb6b042c2e1efb5999
 spectrum	garfield2	garfield - winter's tail 48k (1990)(the edge).tzx	58679	a44a1dab	f4cd867d0e062a5cd6fd97e82ac931a8b8de8d3d
 spectrum	gatecrash	gatecrasher 48k (1984)(quicksilva).tap	30466	980c9911	4122dc1fc57fc19ce509a08df39815213c4982c0
@@ -89965,7 +89965,7 @@ spectrum	gng48	ghosts 'n' goblins 48k (1986)(elite systems).tzx	49599	8224f1de	c
 spectrum	gnkanga	good night kanga 48k-128k (2016)(gabriele amore - factor 6).tap	27329	3e2bacae	
 spectrum	gnoni	gnoni v1.2 es 48k (2020)(azimov).tap	26212	beb0553a	da86ab7515fceef343f15ba677d3b873cc8d0365
 spectrum	gnonimh	gnoni es 48k (1988)(microhobby).tap	17473	14adb16f	759cbd4d193490e16227d52ad3aae71f149e6ff9
-spectrum	go9x9	go 9x9 v2.0.1 128k (2026)(lawlord).tap	96306	c9785e8e	
+spectrum	go9x9	go 9x9 v2.0.1 128k (2026)(lawlord).tap	96306	c9785e8e	49080cd85cdcf2bd9da0e49813e9c24bba6f7409
 spectrum	goblinarama	goblinarama v2 128k (2025)(zero budget).tap	72354	b21d9b4c	7fdc9f60d870c918534abcd86c9ea168a177e819
 spectrum	goblinen	goblin, the en 48k-128k (2022)(hicks).tap	46960	aaddbdc4	
 spectrum	goblines	goblin, the es 48k-128k (2022)(hicks).tap	46999	80e04163	
@@ -90493,7 +90493,7 @@ spectrum	losttapes	lost tapes of albion, the 48k (2012)(stonechat productions).t
 spectrum	lostulumen	lost treasures of tulum, the en 128k (2020)(retroworks).tap	75999	c64c38ad	2980abc7b884df58363040abdf4a8849e1cda0d2
 spectrum	lostulumes	lost treasures of tulum, the es 128k (2020)(retroworks).tap	75999	c4087b0e	ee409b308318d520b04ce17af2c24a38c4474e10
 spectrum	lotustc	lotus esprit turbo challenge 128k (1990)(gremlin graphics).z80	88502	e2a3503d	d5049653463a56bedcc1205dfade8bbe5ebc9cc2
-spectrum	loukoumas	loukoumas 48k (2026)(revive8bit).tap	30461	1b08c862	
+spectrum	loukoumas	loukoumas 48k (2026)(revive8bit).tap	30461	1b08c862	c96bbfc9c6bf2c3b308dbe924a93e95d3c4bb394
 spectrum	loxley	loxley v1.1 128k (2022)(world xxi soft).tap	144187	89ef517a	552e11cf94e190874c19560be308192646ed0941
 spectrum	lpatrol25	lunar patrol '25 128k (2025)(gabriele amore).tap	55375	dcf08fd6	e50010a28ace8539315c659e0ab324d3ce3ebbfb
 spectrum	lprintrun	lprint runaway 48k (2023)(ignacobo).tap	43514	a3785c33	da847698ff57ca31a3ad512bf9fd2658af7ad61f
@@ -90924,21 +90924,21 @@ spectrum	omelettes	omelettes for breakfast 48k-128k (2017)(gabriele amore).tap	3
 spectrum	oo48	--=o o=-- v1.1 48k-ay (2025-26)(briefer666).tap	39393	bcbf0d46	efd2fbd31d3d9679a99616594ee79a15e1f1b7f4
 spectrum	ooze	ooze 128k (2017)(bubblesoft).tap	49790	188d3e4e	d08da4a1646f4638bdae2b9ab5914b6b88b275bb
 spectrum	operationgunship	operation gunship 128k (1989)(codemasters).tap	52455	ee1f687d	25828cf29040525df653e19def41b4adedd3aa2e
-spectrum	opgreenup1en	operation greenup - part 1 en 128k (2026)(molisoft).tap	120944	2120674b	
-spectrum	opgreenup1es	operacion greenup - parte 1 es 128k (2026)(molisoft).tap	121201	2e79b60d	
-spectrum	opgreenup2en	operation greenup - part 2 en 128k (2026)(molisoft).tap	120826	e57631fd	
-spectrum	opgreenup2es	operacion greenup - parte 2 es 128k (2026)(molisoft).tap	120376	19a0eb68	
-spectrum	opgreenup3en	operation greenup - part 3 en 128k (2026)(molisoft).tap	80546	28d7c03f	
-spectrum	opgreenup3es	operacion greenup - parte 3 es 128k (2026)(molisoft).tap	81038	ade5760c	
+spectrum	opgreenup1en	operation greenup - part 1 en 128k (2026)(molisoft).tap	120944	2120674b	3c11b2d0b81ea42ae6160e8b90756cb3f8638d77
+spectrum	opgreenup1es	operacion greenup - parte 1 es 128k (2026)(molisoft).tap	121201	2e79b60d	2b8b48e7bd319468d15b311d4116b91f97d917c1
+spectrum	opgreenup2en	operation greenup - part 2 en 128k (2026)(molisoft).tap	120826	e57631fd	2ce9e406353319570c95e53aa52cee2b25eebd35
+spectrum	opgreenup2es	operacion greenup - parte 2 es 128k (2026)(molisoft).tap	120376	19a0eb68	de1e07d27f3a21e526e2c016f162cd1d0e8658ba
+spectrum	opgreenup3en	operation greenup - part 3 en 128k (2026)(molisoft).tap	80546	28d7c03f	b8cf4fcadfc687fd4de590fc8db04a376bc55838
+spectrum	opgreenup3es	operacion greenup - parte 3 es 128k (2026)(molisoft).tap	81038	ade5760c	be8c12a42adcbbd9e8bec7165f4969b92c9382d4
 spectrum	ophanoi	operation hanoi 48k-128k (1990)(players premier).tap	74134	8f259898	4588a42dc1c35ce2f2709ced7a521617905b56a0
 spectrum	ophormuz	operation hormuz 48k-128k (1989)(again again).tzx	49106	1c657b1e	579561fd0a8c365476c229bc0bd7f6f562140059
 spectrum	oplabfall	operation - labyrinth fall 128k (2018)(bumfun software).tap	36787	22169ded	3dbd2b19bb569e2f78f39694f13bb9d9e43e4601
 spectrum	opmoo	operation moo 128k (2025)(juangm).tap	68142	04bb8296	e1c5ee917062103d4199f45964aaedf0a29cb798
 spectrum	opuzz	o-puzz attack 48k (2018)(oblo).tap	29543	ebadd8c9	7ebdd39787fb54e882da8168a38210bd78c2b2c8
 spectrum	opuzz	spectrum.rom	16384	ddee531f	
-spectrum	opuzzv1a	o-puzz attack v1.29 48k (2026)(oblo).tzx	45282	c1e7b5d8	
-spectrum	opuzzv1a	spectrum.rom	16384	ddee531f	
-spectrum	opuzzv2	o-puzz attack v2.08 48k-128k (2026)(oblo).tap	52496	03a7bd63	
+spectrum	opuzzv1a	o-puzz attack v1.29 48k (2026)(oblo).tzx	45282	c1e7b5d8	1fbaa4c8c136ef1c31260262aaa14d6505fe1b2a
+spectrum	opuzzv1a	spectrum.rom	16384	ddee531f	5ea7c2b824672e914525d1d5c419d71b84a426a2
+spectrum	opuzzv2	o-puzz attack v2.08 48k-128k (2026)(oblo).tap	52496	03a7bd63	37d0f04889b4803f8ac0a2de27ebe80f7c5703db
 spectrum	opwolf	operation wolf 128k (1988)(ocean).z80	121476	a7cd683f	e732e7fb01f4b6dfe1382cf810d3443a3258a996
 spectrum	orcattack	orc attack 48k (1984)(creative sparks).tzx	31150	0cdb8978	72c3f47368143e2bd3b386402eccc3008a67a068
 spectrum	orderslpdrag	order of sleeping dragon, the 128k (2019)(evgeniya zapolnova).tap	125004	5652c985	bb6288b9775f1f19ddf6b0326136a41b19e34d04
@@ -91003,7 +91003,7 @@ spectrum	pcaptcreedes	pirate captain creed es 48k (2023)(furillo productions).ta
 spectrum	pcaptcreedjp	pirate captain creed jp 48k (2023)(furillo productions).tap	44553	736f88d8	ec35b53f62c59583b6fd8bbaaeccb0eff3de5ac8
 spectrum	pcquest	page's castle quest 48k-ay (2014)(t.d.f. micro-visions).tzx	36810	9aefb680	3e19f5dc95cc7fe3f5f2b870737d12c52c1520e7
 spectrum	pdrift	power drift 128k (1989)(activision).z80	90358	34a7f74a	d7cce70a536404d3ec244e9c8da55c1ef23ecdeb
-spectrum	pedrisco	pedrisco 48k-128k (2026)(vosges6128).tap	27819	45bbba00	
+spectrum	pedrisco	pedrisco 48k-128k (2026)(vosges6128).tap	27819	45bbba00	fd64faa36382a2745be7376c991a604cfc58b1c1
 spectrum	pedro	pedro 48k (1984)(imagine software).tap	27328	4c759deb	c4366a0f73668e2e58a45d0a5a65b7aba066b0ed
 spectrum	pedrocastle	pedro in the haunted castle t-eng 48k-128k (2011)(pavel pliva).tap	40342	dd90c539	0224f8c0c95028fd0bb35474af66e0c49f6eca47
 spectrum	pedroisland	pedro on the pirate island t-eng 48k-128k (2011)(pavel pliva).tap	36190	7eb92bba	2fc1dff13ed046c47c541de400623091e5b2416b
