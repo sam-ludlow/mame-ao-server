@@ -624,7 +624,7 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
     // Menu
     //
     const walkMenu = (current: any) => {
-        responseInfo.NavMenu += '<table class="nav"><tr class="nav">';
+        responseInfo.NavMenu += '<div class="nav-row">';
         
         let foundMenu: any;
 
@@ -635,9 +635,9 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
 
             const navClass = requestInfo.UrlPaths.includes(menuItem.href) ? 'nav-on' : 'nav-off';
 
-            responseInfo.NavMenu += `<td class="${navClass}"><a class="${navClass}" href="${menuItem.href}" title="${menuItem.title}">${menuItem.text}</a></td>`;
+            responseInfo.NavMenu += `<a class="${navClass}" href="${menuItem.href}" title="${menuItem.title}">${menuItem.text}</a>`;
         });
-        responseInfo.NavMenu += '</tr></table>';
+        responseInfo.NavMenu += '</div>';
 
         if (foundMenu !== undefined && foundMenu.menu !== undefined)
             walkMenu(foundMenu.menu);
