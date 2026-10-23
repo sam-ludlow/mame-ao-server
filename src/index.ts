@@ -154,7 +154,7 @@ export class ApplicationCore implements Application {
 
             case 'fbneo':
                 this.DatabaseConfigs = [ tools.sqlConfig(databaseServer, `${databaseNamePrefix}-${this.Key}`)];
-                const datafiles = await tools.databaseQuery(this.DatabaseConfigs[0], 'SELECT [name], [description] FROM [datafile] ORDER BY [name]');
+                const datafiles = await tools.databaseQuery(this.DatabaseConfigs[0], 'SELECT [name], [description] FROM [datafile] WHERE ([name] != \'neogeo\') ORDER BY [name]');
 
                 rootMenu.filter(x => x.href === `/${this.Key}`)[0].menu = datafiles.map(sub => ({
                     text: sub[0].value,
@@ -846,7 +846,7 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
                             }
                             break;
 
-                        // Datafile
+                        // Datafile / Games search
                         case 'fbneo':
                             let datafile_name = requestInfo.UrlParts[1];
 
@@ -856,10 +856,66 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
                             if (validExtentions.includes(responseInfo.Extention) === false)
                                 throw new Error('Bad extention');
 
-                            const fbneo_data = await tools.databasePayload(application.DatabaseConfigs[0], 'datafile_payload', { datafile_name }, responseInfo.Extention);
+
+                            const displayMode: string = requestInfo.Paramters.view === 'grid' ? 'html_card' : 'html';
+
+                            const pageData = await getGames(application.DatabaseConfigs[0], requestInfo.Paramters, displayMode, datafile_name);
+
+                            let viewCount = pageData.length;
+                            let totalCount = viewCount === 0 ? 0 : pageData[0].filter((r: any) => r.metadata.colName === 'ao_total')[0].value;
+
+                            let nav = makePageNav(requestInfo, viewCount, totalCount);
+
+                            let machineHtml = '';
+
+                            switch (displayMode) {
+
+                                case 'html':
+                                    const columnDefs = {
+                                        'name': 'Name',
+                                        'description': 'Description',
+                                        'year': 'Year',
+                                        'manufacturer': 'Manufacturer',
+                                        'cloneof': 'Clone of',
+                                        'romof': 'Rom of',
+                                    };
+
+                                    machineHtml = `<table><tr>`;
+                                    machineHtml += Object.keys(columnDefs).map(columnName => `<th>${columnName}</th>`).join('');
+                                    machineHtml += '</tr>' + os.EOL;
+                                    
+                                    pageData.forEach((row) => {
+                                        machineHtml += row[1].value + os.EOL;
+                                    });
+                                    
+                                    machineHtml += '</table>';
+                                    break;
+
+                                case 'html_card':
+                                    machineHtml = '<div class="card-grid">';
+                                    pageData.forEach((row) => {
+                                        machineHtml += row[1].value + os.EOL;
+                                    });
+                                    machineHtml += '</div>' + os.EOL;
+                                    break;
+
+                                default:
+                                    throw new Error(`Bad display mode ${displayMode}`);
+                            }
+
+                            machineHtml = assets['mame-machine.html'].replace('@DATA@', machineHtml);
+                            machineHtml = machineHtml.replace('@TOP@', nav);
+                            machineHtml = machineHtml.replace('@BOTTOM@', nav);
+
+                            responseInfo.Title = `${application.Key.toUpperCase()} (${application.Version}) machine`;
+                            responseInfo.Heading = responseInfo.Title;
+                            responseInfo.Body = machineHtml;
+
+
+/*                             const fbneo_data = await tools.databasePayload(application.DatabaseConfigs[0], 'datafile_payload', { datafile_name }, responseInfo.Extention);
                             responseInfo.Title = fbneo_data[0].value;
                             responseInfo.Heading = responseInfo.Title;
-                            responseInfo.Body = fbneo_data[1].value;
+                            responseInfo.Body = fbneo_data[1].value; */
                             break;
 
                         // Subset
@@ -1340,6 +1396,101 @@ export const getMachines = async (config: any, paramters: any, payloadColumnName
     finally {
         await tools.sqlClose(connection);
     }
+
+    return data;
+}
+
+export const getGames = async (config: any, paramters: any, payloadColumnName: string, datafile_name: string) => {
+
+    let commandText;
+
+    if (paramters.search.length !== 0) {
+        commandText = `
+            WITH tmp_search_rows AS (
+                SELECT
+                    game_search_payload.[${payloadColumnName}],
+                    game_search_payload.[description],
+                    seacrh_result.[RANK],
+                    COUNT(*) OVER() AS ao_total
+                FROM FREETEXTTABLE(
+                        game_search_payload,
+                        ([name], [description]),
+                        @search
+                    ) AS seacrh_result
+                JOIN game_search_payload AS game_search_payload
+                    ON game_search_payload.[key] = seacrh_result.[KEY]
+                @WHERE
+            )
+            SELECT
+                ao_total,
+                [${payloadColumnName}],
+                [RANK]
+            FROM tmp_search_rows
+            ORDER BY [RANK] DESC, [description] ASC
+            OFFSET @offset ROWS
+            FETCH NEXT @limit ROWS ONLY;
+        `;
+    } else {
+        commandText = `
+            SELECT tmp_total_rows.[ao_total], tmp_page_rows.[${payloadColumnName}]
+            FROM (
+                SELECT COUNT(*) AS ao_total
+                FROM game_search_payload
+                @WHERE
+            ) tmp_total_rows
+            CROSS JOIN (
+                SELECT [${payloadColumnName}]
+                FROM game_search_payload
+                @WHERE
+                ORDER BY description
+                OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY
+            ) tmp_page_rows;
+        `;
+    }
+
+    commandText = commandText.replace('@offset', paramters.offset.toString());
+    commandText = commandText.replace('@limit', paramters.limit.toString());
+
+    const wheres: string[] = [];
+
+    wheres.push(`([type] = '${datafile_name}')`);
+
+/*     if (paramters.type.length !== 0 && paramters.type.length !== _machine_types.length)
+        wheres.push(paramters.type.map((type: string) => `([type] = '${type}')`).join(' OR '));
+
+    if (paramters.status.length !== 0)
+        wheres.push(paramters.status.map((status: string) => `([ao_status] = '${status}')`).join(' OR '));
+
+    if (paramters.mechanical !== null)
+        wheres.push(`([ismechanical] = ${paramters.mechanical ? '1' : '0'})`);
+
+    if (paramters.clone !== null)
+        wheres.push(`([isclone] = ${paramters.clone ? '1' : '0'})`); */
+
+    commandText = wheres.length === 0 ? commandText.replaceAll('@WHERE', '') : commandText.replaceAll('@WHERE', `WHERE ((${wheres.join(') AND (')}))`);
+
+    const request: Tedious.Request = new Request(commandText, () => {});
+
+    if (paramters.search.length !== 0)
+        request.addParameter('search', TYPES.VarChar, paramters.search);
+
+    console.log(commandText);
+    console.log(request.parameters);
+
+
+    let data;
+
+    const connection = new Connection(config);
+    await tools.sqlOpen(connection);
+
+    try {
+        data = await tools.sqlRequest(connection, request);
+    }
+    finally {
+        await tools.sqlClose(connection);
+    }
+
+    console.log(data);
 
     return data;
 }
