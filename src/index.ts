@@ -856,66 +856,70 @@ const requestListener: http.RequestListener = async (req: http.IncomingMessage, 
                             if (validExtentions.includes(responseInfo.Extention) === false)
                                 throw new Error('Bad extention');
 
+                            if (responseInfo.Extention === '') {
+                                const displayMode: string = requestInfo.Paramters.view === 'grid' ? 'html_card' : 'html';
 
-                            const displayMode: string = requestInfo.Paramters.view === 'grid' ? 'html_card' : 'html';
+                                const pageData = await getGames(application.DatabaseConfigs[0], requestInfo.Paramters, displayMode, datafile_name);
 
-                            const pageData = await getGames(application.DatabaseConfigs[0], requestInfo.Paramters, displayMode, datafile_name);
+                                let viewCount = pageData.length;
+                                let totalCount = viewCount === 0 ? 0 : pageData[0].filter((r: any) => r.metadata.colName === 'ao_total')[0].value;
 
-                            let viewCount = pageData.length;
-                            let totalCount = viewCount === 0 ? 0 : pageData[0].filter((r: any) => r.metadata.colName === 'ao_total')[0].value;
+                                let nav = makePageNav(requestInfo, viewCount, totalCount);
 
-                            let nav = makePageNav(requestInfo, viewCount, totalCount);
+                                let machineHtml = '';
 
-                            let machineHtml = '';
+                                switch (displayMode) {
 
-                            switch (displayMode) {
+                                    case 'html':
+                                        const columnDefs = {
+                                            'name': 'Name',
+                                            'description': 'Description',
+                                            'year': 'Year',
+                                            'manufacturer': 'Manufacturer',
+                                            'cloneof': 'Clone of',
+                                            'romof': 'Rom of',
+                                        };
 
-                                case 'html':
-                                    const columnDefs = {
-                                        'name': 'Name',
-                                        'description': 'Description',
-                                        'year': 'Year',
-                                        'manufacturer': 'Manufacturer',
-                                        'cloneof': 'Clone of',
-                                        'romof': 'Rom of',
-                                    };
+                                        machineHtml = `<table><tr>`;
+                                        machineHtml += Object.keys(columnDefs).map(columnName => `<th>${columnName}</th>`).join('');
+                                        machineHtml += '</tr>' + os.EOL;
+                                        
+                                        pageData.forEach((row) => {
+                                            machineHtml += row[1].value + os.EOL;
+                                        });
+                                        
+                                        machineHtml += '</table>';
+                                        break;
 
-                                    machineHtml = `<table><tr>`;
-                                    machineHtml += Object.keys(columnDefs).map(columnName => `<th>${columnName}</th>`).join('');
-                                    machineHtml += '</tr>' + os.EOL;
-                                    
-                                    pageData.forEach((row) => {
-                                        machineHtml += row[1].value + os.EOL;
-                                    });
-                                    
-                                    machineHtml += '</table>';
-                                    break;
+                                    case 'html_card':
+                                        machineHtml = '<div class="card-grid">';
+                                        pageData.forEach((row) => {
+                                            machineHtml += row[1].value + os.EOL;
+                                        });
+                                        machineHtml += '</div>' + os.EOL;
+                                        break;
 
-                                case 'html_card':
-                                    machineHtml = '<div class="card-grid">';
-                                    pageData.forEach((row) => {
-                                        machineHtml += row[1].value + os.EOL;
-                                    });
-                                    machineHtml += '</div>' + os.EOL;
-                                    break;
+                                    default:
+                                        throw new Error(`Bad display mode ${displayMode}`);
+                                }
 
-                                default:
-                                    throw new Error(`Bad display mode ${displayMode}`);
+                                machineHtml = assets['fbneo-game.html'].replace('@DATA@', machineHtml);
+                                machineHtml = machineHtml.replace('@TOP@', nav);
+                                machineHtml = machineHtml.replace('@BOTTOM@', nav);
+                                machineHtml = machineHtml.replace('@PAYLOAD_LINKS@', `<a href="${datafile_name}.xml">XML</a> &bull; <a href="${datafile_name}.json">JSON</a>`);
+
+                                responseInfo.Title = `${application.Key.toUpperCase()} (${application.Version}) machine`;
+                                responseInfo.Heading = responseInfo.Title;
+                                responseInfo.Body = machineHtml;
                             }
+                            else
+                            {
+                                const software_data = await tools.databasePayload(application.DatabaseConfigs[0], 'datafile_payload', { datafile_name }, responseInfo.Extention);
 
-                            machineHtml = assets['mame-machine.html'].replace('@DATA@', machineHtml);
-                            machineHtml = machineHtml.replace('@TOP@', nav);
-                            machineHtml = machineHtml.replace('@BOTTOM@', nav);
-
-                            responseInfo.Title = `${application.Key.toUpperCase()} (${application.Version}) machine`;
-                            responseInfo.Heading = responseInfo.Title;
-                            responseInfo.Body = machineHtml;
-
-
-/*                             const fbneo_data = await tools.databasePayload(application.DatabaseConfigs[0], 'datafile_payload', { datafile_name }, responseInfo.Extention);
-                            responseInfo.Title = fbneo_data[0].value;
-                            responseInfo.Heading = responseInfo.Title;
-                            responseInfo.Body = fbneo_data[1].value; */
+                                responseInfo.Title = software_data[0].value;
+                                responseInfo.Heading = responseInfo.Title;
+                                responseInfo.Body = software_data[1].value;
+                            }
                             break;
 
                         // Subset
@@ -1474,10 +1478,6 @@ export const getGames = async (config: any, paramters: any, payloadColumnName: s
     if (paramters.search.length !== 0)
         request.addParameter('search', TYPES.VarChar, paramters.search);
 
-    console.log(commandText);
-    console.log(request.parameters);
-
-
     let data;
 
     const connection = new Connection(config);
@@ -1489,8 +1489,6 @@ export const getGames = async (config: any, paramters: any, payloadColumnName: s
     finally {
         await tools.sqlClose(connection);
     }
-
-    console.log(data);
 
     return data;
 }
